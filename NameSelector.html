@@ -1,0 +1,544 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Randomized Name Selector</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap');
+    body {
+      margin: 0;
+      height: 100vh;
+      background-color: black;
+      background-image: url('images/Tech3409297.jpg');
+      background-repeat: no-repeat;
+      background-position: center center;
+      background-attachment: fixed;
+      background-size: cover;
+      position: relative;
+      font-family: 'Inter', sans-serif;
+      color: #fff;
+      text-shadow: 0 0 8px rgba(0,0,0,0.7);
+      padding: 0;
+      box-sizing: border-box;
+      font-size: 1.5rem;
+      font-weight: 700;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      overflow: hidden;
+    }
+    .main-content {
+      padding-top: 20px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      width: 100%;
+      text-align: center;
+      overflow: auto;
+    }
+    .randomized-selector {
+      text-align: center;
+      z-index: 1;
+      width: 100%;
+    }
+    h2 {
+      font-size: 2.5rem;
+      margin-bottom: 20px;
+    }
+    .selected-result {
+      font-size: 3rem;
+      font-weight: 700;
+      text-align: center;
+      margin-top: 20px;
+      padding: 20px;
+      border-radius: 12px;
+      background: rgba(0, 0, 0, 0.6);
+      margin-bottom: 30px;
+      animation: glowPulse 2s infinite ease-in-out;
+      max-width: 70%;
+      word-wrap: break-word;
+      margin: 0 auto;
+    }
+    @keyframes glowPulse {
+      0%, 100% {
+        text-shadow: 0 0 10px #fff, 0 0 20px #fff;
+        opacity: 1;
+      }
+      50% {
+        text-shadow: 0 0 30px #fff, 0 0 60px #fff;
+        opacity: 0.7;
+      }
+    }
+    .custom-name textarea {
+      width: 70vw;
+      max-width: 800px;
+      padding: 30px;
+      font-size: 1.5rem;
+      font-weight: 400;
+      border-radius: 15px;
+      border: 2px solid #ccc;
+      text-align: center;
+      background: rgba(255, 255, 255, 0.2);
+      color: #fff;
+      transition: border-color 0.3s, background 0.3s;
+      font-family: 'Arial', sans-serif;
+      -webkit-appearance: none;
+      -moz-appearance: none;
+      margin: 20px 0;
+      height: 50vh;
+      resize: none;
+    }
+    .custom-name textarea::placeholder {
+      color: #fff;
+      opacity: 1;
+    }
+    .custom-name textarea:focus {
+      border-color: #0088ff;
+      outline: none;
+      background: rgba(255, 255, 255, 0.3);
+    }
+    .button-row {
+      display: flex;
+      justify-content: center;
+      gap: 20px;
+      flex-wrap: wrap;
+      width: 100%;
+      margin-top: 20px;
+    }
+    button {
+      padding: 15px 35px;
+      font-size: 1.5rem;
+      font-weight: 700;
+      border: 2px solid rgba(255,255,255,0.6);
+      background: transparent;
+      border-radius: 30px;
+      cursor: pointer;
+      transition: background 0.3s, color 0.3s;
+      backdrop-filter: blur(5px);
+      color: #fff;
+      z-index: 1;
+      height: 60px;
+      line-height: 30px;
+      width: auto;
+    }
+    button:hover {
+      background: rgba(255,255,255,0.4);
+      color: #000;
+    }
+    button:active {
+      background: rgba(255,255,255,0.6);
+      color: #333;
+    }
+    #fileInput {
+      display: none;
+    }
+    .file-input-label {
+      padding: 15px 35px;
+      font-size: 1.5rem;
+      font-weight: 700;
+      border: 2px solid rgba(255,255,255,0.6);
+      background: transparent;
+      border-radius: 30px;
+      cursor: pointer;
+      transition: background 0.3s, color 0.3s, transform 0.2s;
+      backdrop-filter: blur(5px);
+      color: #fff;
+      z-index: 1;
+      display: inline-block;
+      height: 60px;
+      line-height: 30px;
+      box-sizing: border-box;
+      vertical-align: middle;
+    }
+    .file-input-label:hover {
+      background: rgba(255,255,255,0.4);
+      color: #000;
+    }
+    .file-input-label:active {
+      transform: scale(0.97);
+    }
+    select {
+      padding: 15px 35px 15px 20px; /* Extra right padding for arrow */
+      font-size: 1.5rem;
+      font-weight: 700;
+      border: 2px solid rgba(255,255,255,0.6);
+      background: transparent;
+      border-radius: 30px;
+      cursor: pointer;
+      transition: background 0.3s, color 0.3s;
+      backdrop-filter: blur(5px);
+      color: #fff;
+      z-index: 1;
+      height: 60px;
+      width: auto;
+      text-align: center;
+      appearance: none;
+      -webkit-appearance: none;
+      -moz-appearance: none;
+      background-image: url("data:image/svg+xml;charset=UTF-8,<svg width='24' height='24' xmlns='http://www.w3.org/2000/svg'><path fill='white' d='M7 10l5 5 5-5z'/></svg>");
+      background-repeat: no-repeat;
+      background-position: right 15px center;
+      background-size: 1.2em;
+    }
+    select:hover {
+      background: rgba(255,255,255,0.4);
+      color: #000;
+    }
+    select:focus {
+      background: rgba(255,255,255,0.3);
+      outline: none;
+    }
+    .go-button {
+      padding: 15px 35px;
+      font-size: 1.5rem;
+      font-weight: 700;
+      border: 2px solid rgba(255, 255, 255, 0.6);
+      background: transparent;
+      border-radius: 30px; 
+      cursor: pointer;
+      transition: background 0.3s, color 0.3s;
+      backdrop-filter: blur(5px);
+      color: #fff;
+      z-index: 1;
+      margin-top: 20px;
+      height: 60px;
+      line-height: 30px;
+    }
+    .go-button:hover {
+      background: rgba(255,255,255,0.4);
+      color: #000;
+    }
+    .go-button:active {
+      background: rgba(255,255,255,0.6);
+      color: #333;
+    }
+    .back-button {
+      padding: 15px 35px;
+      font-size: 1.5rem;
+      font-weight: 700;
+      border: 2px solid rgba(255,255,255,0.6);
+      background: transparent;
+      border-radius: 30px;
+      cursor: pointer;
+      transition: background 0.3s, color 0.3s; 
+      backdrop-filter: blur(5px);
+      color: #fff;
+      z-index: 1;
+      margin-top: 20px;
+      height: 60px;
+      line-height: 30px;
+    }
+    .back-button:hover {
+      background: rgba(255,255,255,0.4);
+      color: #000;
+    }
+    .back-button:active {
+      background: rgba(255,255,255,0.6);
+      color: #333;
+    }
+    .modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.5);
+      backdrop-filter: blur(10px);
+      color: #fff;
+      z-index: 2;
+      justify-content: center;
+      align-items: center;
+      font-size: 1.5rem;
+    }
+    .modal-content {
+      background-color: rgba(0, 0, 0, 0.7);
+      padding: 40px;
+      border-radius: 15px;
+      text-align: center;
+    }
+    .modal button {
+      padding: 10px 20px;
+      font-size: 1.5rem;
+      font-weight: 700;
+      border-radius: 30px;
+      background-color: transparent;
+      color: #fff;
+      border: 2px solid rgba(255, 255, 255, 0.6);
+      cursor: pointer;
+    }
+    .modal button:hover {
+      background: rgba(255,255,255,0.4);
+      color: #000;
+    }
+    .modal button:active {
+      background: rgba(255,255,255,0.6);
+      color: #333;
+    }
+    .switch-container {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 10px;
+      font-size: 1.35rem;
+      margin-top: 20px;
+    }
+    .switch-container label {
+      font-weight: 700;
+      font-size: 1.35rem;
+    }
+    .switch {
+      position: relative;
+      display: inline-block;
+      width: 54px;
+      height: 30px;
+    }
+    .switch input {
+      opacity: 0;
+      width: 0;
+      height: 0;
+    }
+    .slider {
+      position: absolute;
+      cursor: pointer;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background-color: #ccc;
+      transition: 0.4s;
+      border-radius: 50px;
+    }
+    .slider:before {
+      position: absolute;
+      content: "";
+      height: 22px;
+      width: 22px;
+      border-radius: 50px;
+      left: 4px;
+      bottom: 4px;
+      background-color: white;
+      transition: 0.4s;
+    }
+    input:checked + .slider {
+      background-color: #4CAF50;
+    }
+    input:checked + .slider:before {
+      transform: translateX(24px);
+    }
+   .logo-header {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 96px;           /* Enough room for your logo and 20px padding */
+  background: transparent; /* Or set a color if you want a bar */
+  z-index: 1000;
+  display: flex;
+  align-items: flex-start;
+  padding: 20px 0 0 20px; /* Top/Left padding */
+  box-sizing: border-box;
+}
+
+.logo-img {
+  height: 56px;        /* Adjust for your logo's size */
+  width: auto;
+  border-radius: 10px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+}
+  </style>
+</head>
+<body>
+  <header class="logo-header">
+    <img src="images/SELECTr%20WH%20logo.png" alt="Logo" class="logo-img">
+  </header>
+  <div class="main-content">
+    <!-- ... your existing content ... -->
+    <div class="randomized-selector">
+      <h2>Step 1: Enter, Upload, or Choose Class</h2>
+      <div class="custom-name">
+        <textarea id="nameInput" placeholder="Enter names here, one per line OR choose a class from dropdown if previously saved."></textarea>
+      </div>
+      <div class="button-row">
+        <label for="fileInput" class="file-input-label">Upload File</label>
+        <input type="file" id="fileInput" accept=".txt,.csv" onchange="uploadNames(event)">
+        <button onclick="saveNames()">Save Names</button>
+        <select id="classSelect" onchange="populateNamesFromClass()">
+          <option value="Class 1">Class 1</option>
+          <option value="Class 2">Class 2</option>
+          <option value="Class 3">Class 3</option>
+          <option value="Class 4">Class 4</option>
+          <option value="Class 5">Class 5</option>
+          <option value="Class 6">Class 6</option>
+          <option value="Class 7">Class 7</option>
+          <option value="Class 8">Class 8</option>
+          <option value="Class 9">Class 9</option>
+          <option value="Class 10">Class 10</option>
+        </select>
+        <button onclick="proceedToStep2()">Next</button>
+      </div>
+    </div>
+    <div class="randomized-selector" id="step2" style="display:none;">
+      <h2>Name Selector</h2>
+      <div class="selected-result" id="selectedResult">No name selected yet</div>
+      <button class="back-button" onclick="goBackToStep1()">Back</button>
+      <button class="go-button" onclick="selectRandomName()">GO!</button>
+      <div class="switch-container">
+        <label for="noRepeatSwitch">No Repeat</label>
+        <label class="switch">
+          <input type="checkbox" id="noRepeatSwitch" onclick="toggleNoRepeat()" checked>
+          <span class="slider"></span>
+        </label>
+      </div>
+    </div>
+  </div>
+  <div class="modal" id="modal">
+    <div class="modal-content">
+      <p id="modalMessage"></p>
+      <button onclick="closeModal()">OK</button>
+    </div>
+  </div>
+  <audio id="tickingSound" src="audio/ticking.mp3" preload="auto"></audio>
+  <audio id="dingSound" src="audio/ding.mp3" preload="auto"></audio>
+  <script>
+    let savedNames = {
+      "Class 1": [],
+      "Class 2": [],
+      "Class 3": [],
+      "Class 4": [],
+      "Class 5": [],
+      "Class 6": [],
+      "Class 7": [],
+      "Class 8": [],
+      "Class 9": [],
+      "Class 10": []
+    };
+    let activeNames = {}; // Holds temporary "no repeat" lists for Step 2
+    let noRepeatNames = true;
+
+    window.onload = function() {
+      showModal(
+        "We recommend backing up your entered lists in a separate file on your device.<br><br>Names will be saved under the selected class in the dropdown menu, but may be lost if your browser's cache is cleared."
+      );
+      const storedNames = JSON.parse(localStorage.getItem("names"));
+      if (storedNames && Object.keys(storedNames).length > 0) {
+        savedNames = storedNames;
+      }
+      // Initialize activeNames as a copy of savedNames for each class
+      for (let key in savedNames) {
+        activeNames[key] = [...savedNames[key]];
+      }
+      populateNamesFromClass();
+      document.getElementById("selectedResult").textContent = "Ready to select a name!";
+    };
+
+    function saveNames() {
+      const nameInput = document.getElementById("nameInput").value.trim();
+      const selectedClass = document.getElementById("classSelect").value;
+      if (nameInput) {
+        savedNames[selectedClass] = nameInput.split("\n").map(name => name.trim()).filter(name => name !== "");
+        localStorage.setItem("names", JSON.stringify(savedNames));
+        // When saved, reset activeNames for that class
+        activeNames[selectedClass] = [...savedNames[selectedClass]];
+        showModal(`Names successfully saved to ${selectedClass}!`);
+      } else {
+        document.getElementById("selectedResult").textContent = "Please enter some names.";
+      }
+    }
+
+    function uploadNames(event) {
+      const file = event.target.files[0];
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        const fileContent = e.target.result;
+        const selectedClass = document.getElementById("classSelect").value;
+        savedNames[selectedClass] = fileContent.split("\n").map(name => name.trim()).filter(name => name !== "");
+        localStorage.setItem("names", JSON.stringify(savedNames));
+        activeNames[selectedClass] = [...savedNames[selectedClass]];
+        showModal(`Names successfully uploaded to ${selectedClass}!`);
+        populateNamesFromClass();
+      };
+      if (file) {
+        reader.readAsText(file);
+      }
+    }
+
+    // Populate textarea when a class is chosen
+    function populateNamesFromClass() {
+      const selectedClass = document.getElementById("classSelect").value;
+      const currentNames = savedNames[selectedClass] || [];
+      document.getElementById("nameInput").value = currentNames.length > 0 ? currentNames.join("\n") : "";
+    }
+
+    function proceedToStep2() {
+      // On each entry to step 2, reset the active names list for selected class
+      const selectedClass = document.getElementById("classSelect").value;
+      activeNames[selectedClass] = [...savedNames[selectedClass]];
+      document.querySelector(".randomized-selector").style.display = "none";
+      document.getElementById("step2").style.display = "block";
+    }
+
+    function selectRandomName() {
+      const selectedClass = document.getElementById("classSelect").value;
+      const classNames = noRepeatNames ? activeNames[selectedClass] : savedNames[selectedClass];
+      if (classNames && classNames.length > 0) {
+        let counter = 0;
+        const resultDisplay = document.getElementById("selectedResult");
+        resultDisplay.style.fontSize = "3rem";
+        document.getElementById("tickingSound").pause();
+        document.getElementById("tickingSound").currentTime = 0;
+        document.getElementById("dingSound").pause();
+        document.getElementById("dingSound").currentTime = 0;
+        document.getElementById("tickingSound").play();
+        const cyclingEffect = setInterval(() => {
+          const randomIndex = Math.floor(Math.random() * classNames.length);
+          resultDisplay.textContent = classNames[randomIndex];
+          counter++;
+          if (counter >= 10) {
+            clearInterval(cyclingEffect);
+            const finalIndex = Math.floor(Math.random() * classNames.length);
+            resultDisplay.textContent = classNames[finalIndex];
+            resultDisplay.style.fontSize = "6rem";
+            if (noRepeatNames) {
+              // Remove the name from active list only
+              activeNames[selectedClass].splice(finalIndex, 1);
+            }
+            document.getElementById("tickingSound").pause();
+            document.getElementById("tickingSound").currentTime = 0;
+            document.getElementById("dingSound").play();
+            if (noRepeatNames && activeNames[selectedClass].length === 0) {
+              setTimeout(() => {
+                showModal("All names used. Select the Back button to start over.");
+              }, 1250);
+            }
+          }
+        }, 100);
+      } else {
+        document.getElementById("selectedResult").textContent = "No names saved yet.";
+      }
+    }
+
+    function goBackToStep1() {
+      document.getElementById("step2").style.display = "none";
+      document.querySelector(".randomized-selector").style.display = "block";
+      populateNamesFromClass();
+      document.getElementById("selectedResult").textContent = "Ready to select a name!";
+    }
+
+    function toggleNoRepeat() {
+      noRepeatNames = document.getElementById("noRepeatSwitch").checked;
+    }
+
+    function showModal(message) {
+      document.getElementById("modalMessage").innerHTML = message;
+      document.getElementById("modal").style.display = "flex";
+    }
+    function closeModal() {
+      document.getElementById("modal").style.display = "none";
+    }
+  </script>
+</body>
+</html>

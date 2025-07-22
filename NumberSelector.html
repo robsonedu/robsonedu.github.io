@@ -1,0 +1,396 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Randomized Selector</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap');
+
+    body {
+      margin: 0;
+      height: 100vh;
+      background-color: black;
+      background-image: url('images/Tech3409297.jpg');
+      background-repeat: no-repeat;
+      background-position: center center;
+      background-attachment: fixed;
+      background-size: cover;
+      position: relative;
+      font-family: 'Inter', sans-serif;
+      color: #fff;
+      text-shadow: 0 0 8px rgba(0,0,0,0.7);
+      padding: 0;
+      box-sizing: border-box;
+      font-size: 1.5rem;
+      font-weight: 700;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .main-content {
+      padding-top: 20px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      width: 100%;
+      text-align: center;
+    }
+
+    .randomized-selector {
+      text-align: center;
+      z-index: 1;
+    }
+
+    h2 {
+      font-size: 2.5rem;
+      margin-bottom: 20px;
+    }
+
+    /* Result Display */
+    .selected-result {
+      font-size: 3rem;  /* Start at 3rem */
+      font-weight: 700;
+      text-align: center;
+      margin-top: 20px;
+      padding: 20px;
+      border-radius: 12px;
+      background: rgba(0, 0, 0, 0.6);
+      margin-bottom: 30px;
+      animation: glowPulse 2s infinite ease-in-out;
+    }
+
+    @keyframes glowPulse {
+      0%, 100% {
+        text-shadow: 0 0 10px #fff, 0 0 20px #fff;
+        opacity: 1;
+      }
+      50% {
+        text-shadow: 0 0 30px #fff, 0 0 60px #fff;
+        opacity: 0.7;
+      }
+    }
+
+    /* Custom Number Input Field - Fixed Width */
+    .custom-number input {
+      width: 50vw;  /* Responsive width based on viewport width */
+      max-width: 600px;  /* Limiting max-width to prevent it from becoming too wide */
+      padding: 30px 40px;
+      font-size: 2.5rem;
+      font-weight: 700;
+      border-radius: 15px;
+      border: 2px solid #ccc;
+      text-align: center;
+      background: rgba(255, 255, 255, 0.2); /* Transparent background */
+      color: #fff;
+      transition: border-color 0.3s, background 0.3s;
+      font-family: 'Arial', sans-serif;
+      -webkit-appearance: none;
+      -moz-appearance: none;
+      margin: 20px 0;  /* Added vertical margin */
+    }
+
+    .custom-number input::placeholder {
+      color: #fff;
+      opacity: 1;
+    }
+
+    .custom-number input:focus {
+      border-color: #0088ff;
+      outline: none;
+      background: rgba(255, 255, 255, 0.3);
+    }
+
+    /* GO Button - Centering the text */
+    .go-button {
+      padding: 25px;
+      font-size: 2rem;
+      font-weight: 700;
+      border: 2px solid rgba(255, 255, 255, 0.6);
+      background: transparent;
+      border-radius: 50%;
+      cursor: pointer;
+      transition: background 0.3s, color 0.3s, transform 0.2s;
+      backdrop-filter: blur(5px);
+      color: #fff;
+      z-index: 1;
+      text-transform: uppercase;
+      display: flex;              /* Make the button a flex container */
+      justify-content: center;    /* Center text horizontally */
+      align-items: center;        /* Center text vertically */
+      width: 120px;
+      height: 120px;
+      margin: 20px 0;             /* Added vertical margin for spacing */
+    }
+
+    .go-button:hover {
+      background: rgba(255,255,255,0.4);
+      color: #000;
+      transform: scale(1.05);
+    }
+
+    .go-button:active {
+      transform: scale(0.97);
+    }
+
+    /* GO Button Container with Margin for Positioning */
+    .go-button-container {
+      display: flex;
+      justify-content: center;
+      margin-left: 0in;  /* Move the GO button to the right by 2 inches */
+    }
+
+    /* Reset Button - Similar to GO button, but not circular */
+    .reset-number-history {
+      padding: 12px 24px;  /* Reduced padding to match No Repeat label */
+      font-size: 1.5rem;
+      font-weight: 700;
+      border: 2px solid rgba(255, 255, 255, 0.6);
+      background: transparent;
+      border-radius: 15px; /* Rounded edges */
+      cursor: pointer;
+      transition: background 0.3s, color 0.3s, transform 0.2s;
+      backdrop-filter: blur(5px);
+      color: #fff;
+      z-index: 1;
+      text-transform: uppercase;
+      display: inline-block;
+      width: auto;          /* Let it be flexible with text */
+      height: auto;
+      margin: 10px 0;       /* Adjust vertical margin */
+      margin-left: 20px;    /* Move reset button 20px to the right */
+    }
+
+    .reset-number-history:hover {
+      background: rgba(255, 255, 255, 0.4);
+      color: #000;
+      transform: scale(1.05);
+    }
+
+    .reset-number-history:active {
+      transform: scale(0.97);
+    }
+
+    /* Switch container */
+    .switch-container {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      font-size: 1rem;
+      margin-top: 40px;
+    }
+
+    .switch-container label {
+      font-weight: 700;
+      font-size: 1rem;
+    }
+
+    .switch {
+      position: relative;
+      display: inline-block;
+      width: 60px;
+      height: 34px;
+    }
+
+    .switch input {
+      opacity: 0;
+      width: 0;
+      height: 0;
+    }
+
+    .slider {
+      position: absolute;
+      cursor: pointer;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background-color: #ccc;
+      transition: 0.4s;
+      border-radius: 50px;
+    }
+
+    .slider:before {
+      position: absolute;
+      content: "";
+      height: 26px;
+      width: 26px;
+      border-radius: 50px;
+      left: 4px;
+      bottom: 4px;
+      background-color: white;
+      transition: 0.4s;
+    }
+
+    input:checked + .slider {
+      background-color: #4CAF50;
+    }
+
+    input:checked + .slider:before {
+      transform: translateX(26px);
+    }
+
+    @media (max-width: 1300px) {
+      .controls, .custom-number, .presets {
+        gap: 12px;
+        margin-top: 15px;
+        flex-wrap: wrap;
+      }
+
+      .custom-number input {
+        width: 80%;
+        font-size: 1.5rem;
+      }
+
+      .go-button {
+        width: 100px;
+        height: 100px;
+        font-size: 1.5rem;
+      }
+    }
+.logo-header {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 96px;           /* Enough room for your logo and 20px padding */
+  background: transparent; /* Or set a color if you want a bar */
+  z-index: 1000;
+  display: flex;
+  align-items: flex-start;
+  padding: 20px 0 0 20px; /* Top/Left padding */
+  box-sizing: border-box;
+}
+
+.logo-img {
+  height: 56px;        /* Adjust for your logo's size */
+  width: auto;
+  border-radius: 10px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+}
+
+  </style>
+</head>
+<body>
+
+  <header class="logo-header">
+    <img src="images/SELECTr%20WH%20logo.png" alt="Logo" class="logo-img">
+  </header>
+  <div class="main-content">
+    <!-- ... your existing content ... -->
+    <div class="randomized-selector">
+      <h2>Number Selector</h2>
+      <div class="selected-result" id="selectedResult">Please Enter a Number</div>
+
+      <!-- Maximum Value Section -->
+      <div class="custom-number">
+        <input type="text" id="maxValue" placeholder="Enter Max Number">
+      </div>
+
+      <!-- GO Button Below the Input Field -->
+      <div class="go-button-container">
+        <button class="go-button" onclick="selectRandomNumber()">GO!</button>
+      </div>
+
+      <!-- Flip Switch for No Repeat -->
+      <div class="switch-container">
+        <label for="noRepeatSwitch">No Repeat</label>
+        <label class="switch">
+          <input type="checkbox" id="noRepeatSwitch" onclick="toggleNoRepeat()" checked>
+          <span class="slider"></span>
+        </label>
+        <button class="reset-number-history" onclick="resetHistory('number')">Reset</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Add Audio Elements -->
+  <audio id="tickingSound" src="audio/ticking.mp3" preload="auto"></audio>
+  <audio id="dingSound" src="audio/ding.mp3" preload="auto"></audio>
+
+  <script>
+    let selectedNumbers = [];
+    let noRepeatNumbers = true;
+
+    // Toggle No Repeat based on switch state
+    function toggleNoRepeat() {
+      noRepeatNumbers = document.getElementById("noRepeatSwitch").checked;
+    }
+
+    // Set volume for the sounds directly in the code
+    document.getElementById("tickingSound").volume = 1;  // Max volume for ticking sound
+    document.getElementById("dingSound").volume = 0.5;   // Reduced volume for ding sound
+
+    function selectRandomNumber() {
+      const maxValue = parseInt(document.getElementById("maxValue").value);
+
+      if (isNaN(maxValue) || maxValue < 1) {
+        alert("Please enter a valid number greater than 0.");
+        return;
+      }
+
+      const minValue = 1;
+
+      if (noRepeatNumbers && selectedNumbers.length >= maxValue) {
+        resetHistory('number');
+        return;
+      }
+
+      let randomNum;
+      let counter = 0;
+      const resultDisplay = document.getElementById("selectedResult");
+
+      // Hide the input field and label once "GO!" is clicked
+      document.querySelector('.custom-number').style.display = 'none';
+
+      // Set font size immediately for the cycling numbers
+      resultDisplay.style.fontSize = "3rem"; // Keep this initially at 3rem during cycling
+
+      // Stop the ding sound if it's playing (reset it)
+      document.getElementById("dingSound").pause();
+      document.getElementById("dingSound").currentTime = 0;
+
+      // Display cycling effect with ticking sound
+      const cyclingEffect = setInterval(() => {
+        randomNum = Math.floor(Math.random() * maxValue) + minValue;
+        resultDisplay.textContent = randomNum;
+        counter++;
+        
+        // Play ticking sound every cycle
+        document.getElementById("tickingSound").play();
+
+        if (counter >= 15) { // Stop after 15 cycles
+          clearInterval(cyclingEffect);
+          selectedNumbers.push(randomNum);
+          resultDisplay.textContent = randomNum; // Show final number
+          resultDisplay.style.fontSize = "10rem"; // Set larger font size after cycling ends
+
+          // Stop ticking sound immediately when ding plays
+          document.getElementById("tickingSound").pause();
+          document.getElementById("tickingSound").currentTime = 0; // Reset to start of the sound
+
+          // Play ding sound when number is selected
+          document.getElementById("dingSound").play();
+        }
+      }, 100); // 100ms per cycle for suspense
+    }
+
+    function resetHistory(type) {
+      if (type === 'number') {
+        selectedNumbers = [];
+      }
+      document.getElementById("selectedResult").textContent = "Please Enter a Number";  // Show the original text again
+      document.querySelector('.custom-number').style.display = 'block';  // Show the input field again
+      document.getElementById("maxValue").value = '';  // Clear input value
+      document.getElementById("maxValue").placeholder = 'Enter Max Number';  // Reset placeholder text
+
+      // Reset font size of selected result back to 3rem
+      document.getElementById("selectedResult").style.fontSize = "3rem";  // Reset font size back to 3rem
+    }
+  </script>
+</body>
+</html>

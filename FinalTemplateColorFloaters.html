@@ -1,17 +1,36 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>robsonedu</title>
+
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap');
+.logo-img {
+  position: fixed;
+  top: 20px;
+  left: 20px;
+  height: 56px; /* Adjust as desired */
+  width: auto;
+  z-index: 2000;
+  background: transparent;
+  border-radius: 0;      /* Removes rounded corners */
+  box-shadow: none;      /* Removes the drop shadow */
+  border: none;          /* Removes any border */
+  pointer-events: auto;  /* Logo remains clickable if needed */
+}
+
+.main-content {
+  padding-top: 0px; /* So your content never sits behind the logo */
+}
 
     body {
       margin: 0;
       height: 100vh;
       background-color: black;
-      background-image: url('images/blue brick wall.png');
+      background-image: url('images/ColorFloaters.jpg');
       background-repeat: no-repeat;
       background-position: center center;
       background-attachment: fixed;
@@ -26,37 +45,7 @@
       font-weight: 700;
       display: flex;
       flex-direction: column;
-    }
-
-    .logo-bar {
-      position: fixed;
-      top: 20px;
-      left: 20px;
-      display: flex;
-      align-items: center;
-      z-index: 2000;
-      background: transparent;
-      pointer-events: none; /* So content under is clickable */
-    }
-    .top-left-overlay {
-      height: 160px;   /* Adjust as desired for the left logo */
-      width: auto;
-      margin-right: 18px;
-      background: transparent;
-      border-radius: 0;
-      box-shadow: none;
-      border: none;
-      pointer-events: auto;
-    }
-    .logo-img {
-      height: 56px;   /* Matches your example for the right logo */
-      width: auto;
-      background: transparent;
-      border-radius: 0;
-      box-shadow: none;
-      border: none;
-      pointer-events: auto;
-    }
+   }
 
     .main-content {
       flex: 1;
@@ -64,7 +53,6 @@
       flex-direction: column;
       justify-content: center;
       align-items: center;
-      /* No padding needed! */
     }
 
     .timer {
@@ -105,7 +93,7 @@
       padding: 15px 35px;
       font-size: 1.5rem;
       font-weight: 700;
-      border: 2px solid rgba(255,255,255,0.6);
+      border: 2px solid rgb(142, 141, 232);
       background: transparent;
       border-radius: 30px;
       cursor: pointer;
@@ -254,36 +242,37 @@
       }
     }
 
-    body::before {
-      content: "";
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background: rgba(0, 0, 0, 0.4); /* adjust as needed */
-      z-index: 0;
-      pointer-events: none;
-    }
+  body::before {
+     content: "";
+     position: absolute;
+     top: 0;
+     left: 0;
+     width: 100%;
+     height: 100%;
+     background: rgba(0, 0, 0, 0.2); /* adjust 0.4 as needed */
+     z-index: 0;
+     pointer-events: none;
+  }
   </style>
 </head>
 <body>
-  <div class="logo-bar">
-    <img src="images/Bryant_B-White.png" class="top-left-overlay" alt="Left Logo">
-    <img src="images/TIMEr%20Wh%20Logo.png" class="logo-img" alt="Right Logo">
-  </div>
-  <div class="main-content">
+    <img src="images/TIMEr%20Wh%20Logo.png" alt="Logo" class="logo-img">
+    <div class="main-content">
+    <!-- ... rest of your content ... -->
     <div class="timer" id="timer">05:00</div>
+
     <div class="controls">
       <button class="icon-button" onclick="startTimer()">▶</button>
       <button class="icon-button" onclick="pauseTimer()">‖</button>
       <button class="icon-button" onclick="resetTimer()">Reset</button>
       <button onclick="add30Seconds()">+30 sec</button>
     </div>
+
     <div class="custom-time">
       <button onclick="setCustomTime()">Set</button>
       <input type="text" id="customTime" placeholder="MM:SS" />
     </div>
+
     <div class="presets">
       <button onclick="setTime(0,15)">:15</button>
       <button onclick="setTime(0,30)">:30</button>
@@ -311,15 +300,15 @@
 
   <button class="music-toggle" onclick="toggleSpotify()">♩</button>
 
-  <audio id="endSound">
-    <source src="audio/Computer_Magic-Microsift-1901299923.mp3" type="audio/mpeg">
-    Your browser does not support the audio element.
-  </audio>
+ <audio id="endSound">
+  <source src="audio/ringtone-019-365651.mp3" type="audio/mpeg">
+  Your browser does not support the audio element.
+ </audio>
 
   <script>
     document.body.addEventListener('touchstart', () => {
-      const unlock = document.getElementById('endSound');
-      unlock.play().catch(() => {});
+    const unlock = document.getElementById('endSound');
+    unlock.play().catch(() => {});
     }, { once: true });
 
     let duration = 5 * 60;
@@ -406,7 +395,7 @@
     function playSoundThreeTimes() {
       let count = 0;
       playingSound = true;
-      const cutoffRatio = 0.7;
+      const cutoffRatio = 0.65;
       endSound.volume = 1.0;
 
       function playNext() {

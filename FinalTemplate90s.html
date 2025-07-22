@@ -8,6 +8,23 @@
 
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap');
+.logo-img {
+  position: fixed;
+  top: 20px;
+  left: 20px;
+  height: 56px; /* Adjust as desired */
+  width: auto;
+  z-index: 2000;
+  background: transparent;
+  border-radius: 0;      /* Removes rounded corners */
+  box-shadow: none;      /* Removes the drop shadow */
+  border: none;          /* Removes any border */
+  pointer-events: auto;  /* Logo remains clickable if needed */
+}
+
+.main-content {
+  padding-top: 0px; /* So your content never sits behind the logo */
+}
 
     body {
       margin: 0;
@@ -223,7 +240,10 @@
   </style>
 </head>
 <body>
-  <div class="main-content">
+    <img src="images/TIMEr%20Wh%20Logo.png" alt="Logo" class="logo-img">
+    <div class="main-content">
+    <!-- ... rest of your content ... -->
+
     <div class="timer" id="timer">05:00</div>
 
     <div class="controls">
