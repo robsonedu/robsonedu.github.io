@@ -2829,7 +2829,7 @@ input, select, textarea {
 /* Header */
 
 	#header {
-		padding: 8em 0 0.1em 0 ;
+		padding: 1em 0 0.1em 0 ;
 	}
 
 		#header .logo {
@@ -3344,4 +3344,16 @@ button {
 .music-toggle {
   /* Remove blur just from Spotify toggle */
   backdrop-filter: none !important;
+}
+/* Custom spacing for tighter heading */
+.tight-heading {
+  margin-top: 0.5em;
+	margin-bottom: 0.25em;
+}
+/* Remove underline from logo link in header */
+#header .symbol,
+#header .symbol img,
+#header a {
+  border-bottom: none !important;
+  box-shadow: none !important;
 }
