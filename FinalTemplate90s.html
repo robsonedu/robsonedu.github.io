@@ -291,10 +291,14 @@
   </audio>
 
   <script>
-  document.body.addEventListener('touchstart', () => {
-  const unlock = document.getElementById('silentAudio');
-  unlock.play().catch(() => {});
-}, { once: true });
+ document.body.addEventListener('touchstart', () => {
+  // Unlock both audio elements
+  const silent = document.getElementById('silentAudio');
+  const bell = document.getElementById('endSound');
+  // Play and immediately pause both to unlock
+  silent.play().then(() => silent.pause()).catch(() => {});
+  bell.play().then(() => bell.pause()).catch(() => {});
+  }, { once: true });
 
   // Timer state variables
   let timerDuration = 5 * 60; // in seconds
