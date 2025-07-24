@@ -291,128 +291,150 @@
   </audio>
 
   <script>
-    document.body.addEventListener('touchstart', () => {
-      const unlock = document.getElementById('endSound');
-      unlock.play().catch(() => {});
-    }, { once: true });
+  document.body.addEventListener('touchstart', () => {
+    const unlock = document.getElementById('endSound');
+    unlock.play().catch(() => {});
+  }, { once: true });
 
-    let duration = 5 * 60;
-    let remainingTime = duration;
-    let timerInterval = null;
-    let playingSound = false;
-    const timerDisplay = document.getElementById('timer');
-    const endSound = document.getElementById('endSound');
+  // Timer state variables
+  let timerDuration = 5 * 60; // in seconds
+  let timerEndTime = null;    // timestamp in ms
+  let timerRunning = false;
+  let rafId = null;           // requestAnimationFrame id
+  const timerDisplay = document.getElementById('timer');
+  const endSound = document.getElementById('endSound');
+  let playingSound = false;
 
-    function updateDisplay() {
-      const minutes = Math.floor(remainingTime / 60);
-      const seconds = (remainingTime % 60).toString().padStart(2, '0');
-      timerDisplay.textContent = `${minutes}:${seconds}`;
+  // Initial display
+  updateDisplay(timerDuration);
+
+  function updateDisplay(seconds) {
+    const minutes = Math.floor(seconds / 60);
+    const sec = (seconds % 60).toString().padStart(2, '0');
+    timerDisplay.textContent = `${minutes}:${sec}`;
+  }
+
+  function startTimer() {
+    if (timerRunning) return;
+    timerDisplay.classList.add('running');
+    timerRunning = true;
+    if (!timerEndTime) {
+      timerEndTime = Date.now() + timerDuration * 1000;
     }
+    updateTimer();
+  }
 
-    function startTimer() {
-      if (timerInterval) return;
-      timerDisplay.classList.add('running');
-      timerInterval = setInterval(() => {
-        if (remainingTime > 0) {
-          remainingTime--;
-          updateDisplay();
-        } else {
-          clearInterval(timerInterval);
-          timerInterval = null;
-          timerDisplay.classList.remove('running');
-          timerDisplay.classList.add('glow');
-          playSoundThreeTimes();
-        }
-      }, 1000);
-    }
+  function updateTimer() {
+    if (!timerRunning) return;
+    const now = Date.now();
+    let remaining = Math.max(0, Math.round((timerEndTime - now) / 1000));
+    updateDisplay(remaining);
 
-    function pauseTimer() {
-      clearInterval(timerInterval);
-      timerInterval = null;
+    if (remaining > 0) {
+      rafId = requestAnimationFrame(updateTimer);
+    } else {
       timerDisplay.classList.remove('running');
+      timerDisplay.classList.add('glow');
+      timerRunning = false;
+      timerEndTime = null;
+      playSoundThreeTimes();
     }
+  }
 
-    function resetTimer() {
-      clearInterval(timerInterval);
-      timerInterval = null;
-      remainingTime = duration;
-      updateDisplay();
-      timerDisplay.classList.remove('running', 'glow');
-      stopSound();
-    }
+  function pauseTimer() {
+    if (!timerRunning) return;
+    timerRunning = false;
+    cancelAnimationFrame(rafId);
+    // Update timerDuration so resume works
+    const now = Date.now();
+    timerDuration = Math.max(0, Math.round((timerEndTime - now) / 1000));
+    timerEndTime = null;
+    timerDisplay.classList.remove('running');
+  }
 
-    function setTime(minutes = 0, seconds = 0) {
-      pauseTimer();
-      duration = (minutes * 60) + seconds;
-      remainingTime = duration;
-      updateDisplay();
-      timerDisplay.classList.remove('glow');
-      stopSound();
-      startTimer();
-    }
+  function resetTimer() {
+    timerRunning = false;
+    cancelAnimationFrame(rafId);
+    timerDuration = 5 * 60; // Default 5 minutes; adjust if needed
+    timerEndTime = null;
+    updateDisplay(timerDuration);
+    timerDisplay.classList.remove('running', 'glow');
+    stopSound();
+  }
 
-    function setCustomTime() {
-      const input = document.getElementById('customTime').value.trim();
-      const match = input.match(/^(\d{1,2}):(\d{2})$/);
-      if (match) {
-        let min = parseInt(match[1]);
-        let sec = parseInt(match[2]);
-        if (!isNaN(min) && !isNaN(sec) && sec < 60) {
-          duration = (min * 60) + sec;
-          remainingTime = duration;
-          pauseTimer();
-          updateDisplay();
-          timerDisplay.classList.remove('glow');
-          stopSound();
-        } else {
-          alert("Invalid time format.");
-        }
+  function setTime(minutes = 0, seconds = 0) {
+    pauseTimer();
+    timerDuration = (minutes * 60) + seconds;
+    timerEndTime = null;
+    updateDisplay(timerDuration);
+    timerDisplay.classList.remove('glow');
+    stopSound();
+    startTimer();
+  }
+
+  function setCustomTime() {
+    const input = document.getElementById('customTime').value.trim();
+    const match = input.match(/^(\d{1,2}):(\d{2})$/);
+    if (match) {
+      let min = parseInt(match[1]);
+      let sec = parseInt(match[2]);
+      if (!isNaN(min) && !isNaN(sec) && sec < 60) {
+        pauseTimer();
+        timerDuration = (min * 60) + sec;
+        timerEndTime = null;
+        updateDisplay(timerDuration);
+        timerDisplay.classList.remove('glow');
+        stopSound();
       } else {
-        alert("Please enter time in MM:SS format.");
+        alert("Invalid time format.");
+      }
+    } else {
+      alert("Please enter time in MM:SS format.");
+    }
+  }
+
+  function add30Seconds() {
+    if (timerRunning && timerEndTime) {
+      timerEndTime += 30000; // add 30 seconds
+    } else {
+      timerDuration += 30;
+      updateDisplay(timerDuration);
+    }
+  }
+
+  function playSoundThreeTimes() {
+    let count = 0;
+    playingSound = true;
+    const cutoffRatio = 0.65;
+    endSound.volume = 1.0;
+
+    function playNext() {
+      if (count < 3 && playingSound) {
+        endSound.currentTime = 0;
+        endSound.play().then(() => {
+          const shortDuration = endSound.duration * cutoffRatio;
+          setTimeout(() => {
+            endSound.pause();
+            endSound.currentTime = 0;
+            count++;
+            playNext();
+          }, shortDuration * 1000);
+        }).catch(err => console.log("Audio play prevented:", err));
       }
     }
+    playNext();
+  }
 
-    function add30Seconds() {
-      remainingTime += 30;
-      updateDisplay();
-    }
+  function stopSound() {
+    playingSound = false;
+    endSound.pause();
+    endSound.currentTime = 0;
+  }
 
-    function playSoundThreeTimes() {
-      let count = 0;
-      playingSound = true;
-      const cutoffRatio = 0.65;
-      endSound.volume = 1.0;
-
-      function playNext() {
-        if (count < 3 && playingSound) {
-          endSound.currentTime = 0;
-          endSound.play().then(() => {
-            const shortDuration = endSound.duration * cutoffRatio;
-            setTimeout(() => {
-              endSound.pause();
-              endSound.currentTime = 0;
-              count++;
-              playNext();
-            }, shortDuration * 1000);
-          }).catch(err => console.log("Audio play prevented:", err));
-        }
-      }
-
-      playNext();
-    }
-
-    function stopSound() {
-      playingSound = false;
-      endSound.pause();
-      endSound.currentTime = 0;
-    }
-
-    function toggleSpotify() {
-      const panel = document.getElementById('spotifyPanel');
-      panel.classList.toggle('open');
-    }
-
-    updateDisplay();
-  </script>
+  function toggleSpotify() {
+    const panel = document.getElementById('spotifyPanel');
+    panel.classList.toggle('open');
+  }
+</script>
 </body>
 </html>
