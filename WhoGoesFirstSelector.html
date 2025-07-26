@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Who Goes First?</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap');
+
+    body {
+      margin: 0;
+      height: 100vh;
+      background-color: black;
+      background-image: url('images/Tech3409297.jpg');
+      background-repeat: no-repeat;
+      background-position: center center;
+      background-attachment: fixed;
+      background-size: cover;
+      font-family: 'Inter', sans-serif;
+      color: #fff;
+      text-shadow: 0 0 8px rgba(0,0,0,0.7);
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .main-content {
+      text-align: center;
+      width: 100%;
+    }
+
+    h2 {
+      font-size: 2.5rem;
+      margin-bottom: 20px;
+      max-width: 90%;
+      margin-left: auto;
+      margin-right: auto;
+      text-align: center;
+    }
+
+    /* Phrase Display */
+    .selected-result {
+      font-size: 2rem;
+      font-weight: 700;
+      padding: 20px;
+      border-radius: 12px;
+      background: rgba(0, 0, 0, 0.6);
+      margin: 0 auto 30px auto;
+      animation: glowPulse 2s infinite ease-in-out;
+      max-width: 90%;
+      width: 100%;
+      opacity: 1;
+      transition: opacity 0.4s ease;
+      text-align: center;
+      box-sizing: border-box;
+    }
+
+    /* Fade-in animation */
+    .fade-in {
+      opacity: 0;
+      animation: fadeInEffect 0.4s forwards ease-in;
+    }
+
+    @keyframes fadeInEffect {
+      from { opacity: 0; transform: scale(0.95); }
+      to { opacity: 1; transform: scale(1); }
+    }
+
+    @keyframes glowPulse {
+      0%, 100% { text-shadow: 0 0 10px #fff, 0 0 20px #fff; opacity: 1; }
+      50% { text-shadow: 0 0 30px #fff, 0 0 60px #fff; opacity: 0.7; }
+    }
+
+    /* GO Button */
+    .go-button-row {
+      display: flex;
+      justify-content: center;
+      margin-top: 20px;
+    }
+
+    .go-button {
+      padding: 20px;
+      font-size: 2rem;
+      font-weight: 700;
+      border: 2px solid rgba(255, 255, 255, 0.6);
+      background: transparent;
+      border-radius: 50%;
+      cursor: pointer;
+      transition: background 0.3s, color 0.3s, transform 0.2s;
+      backdrop-filter: blur(5px);
+      color: #fff;
+      text-transform: uppercase;
+      width: 120px;
+      height: 120px;
+    }
+
+    .go-button:hover { background: rgba(255,255,255,0.4); color: #000; transform: scale(1.05); }
+    .go-button:active { transform: scale(0.97); }
+
+    /* No Repeat + Reset */
+    .secondary-controls-row {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 20px;
+      margin-top: 30px;
+      flex-wrap: wrap;
+    }
+
+    .switch-container { display: flex; align-items: center; gap: 10px; }
+    .switch-container label { font-weight: 700; font-size: 1rem; }
+
+    .switch { position: relative; display: inline-block; width: 60px; height: 34px; }
+    .switch input { opacity: 0; width: 0; height: 0; }
+    .slider {
+      position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0;
+      background-color: #ccc; transition: 0.4s; border-radius: 50px;
+    }
+    .slider:before {
+      position: absolute; content: ""; height: 26px; width: 26px; border-radius: 50px;
+      left: 4px; bottom: 4px; background-color: white; transition: 0.4s;
+    }
+    input:checked + .slider { background-color: #4CAF50; }
+    input:checked + .slider:before { transform: translateX(26px); }
+
+    .reset-number-history {
+      padding: 12px 24px;
+      font-size: 1.5rem;
+      font-weight: 700;
+      border: 2px solid rgba(255, 255, 255, 0.6);
+      background: transparent;
+      border-radius: 15px;
+      cursor: pointer;
+      transition: background 0.3s, color 0.3s, transform 0.2s;
+      backdrop-filter: blur(5px);
+      color: #fff;
+      text-transform: uppercase;
+    }
+
+    .reset-number-history:hover { background: rgba(255, 255, 255, 0.4); color: #000; transform: scale(1.05); }
+    .reset-number-history:active { transform: scale(0.97); }
+
+    /* Logo */
+    .logo-header { position: fixed; top: 0; left: 0; width: 100vw; padding: 20px; }
+    .logo-img { height: 56px; width: auto; box-shadow: none; }
+
+    /* --- Responsive Adjustments --- */
+    @media (max-width: 768px) {
+      h2 { font-size: 2rem; }
+      .selected-result { font-size: 1.6rem; padding: 15px; }
+      .go-button { width: 100px; height: 100px; font-size: 1.5rem; }
+      .reset-number-history { font-size: 1.2rem; padding: 10px 18px; }
+    }
+
+    @media (max-width: 480px) {
+      h2 { font-size: 1.8rem; }
+      .selected-result { font-size: 1.4rem; padding: 12px; }
+      .go-button { width: 85px; height: 85px; font-size: 1.2rem; }
+      .secondary-controls-row {
+        flex-direction: column;
+        gap: 15px;
+      }
+      .reset-number-history { font-size: 1rem; padding: 8px 15px; width: 80%; }
+      .switch { width: 50px; height: 28px; }
+      .slider:before { height: 20px; width: 20px; }
+    }
+  </style>
+</head>
+<body>
+
+<header class="logo-header">
+  <img src="images/SELECTr%20WH%20logo.png" alt="Logo" class="logo-img">
+</header>
+
+<div class="main-content">
+  <h2>Who Goes First?</h2>
+  <div class="selected-result" id="selectedResult">Press GO to select</div>
+
+  <!-- GO Button Row -->
+  <div class="go-button-row">
+    <button class="go-button" onclick="selectRandomPhrase()">GO!</button>
+  </div>
+
+  <!-- Secondary Controls Row -->
+  <div class="secondary-controls-row">
+    <div class="switch-container">
+      <label for="noRepeatSwitch">No Repeat</label>
+      <label class="switch">
+        <input type="checkbox" id="noRepeatSwitch" onclick="toggleNoRepeat()" checked>
+        <span class="slider"></span>
+      </label>
+    </div>
+    <button class="reset-number-history" onclick="resetHistory()">Reset</button>
+  </div>
+</div>
+
+<script>
+  const phrases = [
+    "Whoever has the most letters in their last name.",
+    "Whoever’s birthday is coming up next.",
+    "Whoever has the largest hand.",
+    "Whoever has the shortest first name.",
+    "Whoever woke up earliest today.",
+    "Whoever traveled the farthest to get here.",
+    "Whoever has the longest hair.",
+    "Whoever has the largest shoe size (the number)",
+    "Whoever has the shortest hair.",
+    "Whoever is carrying the most items (in pockets, bag, etc.).",
+    "Whoever’s name comes first alphabetically.",
+    "Whoever is the tallest.",
+    "Whoever is the shortest.",
+    "Whoever has the most siblings.",
+    "Whoever has the most pets.",
+    "Whoever has the fewest pets.",
+    "Whoever’s birthday is in the earliest month of the year.",
+    "Whoever's birthday is the earliest in the month.",
+    "Whoever's birthday is the latest in the month.",
+    "Whoever woke up the latest today."
+  ];
+
+  let selectedPhrases = [];
+  let noRepeat = true;
+
+  function toggleNoRepeat() {
+    noRepeat = document.getElementById("noRepeatSwitch").checked;
+  }
+
+  function selectRandomPhrase() {
+    const resultDisplay = document.getElementById("selectedResult");
+    let availablePhrases = phrases.filter(p => !selectedPhrases.includes(p) || !noRepeat);
+
+    if (availablePhrases.length === 0) {
+      resetHistory();
+      availablePhrases = [...phrases];
+    }
+
+    const chosenPhrase = availablePhrases[Math.floor(Math.random() * availablePhrases.length)];
+    selectedPhrases.push(chosenPhrase);
+
+    // Add fade-in animation
+    resultDisplay.classList.remove("fade-in");
+    void resultDisplay.offsetWidth; // restart animation
+    resultDisplay.textContent = chosenPhrase;
+    resultDisplay.classList.add("fade-in");
+  }
+
+  function resetHistory() {
+    selectedPhrases = [];
+    const resultDisplay = document.getElementById("selectedResult");
+    resultDisplay.textContent = "Press GO to select";
+  }
+</script>
+</body>
+</html>
