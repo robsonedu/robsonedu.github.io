@@ -307,10 +307,25 @@
     Your browser does not support the audio element.
   </audio>
 <script>
-  document.body.addEventListener('touchstart', () => {
-    const unlock = document.getElementById('endSound');
-    unlock.play().catch(() => {});
-  }, { once: true });
+  // Unlock audio on any timer button press (once only)
+  let audioUnlocked = false;
+  function unlockAudio() {
+    if (!audioUnlocked) {
+      try {
+        document.getElementById('endSound').play().then(a => {
+          document.getElementById('endSound').pause();
+          document.getElementById('endSound').currentTime = 0;
+        });
+      } catch (e) {}
+      try {
+        document.getElementById('warningSound').play().then(a => {
+          document.getElementById('warningSound').pause();
+          document.getElementById('warningSound').currentTime = 0;
+        });
+      } catch (e) {}
+      audioUnlocked = true;
+    }
+  }
 
   let duration = 5 * 60; // seconds
   let remainingTime = duration;
@@ -318,11 +333,11 @@
   let endTime = null;
   let isRunning = false;
   let playingSound = false;
-  let warningPlayed = false; // NEW
+  let warningPlayed = false;
   const timerDisplay = document.getElementById('timer');
   const endSound = document.getElementById('endSound');
   const warningSound = document.getElementById('warningSound');
-  warningSound.volume = 0.5; //adjust volume
+  warningSound.volume = 0.5;
 
   function updateDisplay() {
     const minutes = Math.floor(remainingTime / 60);
@@ -335,7 +350,7 @@
     const now = Date.now();
     remainingTime = Math.round((endTime - now) / 1000);
 
-    // --- 10 second warning sound ---
+    // 10 second warning sound
     if (remainingTime === 10 && !warningPlayed) {
       warningPlayed = true;
       warningSound.currentTime = 0;
@@ -357,41 +372,44 @@
   }
 
   function startTimer() {
+    unlockAudio();
     if (isRunning) return;
     timerDisplay.classList.add('running');
     endTime = Date.now() + remainingTime * 1000;
     isRunning = true;
     warningPlayed = remainingTime <= 10;
-    timerInterval = setInterval(tick, 250); // Faster for accuracy
+    timerInterval = setInterval(tick, 250);
   }
 
   function pauseTimer() {
+    unlockAudio();
     if (!isRunning) return;
     clearInterval(timerInterval);
     timerInterval = null;
     isRunning = false;
-    // Update remainingTime to be accurate at pause
     const now = Date.now();
     remainingTime = Math.round((endTime - now) / 1000);
     timerDisplay.classList.remove('running');
   }
 
   function resetTimer() {
+    unlockAudio();
     clearInterval(timerInterval);
     timerInterval = null;
     isRunning = false;
     remainingTime = duration;
-    warningPlayed = false; // NEW
+    warningPlayed = false;
     updateDisplay();
     timerDisplay.classList.remove('running', 'glow');
     stopSound();
   }
 
   function setTime(minutes = 0, seconds = 0) {
+    unlockAudio();
     pauseTimer();
     duration = (minutes * 60) + seconds;
     remainingTime = duration;
-    warningPlayed = false; // NEW
+    warningPlayed = false;
     updateDisplay();
     timerDisplay.classList.remove('glow');
     stopSound();
@@ -399,6 +417,7 @@
   }
 
   function setCustomTime() {
+    unlockAudio();
     const input = document.getElementById('customTime').value.trim();
     const match = input.match(/^(\d{1,2}):(\d{2})$/);
     if (match) {
@@ -408,7 +427,7 @@
         duration = (min * 60) + sec;
         remainingTime = duration;
         pauseTimer();
-        warningPlayed = false; // NEW
+        warningPlayed = false;
         updateDisplay();
         timerDisplay.classList.remove('glow');
         stopSound();
@@ -421,13 +440,14 @@
   }
 
   function add30Seconds() {
+    unlockAudio();
     if (isRunning) {
       remainingTime += 30;
       endTime += 30 * 1000;
     } else {
       remainingTime += 30;
     }
-    if (remainingTime > 10) warningPlayed = false; // NEW
+    if (remainingTime > 10) warningPlayed = false;
     updateDisplay();
   }
 
@@ -451,7 +471,6 @@
         }).catch(err => console.log("Audio play prevented:", err));
       }
     }
-
     playNext();
   }
 
@@ -464,12 +483,22 @@
   }
 
   function toggleSpotify() {
+    unlockAudio();
     const panel = document.getElementById('spotifyPanel');
     panel.classList.toggle('open');
   }
 
+  // Add unlockAudio to ALL timer and preset buttons for safety
+  window.addEventListener('DOMContentLoaded', () => {
+    // Find all timer-related buttons
+    document.querySelectorAll('button').forEach(btn => {
+      btn.addEventListener('click', unlockAudio, { once: true });
+    });
+  });
+
   updateDisplay();
 </script>
+
 
 </body>
 </html>
