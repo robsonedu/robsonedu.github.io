@@ -52,7 +52,7 @@
 
     /* Result Display */
     .selected-result {
-      font-size: 3rem;  /* Start at 3rem */
+      font-size: 3rem;
       font-weight: 700;
       text-align: center;
       margin-top: 20px;
@@ -74,23 +74,23 @@
       }
     }
 
-    /* Custom Number Input Field - Fixed Width */
+    /* Input */
     .custom-number input {
-      width: 50vw;  /* Responsive width based on viewport width */
-      max-width: 600px;  /* Limiting max-width to prevent it from becoming too wide */
+      width: 50vw;
+      max-width: 600px;
       padding: 30px 40px;
       font-size: 2.5rem;
       font-weight: 700;
       border-radius: 15px;
       border: 2px solid #ccc;
       text-align: center;
-      background: rgba(255, 255, 255, 0.2); /* Transparent background */
+      background: rgba(255, 255, 255, 0.2);
       color: #fff;
       transition: border-color 0.3s, background 0.3s;
       font-family: 'Arial', sans-serif;
       -webkit-appearance: none;
       -moz-appearance: none;
-      margin: 20px 0;  /* Added vertical margin */
+      margin: 20px 0;
     }
 
     .custom-number input::placeholder {
@@ -104,7 +104,14 @@
       background: rgba(255, 255, 255, 0.3);
     }
 
-    /* GO Button - Centering the text */
+    /* GO Button row */
+    .go-button-row {
+      display: flex;
+      justify-content: center;
+      margin-top: 20px;
+    }
+
+    /* GO Button (Reverted size) */
     .go-button {
       padding: 25px;
       font-size: 2rem;
@@ -116,14 +123,12 @@
       transition: background 0.3s, color 0.3s, transform 0.2s;
       backdrop-filter: blur(5px);
       color: #fff;
-      z-index: 1;
       text-transform: uppercase;
-      display: flex;              /* Make the button a flex container */
-      justify-content: center;    /* Center text horizontally */
-      align-items: center;        /* Center text vertically */
+      display: flex;
+      justify-content: center;
+      align-items: center;
       width: 120px;
       height: 120px;
-      margin: 20px 0;             /* Added vertical margin for spacing */
     }
 
     .go-button:hover {
@@ -136,52 +141,22 @@
       transform: scale(0.97);
     }
 
-    /* GO Button Container with Margin for Positioning */
-    .go-button-container {
+    /* No Repeat + Reset row */
+    .secondary-controls-row {
       display: flex;
       justify-content: center;
-      margin-left: 0in;  /* Move the GO button to the right by 2 inches */
-    }
-
-    /* Reset Button - Similar to GO button, but not circular */
-    .reset-number-history {
-      padding: 12px 24px;  /* Reduced padding to match No Repeat label */
-      font-size: 1.5rem;
-      font-weight: 700;
-      border: 2px solid rgba(255, 255, 255, 0.6);
-      background: transparent;
-      border-radius: 15px; /* Rounded edges */
-      cursor: pointer;
-      transition: background 0.3s, color 0.3s, transform 0.2s;
-      backdrop-filter: blur(5px);
-      color: #fff;
-      z-index: 1;
-      text-transform: uppercase;
-      display: inline-block;
-      width: auto;          /* Let it be flexible with text */
-      height: auto;
-      margin: 10px 0;       /* Adjust vertical margin */
-      margin-left: 20px;    /* Move reset button 20px to the right */
-    }
-
-    .reset-number-history:hover {
-      background: rgba(255, 255, 255, 0.4);
-      color: #000;
-      transform: scale(1.05);
-    }
-
-    .reset-number-history:active {
-      transform: scale(0.97);
+      align-items: center;
+      gap: 20px;
+      margin-top: 30px;
     }
 
     /* Switch container */
     .switch-container {
       display: flex;
       align-items: center;
-      justify-content: center;
       gap: 10px;
       font-size: 1rem;
-      margin-top: 40px;
+      margin: 0;
     }
 
     .switch-container label {
@@ -234,13 +209,33 @@
       transform: translateX(26px);
     }
 
-    @media (max-width: 1300px) {
-      .controls, .custom-number, .presets {
-        gap: 12px;
-        margin-top: 15px;
-        flex-wrap: wrap;
-      }
+    /* Reset Button */
+    .reset-number-history {
+      padding: 12px 24px;
+      font-size: 1.5rem;
+      font-weight: 700;
+      border: 2px solid rgba(255, 255, 255, 0.6);
+      background: transparent;
+      border-radius: 15px;
+      cursor: pointer;
+      transition: background 0.3s, color 0.3s, transform 0.2s;
+      backdrop-filter: blur(5px);
+      color: #fff;
+      text-transform: uppercase;
+      margin: 0;
+    }
 
+    .reset-number-history:hover {
+      background: rgba(255, 255, 255, 0.4);
+      color: #000;
+      transform: scale(1.05);
+    }
+
+    .reset-number-history:active {
+      transform: scale(0.97);
+    }
+
+    @media (max-width: 1300px) {
       .custom-number input {
         width: 80%;
         font-size: 1.5rem;
@@ -252,27 +247,28 @@
         font-size: 1.5rem;
       }
     }
-.logo-header {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100vw;
-  height: 96px;           /* Enough room for your logo and 20px padding */
-  background: transparent; /* Or set a color if you want a bar */
-  z-index: 1000;
-  display: flex;
-  align-items: flex-start;
-  padding: 20px 0 0 20px; /* Top/Left padding */
-  box-sizing: border-box;
-}
 
-.logo-img {
-  height: 56px;        /* Adjust for your logo's size */
-  width: auto;
-  border-radius: 0px;
-  box-shadow: none;
-}
+    /* Logo */
+    .logo-header {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 96px;
+      background: transparent;
+      z-index: 1000;
+      display: flex;
+      align-items: flex-start;
+      padding: 20px 0 0 20px;
+      box-sizing: border-box;
+    }
 
+    .logo-img {
+      height: 56px;
+      width: auto;
+      border-radius: 0px;
+      box-shadow: none;
+    }
   </style>
 </head>
 <body>
@@ -281,7 +277,6 @@
     <img src="images/SELECTr%20WH%20logo.png" alt="Logo" class="logo-img">
   </header>
   <div class="main-content">
-    <!-- ... your existing content ... -->
     <div class="randomized-selector">
       <h2>Number Selector</h2>
       <div class="selected-result" id="selectedResult">Please Enter a Number</div>
@@ -291,18 +286,20 @@
         <input type="text" id="maxValue" placeholder="Enter Max Number">
       </div>
 
-      <!-- GO Button Below the Input Field -->
-      <div class="go-button-container">
+      <!-- GO Button Row -->
+      <div class="go-button-row">
         <button class="go-button" onclick="selectRandomNumber()">GO!</button>
       </div>
 
-      <!-- Flip Switch for No Repeat -->
-      <div class="switch-container">
-        <label for="noRepeatSwitch">No Repeat</label>
-        <label class="switch">
-          <input type="checkbox" id="noRepeatSwitch" onclick="toggleNoRepeat()" checked>
-          <span class="slider"></span>
-        </label>
+      <!-- Secondary Controls Row (No Repeat + Reset) -->
+      <div class="secondary-controls-row">
+        <div class="switch-container">
+          <label for="noRepeatSwitch">No Repeat</label>
+          <label class="switch">
+            <input type="checkbox" id="noRepeatSwitch" onclick="toggleNoRepeat()" checked>
+            <span class="slider"></span>
+          </label>
+        </div>
         <button class="reset-number-history" onclick="resetHistory('number')">Reset</button>
       </div>
     </div>
@@ -316,14 +313,12 @@
     let selectedNumbers = [];
     let noRepeatNumbers = true;
 
-    // Toggle No Repeat based on switch state
     function toggleNoRepeat() {
       noRepeatNumbers = document.getElementById("noRepeatSwitch").checked;
     }
 
-    // Set volume for the sounds directly in the code
-    document.getElementById("tickingSound").volume = 1;  // Max volume for ticking sound
-    document.getElementById("dingSound").volume = 0.5;   // Reduced volume for ding sound
+    document.getElementById("tickingSound").volume = 1;
+    document.getElementById("dingSound").volume = 0.5;
 
     function selectRandomNumber() {
       const maxValue = parseInt(document.getElementById("maxValue").value);
@@ -343,53 +338,42 @@
       let randomNum;
       let counter = 0;
       const resultDisplay = document.getElementById("selectedResult");
-
-      // Hide the input field and label once "GO!" is clicked
       document.querySelector('.custom-number').style.display = 'none';
+      resultDisplay.style.fontSize = "3rem";
 
-      // Set font size immediately for the cycling numbers
-      resultDisplay.style.fontSize = "3rem"; // Keep this initially at 3rem during cycling
-
-      // Stop the ding sound if it's playing (reset it)
       document.getElementById("dingSound").pause();
       document.getElementById("dingSound").currentTime = 0;
 
-      // Display cycling effect with ticking sound
       const cyclingEffect = setInterval(() => {
         randomNum = Math.floor(Math.random() * maxValue) + minValue;
         resultDisplay.textContent = randomNum;
         counter++;
-        
-        // Play ticking sound every cycle
+
         document.getElementById("tickingSound").play();
 
-        if (counter >= 15) { // Stop after 15 cycles
+        if (counter >= 15) {
           clearInterval(cyclingEffect);
           selectedNumbers.push(randomNum);
-          resultDisplay.textContent = randomNum; // Show final number
-          resultDisplay.style.fontSize = "10rem"; // Set larger font size after cycling ends
+          resultDisplay.textContent = randomNum;
+          resultDisplay.style.fontSize = "10rem";
 
-          // Stop ticking sound immediately when ding plays
           document.getElementById("tickingSound").pause();
-          document.getElementById("tickingSound").currentTime = 0; // Reset to start of the sound
+          document.getElementById("tickingSound").currentTime = 0;
 
-          // Play ding sound when number is selected
           document.getElementById("dingSound").play();
         }
-      }, 100); // 100ms per cycle for suspense
+      }, 100);
     }
 
     function resetHistory(type) {
       if (type === 'number') {
         selectedNumbers = [];
       }
-      document.getElementById("selectedResult").textContent = "Please Enter a Number";  // Show the original text again
-      document.querySelector('.custom-number').style.display = 'block';  // Show the input field again
-      document.getElementById("maxValue").value = '';  // Clear input value
-      document.getElementById("maxValue").placeholder = 'Enter Max Number';  // Reset placeholder text
-
-      // Reset font size of selected result back to 3rem
-      document.getElementById("selectedResult").style.fontSize = "3rem";  // Reset font size back to 3rem
+      document.getElementById("selectedResult").textContent = "Please Enter a Number";
+      document.querySelector('.custom-number').style.display = 'block';
+      document.getElementById("maxValue").value = '';
+      document.getElementById("maxValue").placeholder = 'Enter Max Number';
+      document.getElementById("selectedResult").style.fontSize = "3rem";
     }
   </script>
 </body>
