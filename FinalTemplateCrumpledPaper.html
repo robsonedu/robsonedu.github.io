@@ -335,129 +335,174 @@
    <source src="audio/Computer_Magic-Microsift-1901299923.mp3" type="audio/mpeg"/>
    Your browser does not support the audio element.
   </audio>
-  <script>
-   document.body.addEventListener('touchstart', () => {
+  <audio id="warningSound">
+    <source src="audio/Tick%20Tock%20Clock.mp3" type="audio/mpeg">
+    Your browser does not support the audio element.
+  </audio>
+<script>
+  document.body.addEventListener('touchstart', () => {
     const unlock = document.getElementById('endSound');
     unlock.play().catch(() => {});
-    }, { once: true });
+  }, { once: true });
 
-    let duration = 5 * 60;
-    let remainingTime = duration;
-    let timerInterval = null;
-    let playingSound = false;
-    const timerDisplay = document.getElementById('timer');
-    const endSound = document.getElementById('endSound');
+  let duration = 5 * 60; // seconds
+  let remainingTime = duration;
+  let timerInterval = null;
+  let endTime = null;
+  let isRunning = false;
+  let playingSound = false;
+  let warningPlayed = false; // NEW
+  const timerDisplay = document.getElementById('timer');
+  const endSound = document.getElementById('endSound');
+  const warningSound = document.getElementById('warningSound');
+  warningSound.volume = 0.5; //adjust volume
 
-    function updateDisplay() {
-      const minutes = Math.floor(remainingTime / 60);
-      const seconds = (remainingTime % 60).toString().padStart(2, '0');
-      timerDisplay.textContent = `${minutes}:${seconds}`;
+  function updateDisplay() {
+    const minutes = Math.floor(remainingTime / 60);
+    const seconds = (remainingTime % 60).toString().padStart(2, '0');
+    timerDisplay.textContent = `${minutes}:${seconds}`;
+  }
+
+  function tick() {
+    if (!isRunning) return;
+    const now = Date.now();
+    remainingTime = Math.round((endTime - now) / 1000);
+
+    // --- 10 second warning sound ---
+    if (remainingTime === 10 && !warningPlayed) {
+      warningPlayed = true;
+      warningSound.currentTime = 0;
+      warningSound.play().catch(()=>{});
     }
 
-    function startTimer() {
-      if (timerInterval) return;
-      timerDisplay.classList.add('running');
-      timerInterval = setInterval(() => {
-        if (remainingTime > 0) {
-          remainingTime--;
-          updateDisplay();
-        } else {
-          clearInterval(timerInterval);
-          timerInterval = null;
-          timerDisplay.classList.remove('running');
-          timerDisplay.classList.add('glow');
-          playSoundThreeTimes();
-        }
-      }, 1000);
-    }
-
-    function pauseTimer() {
+    if (remainingTime <= 0) {
+      remainingTime = 0;
+      updateDisplay();
       clearInterval(timerInterval);
       timerInterval = null;
+      isRunning = false;
       timerDisplay.classList.remove('running');
-    }
-
-    function resetTimer() {
-      clearInterval(timerInterval);
-      timerInterval = null;
-      remainingTime = duration;
-      updateDisplay();
-      timerDisplay.classList.remove('running', 'glow');
-      stopSound();
-    }
-
-    function setTime(minutes = 0, seconds = 0) {
-      pauseTimer();
-      duration = (minutes * 60) + seconds;
-      remainingTime = duration;
-      updateDisplay();
-      timerDisplay.classList.remove('glow');
-      stopSound();
-      startTimer();
-    }
-
-    function setCustomTime() {
-      const input = document.getElementById('customTime').value.trim();
-      const match = input.match(/^(\d{1,2}):(\d{2})$/);
-      if (match) {
-        let min = parseInt(match[1]);
-        let sec = parseInt(match[2]);
-        if (!isNaN(min) && !isNaN(sec) && sec < 60) {
-          duration = (min * 60) + sec;
-          remainingTime = duration;
-          pauseTimer();
-          updateDisplay();
-          timerDisplay.classList.remove('glow');
-          stopSound();
-        } else {
-          alert("Invalid time format.");
-        }
-      } else {
-        alert("Please enter time in MM:SS format.");
-      }
-    }
-
-    function add30Seconds() {
-      remainingTime += 30;
+      timerDisplay.classList.add('glow');
+      playSoundThreeTimes();
+    } else {
       updateDisplay();
     }
+  }
 
-    function playSoundThreeTimes() {
-      let count = 0;
-      playingSound = true;
-      const cutoffRatio = 0.65;
-      endSound.volume = 1.0;
+  function startTimer() {
+    if (isRunning) return;
+    timerDisplay.classList.add('running');
+    endTime = Date.now() + remainingTime * 1000;
+    isRunning = true;
+    warningPlayed = remainingTime <= 10;
+    timerInterval = setInterval(tick, 250); // Faster for accuracy
+  }
 
-      function playNext() {
-        if (count < 3 && playingSound) {
-          endSound.currentTime = 0;
-          endSound.play().then(() => {
-            const shortDuration = endSound.duration * cutoffRatio;
-            setTimeout(() => {
-              endSound.pause();
-              endSound.currentTime = 0;
-              count++;
-              playNext();
-            }, shortDuration * 1000);
-          }).catch(err => console.log("Audio play prevented:", err));
-        }
-      }
+  function pauseTimer() {
+    if (!isRunning) return;
+    clearInterval(timerInterval);
+    timerInterval = null;
+    isRunning = false;
+    // Update remainingTime to be accurate at pause
+    const now = Date.now();
+    remainingTime = Math.round((endTime - now) / 1000);
+    timerDisplay.classList.remove('running');
+  }
 
-      playNext();
-    }
-
-    function stopSound() {
-      playingSound = false;
-      endSound.pause();
-      endSound.currentTime = 0;
-    }
-
-    function toggleSpotify() {
-      const panel = document.getElementById('spotifyPanel');
-      panel.classList.toggle('open');
-    }
-
+  function resetTimer() {
+    clearInterval(timerInterval);
+    timerInterval = null;
+    isRunning = false;
+    remainingTime = duration;
+    warningPlayed = false; // NEW
     updateDisplay();
-  </script>
+    timerDisplay.classList.remove('running', 'glow');
+    stopSound();
+  }
+
+  function setTime(minutes = 0, seconds = 0) {
+    pauseTimer();
+    duration = (minutes * 60) + seconds;
+    remainingTime = duration;
+    warningPlayed = false; // NEW
+    updateDisplay();
+    timerDisplay.classList.remove('glow');
+    stopSound();
+    startTimer();
+  }
+
+  function setCustomTime() {
+    const input = document.getElementById('customTime').value.trim();
+    const match = input.match(/^(\d{1,2}):(\d{2})$/);
+    if (match) {
+      let min = parseInt(match[1]);
+      let sec = parseInt(match[2]);
+      if (!isNaN(min) && !isNaN(sec) && sec < 60) {
+        duration = (min * 60) + sec;
+        remainingTime = duration;
+        pauseTimer();
+        warningPlayed = false; // NEW
+        updateDisplay();
+        timerDisplay.classList.remove('glow');
+        stopSound();
+      } else {
+        alert("Invalid time format.");
+      }
+    } else {
+      alert("Please enter time in MM:SS format.");
+    }
+  }
+
+  function add30Seconds() {
+    if (isRunning) {
+      remainingTime += 30;
+      endTime += 30 * 1000;
+    } else {
+      remainingTime += 30;
+    }
+    if (remainingTime > 10) warningPlayed = false; // NEW
+    updateDisplay();
+  }
+
+  function playSoundThreeTimes() {
+    let count = 0;
+    playingSound = true;
+    const cutoffRatio = 0.65;
+    endSound.volume = 1.0;
+
+    function playNext() {
+      if (count < 3 && playingSound) {
+        endSound.currentTime = 0;
+        endSound.play().then(() => {
+          const shortDuration = endSound.duration * cutoffRatio;
+          setTimeout(() => {
+            endSound.pause();
+            endSound.currentTime = 0;
+            count++;
+            playNext();
+          }, shortDuration * 1000);
+        }).catch(err => console.log("Audio play prevented:", err));
+      }
+    }
+
+    playNext();
+  }
+
+  function stopSound() {
+    playingSound = false;
+    endSound.pause();
+    endSound.currentTime = 0;
+    warningSound.pause();
+    warningSound.currentTime = 0;
+  }
+
+  function toggleSpotify() {
+    const panel = document.getElementById('spotifyPanel');
+    panel.classList.toggle('open');
+  }
+
+  updateDisplay();
+</script>
+
  </body>
 </html>
