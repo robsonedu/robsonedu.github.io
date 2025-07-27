@@ -4,12 +4,13 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Color Selector</title>
+  <link rel="icon" type="image/png" href="images/FaviconCircleR.png">
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap');
 
     body {
       margin: 0;
-      height: 100vh;
+      min-height: 100vh;
       background-color: black;
       background-image: url('images/Tech3409297.jpg');
       background-repeat: no-repeat;
@@ -212,13 +213,79 @@
       height: 56px;
       width: auto;
     }
+
+    /* ------ MOBILE RESPONSIVENESS BELOW ------ */
+    @media (max-width: 700px) {
+  .main-content {
+    padding-top: 60px;
+  }
+  .color-display {
+    flex-wrap: wrap;
+    gap: 6vw;
+    margin-bottom: 18px;
+    justify-content: center;
+  }
+  .color-circle {
+    width: 48px;
+    height: 48px;
+    margin-bottom: 0;
+  }
+  .go-button-row {
+    width: 100%;
+    justify-content: center;
+    margin-top: 8px;
+  }
+  .go-button {
+    width: 54px;
+    height: 54px;
+    font-size: 1rem;
+    margin: 0 auto 10px auto;
+  }
+  .secondary-controls-row {
+    flex-direction: column;
+    gap: 10px;
+    margin-top: 10px;
+    align-items: stretch;
+    width: 90%;
+  }
+  .switch-container,
+  .reset-number-history {
+    width: 100%;
+    justify-content: center;
+    margin: 0 auto;
+  }
+  .reset-number-history {
+    font-size: 1rem;
+    padding: 8px 12px;
+    border-radius: 10px;
+  }
+}
+@media (max-width: 420px) {
+  .color-display {
+    gap: 3vw;
+  }
+  .color-circle {
+    width: 32px;
+    height: 32px;
+  }
+  .go-button {
+    width: 36px;
+    height: 36px;
+    font-size: 0.8rem;
+  }
+  .main-content {
+    padding-top: 36px;
+  }
+}
+
   </style>
 </head>
 <body>
-
   <header class="logo-header">
+  <a href="TimersSelectors.html">
     <img src="images/SELECTr%20WH%20logo.png" alt="Logo" class="logo-img">
-  </header>
+  </a>
+</header>
   <div class="main-content">
     <h2>Color Selector</h2>
     <div class="color-display" id="colorDisplay">
@@ -227,13 +294,9 @@
       <div class="color-circle" style="background: green;"></div>
       <div class="color-circle" style="background: yellow;"></div>
     </div>
-
-    <!-- GO Button Row -->
     <div class="go-button-row">
       <button class="go-button" onclick="selectRandomColor()">GO!</button>
     </div>
-
-    <!-- Secondary Controls Row -->
     <div class="secondary-controls-row">
       <div class="switch-container">
         <label for="noRepeatSwitch">No Repeat</label>
@@ -245,11 +308,8 @@
       <button class="reset-number-history" onclick="resetHistory()">Reset</button>
     </div>
   </div>
-
-  <!-- Sounds -->
   <audio id="tickingSound" src="audio/ticking.mp3" preload="auto"></audio>
   <audio id="dingSound" src="audio/ding.mp3" preload="auto"></audio>
-
   <script>
     const colors = ["red", "blue", "green", "yellow"];
     let selectedColors = [];
@@ -278,7 +338,7 @@
       const cyclingEffect = setInterval(() => {
         const randomColor = availableColors[Math.floor(Math.random() * availableColors.length)];
         colorCircles.forEach(circle => {
-          circle.style.opacity = circle.style.background === randomColor ? "1" : "0.3";
+          circle.style.opacity = circle.style.background === randomColor ? "1" : "0.33";
           circle.classList.remove("selected");
         });
 
@@ -294,7 +354,7 @@
               circle.classList.add("selected");
               circle.style.opacity = "1";
             } else {
-              circle.style.opacity = "0.3";
+              circle.style.opacity = "0.33";
             }
           });
 
