@@ -27,14 +27,14 @@
       margin: 0;
       height: 100vh;
       background-color: black;
-      background-image: url(images/AbstractART.jpg);
+      background-image: url(images/DarkSpace.jpg);
       background-repeat: no-repeat;
       background-position: center center;
       background-attachment: fixed;
       background-size: cover;
       position: relative;
       font-family: 'Inter', sans-serif;
-      color: #fff;
+      color: #e2cc0a;
       text-shadow: 0 0 8px rgba(0,0,0,0.7);
       padding: 0;
       box-sizing: border-box;
@@ -58,8 +58,8 @@
     .timer.running { transform: scale(1.1);}
     .timer.glow { animation: glowPulse 2s infinite ease-in-out;}
     @keyframes glowPulse {
-      0%, 100% { text-shadow: 0 0 10px #fff, 0 0 20px #fff; opacity: 1; }
-      50% { text-shadow: 0 0 30px #fff, 0 0 60px #fff; opacity: 0.7; }
+      0%, 100% { text-shadow: 0 0 10px #e2cc0a, 0 0 20px #e2cc0a; opacity: 1; }
+      50% { text-shadow: 0 0 30px #e2cc0a, 0 0 60px #e2cc0a; opacity: 0.7; }
     }
     .controls, .custom-time, .presets {
       margin-top: 25px;
@@ -73,13 +73,13 @@
       padding: 15px 35px;
       font-size: 1.5rem;
       font-weight: 700;
-      border: 2px solid rgba(255,255,255,0.6);
+      border: 2px solid #e2cc0a;
       background: transparent;
       border-radius: 30px;
       cursor: pointer;
       transition: background 0.3s, color 0.3s, transform 0.2s;
       backdrop-filter: blur(5px);
-      color: #fff;
+      color: #e2cc0a;
       z-index: 1;
     }
     button:hover { background: rgba(255,255,255,0.4); color: #000; transform: scale(1.05);}
@@ -93,12 +93,12 @@
       font-size: 1.5rem;
       font-weight: 700;
       border-radius: 8px;
-      border: 1px solid #ccc;
+      border: 1px solid #e2cc0a;
       text-align: center;
-      background: rgba(255,255,255,0.9);
-      color: #000;
+      background: rgba(255, 255, 255, 0.17);
+      color: #e2cc0a;
     }
-    .custom-time input::placeholder { color: #333; opacity: 1; }
+    .custom-time input::placeholder { color: #ffe81fb5; opacity: 1; }
     /* YOUTUBE PANEL STYLES */
     .youtube-panel {
       position: fixed;
@@ -131,7 +131,7 @@
       bottom: 20px;
       right: 20px;
       font-size: 2.2rem;
-      color: white;
+      color: #e2cc0a;
       background: none;
       border: none;
       cursor: pointer;
@@ -143,7 +143,7 @@
       align-items: center;
       justify-content: center;
     }
-    .music-toggle:hover { color: #ccc; }
+    .music-toggle:hover { color: #e2cc0a; }
     @media (max-width: 870px) {
       .timer { font-size: 4rem;}
       button { padding: 10px 20px; font-size: 1.2rem;}
@@ -160,7 +160,7 @@
       position: absolute;
       top: 0; left: 0;
       width: 100%; height: 100%;
-      background: rgba(0, 0, 0, 0.4);
+      background: rgba(0, 0, 0, 0.4); /* adjust darkness as needed */
       z-index: 0;
       pointer-events: none;
     }
@@ -208,7 +208,7 @@
   </div>
   <button class="music-toggle" onclick="toggleYouTube()">♩</button>
   <audio id="endSound">
-    <source src="audio/Computer_Magic-Microsift-1901299923.mp3" type="audio/mpeg">
+    <source src="audio/star-wars-R2soundsringtone-101soundboards.mp3" type="audio/mpeg">
     Your browser does not support the audio element.
   </audio>
   <audio id="warningSound">
