@@ -1,0 +1,428 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Robsonedu</title>
+  <link rel="icon" type="image/png" href="images/FaviconCircleR.png">
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap');
+
+    /* Video Background */
+    #bgvid {
+      position: fixed;
+      top: 0;
+      left: 0;
+      min-width: 100vw;
+      min-height: 100vh;
+      width: 100vw;
+      height: 100vh;
+      object-fit: cover;
+      z-index: -1;
+      background: #000;
+      pointer-events: none;
+    }
+
+    .logo-img {
+      position: fixed;
+      top: 20px;
+      left: 20px;
+      height: 56px;
+      width: auto;
+      z-index: 2000;
+      background: transparent;
+      border-radius: 0;
+      box-shadow: none;
+      border: none;
+      pointer-events: auto;
+    }
+    .main-content {
+      padding-top: 0px;
+    }
+    body {
+      margin: 0;
+      height: 100vh;
+      background-color: black;
+      /* Removed background-image */
+      position: relative;
+      font-family: 'Inter', sans-serif;
+      color: #fff;
+      text-shadow: 0 0 8px rgba(0,0,0,0.7);
+      padding: 0;
+      box-sizing: border-box;
+      font-size: 1.5rem;
+      font-weight: 700;
+      display: flex;
+      flex-direction: column;
+    }
+    .main-content {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+    }
+    .timer {
+      font-size: 7.5rem;
+      transition: transform 0.3s ease, text-shadow 0.4s ease;
+      z-index: 1;
+      text-shadow:
+        0 0 12px rgba(0,0,0,0.95),  /* main big shadow */
+        0 0 3px #000;
+    }
+    .timer.running { transform: scale(1.1);}
+    .timer.glow { animation: glowPulse 2s infinite ease-in-out;}
+    @keyframes glowPulse {
+      0%, 100% { text-shadow: 0 0 10px #fff, 0 0 20px #fff; opacity: 1; }
+      50% { text-shadow: 0 0 30px #fff, 0 0 60px #fff; opacity: 0.7; }
+    }
+    .controls, .custom-time, .presets {
+      margin-top: 25px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 20px;
+      justify-content: center;
+      z-index: 1;
+    }
+    button {
+      padding: 15px 35px;
+      font-size: 1.5rem;
+      font-weight: 700;
+      border: 2px solid rgba(255,255,255,0.6);
+      background: transparent;
+      border-radius: 30px;
+      cursor: pointer;
+      transition: background 0.3s, color 0.3s, transform 0.2s;
+      backdrop-filter: blur(5px);
+      color: #fff;
+      z-index: 1;
+    }
+    button:hover { background: rgba(255,255,255,0.4); color: #000; transform: scale(1.05);}
+    button:active { transform: scale(0.97);}
+    .icon-button { font-size: 1.275rem; padding: 15px 35px;}
+    .presets button { width: 80px; height: 80px; border-radius: 50%; padding: 0; font-size: 1.3rem;}
+    .custom-time button { padding: 15px 20px;}
+    .custom-time input {
+      width: 110px;
+      padding: 10px;
+      font-size: 1.5rem;
+      font-weight: 700;
+      border-radius: 8px;
+      border: 1px solid #ccc;
+      text-align: center;
+      background: rgba(255,255,255,0.9);
+      color: #000;
+    }
+    .custom-time input::placeholder { color: #333; opacity: 1; }
+    /* YOUTUBE PANEL STYLES */
+    .youtube-panel {
+      position: fixed;
+      top: 20px;
+      right: -230px;
+      width: 204px;
+      height: 205px;
+      z-index: 200;
+      border-radius: 12px;
+      overflow: hidden;
+      background: rgba(0,0,0,0.92);
+      box-shadow: 0 6px 30px 0 rgba(0,0,0,0.25);
+      transition: right 0.4s cubic-bezier(.82,.01,.4,.99);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0;
+    }
+    .youtube-panel.open {
+      right: 20px;
+    }
+    .youtube-panel iframe {
+      width: 100%;
+      height: 100%;
+      border: none;
+      background: #111;
+    }
+    .music-toggle {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      font-size: 2.2rem;
+      color: white;
+      background: none;
+      border: none;
+      cursor: pointer;
+      z-index: 100;
+      padding: 0;
+      width: 52px;
+      height: 52px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .music-toggle:hover { color: #ccc; }
+    @media (max-width: 870px) {
+      .timer { font-size: 4rem;}
+      button { padding: 10px 20px; font-size: 1.2rem;}
+      .presets button { width: 60px; height: 60px; font-size: 1rem;}
+      .custom-time input { width: 80px; font-size: 1.2rem;}
+      .controls, .custom-time, .presets { gap: 12px; margin-top: 15px;}
+      .youtube-panel,
+      .music-toggle {
+        display: none !important;
+      }
+    }
+    body::before {
+      content: "";
+      position: absolute;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      background: rgba(0, 0, 0, 0.0); /* adjust darkness as needed */
+      z-index: 0;
+      pointer-events: none;
+    }
+  </style>
+</head>
+<body>
+  <!-- VIDEO BACKGROUND -->
+  <video autoplay muted loop playsinline id="bgvid">
+    <source src="images/GreenThing-uhd_3840_2160_30fps.mp4" type="video/mp4" />
+    Your browser does not support the video tag.
+  </video>
+  <a href="TimersSelectors.html">
+    <img src="images/TIMEr%20Wh%20Logo.png" alt="Logo" class="logo-img">
+  </a>
+  <div class="main-content">
+    <div class="timer" id="timer">05:00</div>
+    <div class="controls">
+      <button class="icon-button" onclick="startTimer()">▶</button>
+      <button class="icon-button" onclick="pauseTimer()">‖</button>
+      <button class="icon-button" onclick="resetTimer()">Reset</button>
+      <button onclick="add30Seconds()">+30 sec</button>
+    </div>
+    <div class="custom-time">
+      <button onclick="setCustomTime()">Set</button>
+      <input type="text" id="customTime" placeholder="MM:SS" />
+    </div>
+    <div class="presets">
+      <button onclick="setTime(0,15)">:15</button>
+      <button onclick="setTime(0,30)">:30</button>
+      <button onclick="setTime(1)">1</button>
+      <button onclick="setTime(2)">2</button>
+      <button onclick="setTime(3)">3</button>
+      <button onclick="setTime(4)">4</button>
+      <button onclick="setTime(5)">5</button>
+      <button onclick="setTime(6)">6</button>
+      <button onclick="setTime(7)">7</button>
+      <button onclick="setTime(8)">8</button>
+      <button onclick="setTime(9)">9</button>
+      <button onclick="setTime(10)">10</button>
+    </div>
+  </div>
+  <!-- YOUTUBE PANEL (music player) -->
+  <div class="youtube-panel" id="youtubePanel">
+    <iframe src="https://www.youtube-nocookie.com/embed/videoseries?si=bV_XwAxnV_fHx064&amp;list=PLYc7EoK5SagCCVbZdbGfKghM9VaGLRyKM"
+      title="YouTube video player"
+      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+      referrerpolicy="strict-origin-when-cross-origin"
+      allowfullscreen>
+    </iframe>
+  </div>
+  <button class="music-toggle" onclick="toggleYouTube()">♩</button>
+  <audio id="endSound">
+    <source src="audio/Computer_Magic-Microsift-1901299923.mp3" type="audio/mpeg">
+    Your browser does not support the audio element.
+  </audio>
+  <audio id="warningSound">
+    <source src="audio/Tick%20Tock%20Clock.mp3" type="audio/mpeg">
+    Your browser does not support the audio element.
+  </audio>
+<script>
+  // Unlock audio on any timer button press (once only)
+  let audioUnlocked = false;
+  function unlockAudio() {
+    if (!audioUnlocked) {
+      try {
+        document.getElementById('endSound').play().then(a => {
+          document.getElementById('endSound').pause();
+          document.getElementById('endSound').currentTime = 0;
+        });
+      } catch (e) {}
+      try {
+        document.getElementById('warningSound').play().then(a => {
+          document.getElementById('warningSound').pause();
+          document.getElementById('warningSound').currentTime = 0;
+        });
+      } catch (e) {}
+      audioUnlocked = true;
+    }
+  }
+
+  let duration = 5 * 60; // seconds
+  let remainingTime = duration;
+  let timerInterval = null;
+  let endTime = null;
+  let isRunning = false;
+  let playingSound = false;
+  let warningPlayed = false;
+  const timerDisplay = document.getElementById('timer');
+  const endSound = document.getElementById('endSound');
+  const warningSound = document.getElementById('warningSound');
+  warningSound.volume = 0.5;
+
+  function updateDisplay() {
+    const minutes = Math.floor(remainingTime / 60);
+    const seconds = (remainingTime % 60).toString().padStart(2, '0');
+    timerDisplay.textContent = `${minutes}:${seconds}`;
+  }
+
+  function tick() {
+    if (!isRunning) return;
+    const now = Date.now();
+    remainingTime = Math.round((endTime - now) / 1000);
+
+    // 10 second warning sound
+    if (remainingTime === 10 && !warningPlayed) {
+      warningPlayed = true;
+      warningSound.currentTime = 0;
+      warningSound.play().catch(()=>{});
+    }
+
+    if (remainingTime <= 0) {
+      remainingTime = 0;
+      updateDisplay();
+      clearInterval(timerInterval);
+      timerInterval = null;
+      isRunning = false;
+      timerDisplay.classList.remove('running');
+      timerDisplay.classList.add('glow');
+      playSoundThreeTimes();
+    } else {
+      updateDisplay();
+    }
+  }
+
+  function startTimer() {
+    unlockAudio();
+    if (isRunning) return;
+    timerDisplay.classList.add('running');
+    endTime = Date.now() + remainingTime * 1000;
+    isRunning = true;
+    warningPlayed = remainingTime <= 10;
+    timerInterval = setInterval(tick, 250);
+  }
+
+  function pauseTimer() {
+    unlockAudio();
+    if (!isRunning) return;
+    clearInterval(timerInterval);
+    timerInterval = null;
+    isRunning = false;
+    const now = Date.now();
+    remainingTime = Math.round((endTime - now) / 1000);
+    timerDisplay.classList.remove('running');
+  }
+
+  function resetTimer() {
+    unlockAudio();
+    clearInterval(timerInterval);
+    timerInterval = null;
+    isRunning = false;
+    remainingTime = duration;
+    warningPlayed = false;
+    updateDisplay();
+    timerDisplay.classList.remove('running', 'glow');
+    stopSound();
+  }
+
+  function setTime(minutes = 0, seconds = 0) {
+    unlockAudio();
+    pauseTimer();
+    duration = (minutes * 60) + seconds;
+    remainingTime = duration;
+    warningPlayed = false;
+    updateDisplay();
+    timerDisplay.classList.remove('glow');
+    stopSound();
+    startTimer();
+  }
+
+  function setCustomTime() {
+    unlockAudio();
+    const input = document.getElementById('customTime').value.trim();
+    const match = input.match(/^(\d{1,2}):(\d{2})$/);
+    if (match) {
+      let min = parseInt(match[1]);
+      let sec = parseInt(match[2]);
+      if (!isNaN(min) && !isNaN(sec) && sec < 60) {
+        duration = (min * 60) + sec;
+        remainingTime = duration;
+        pauseTimer();
+        warningPlayed = false;
+        updateDisplay();
+        timerDisplay.classList.remove('glow');
+        stopSound();
+      } else {
+        alert("Invalid time format.");
+      }
+    } else {
+      alert("Please enter time in MM:SS format.");
+    }
+  }
+
+  function add30Seconds() {
+    unlockAudio();
+    if (isRunning) {
+      remainingTime += 30;
+      endTime += 30 * 1000;
+    } else {
+      remainingTime += 30;
+    }
+    if (remainingTime > 10) warningPlayed = false;
+    updateDisplay();
+  }
+
+  function playSoundThreeTimes() {
+    let count = 0;
+    playingSound = true;
+    const cutoffRatio = 0.65;
+    endSound.volume = 1.0;
+
+    function playNext() {
+      if (count < 3 && playingSound) {
+        endSound.currentTime = 0;
+        endSound.play().then(() => {
+          const shortDuration = endSound.duration * cutoffRatio;
+          setTimeout(() => {
+            endSound.pause();
+            endSound.currentTime = 0;
+            count++;
+            playNext();
+          }, shortDuration * 1000);
+        }).catch(err => console.log("Audio play prevented:", err));
+      }
+    }
+    playNext();
+  }
+
+  function stopSound() {
+    playingSound = false;
+    endSound.pause();
+    endSound.currentTime = 0;
+    warningSound.pause();
+    warningSound.currentTime = 0;
+  }
+
+  function toggleYouTube() {
+    const panel = document.getElementById('youtubePanel');
+    panel.classList.toggle('open');
+  }
+
+  // Only add unlockAudio to timer and preset buttons, NOT music-toggle
+  window.addEventListener('DOMContentLoaded', () => {
+    document.querySelectorAll('button:not(.music-toggle)').forEach(btn => {
+      btn.addEventListener('click', unlockAudio, { once: true });
+    });
+    updateDisplay();
+  });
+</script>
+</body>
+</html>
