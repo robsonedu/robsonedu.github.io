@@ -1,5 +1,5 @@
 {
-  "id": "/app-telectors",
+  "id": "/app-timers",
   "name": "RobsonEDU – Timers",
   "short_name": "Timers",
   "start_url": "/PageTimers.html",
@@ -8,7 +8,7 @@
   "background_color": "#000000",
   "theme_color": "#002744",
   "icons": [
-    { "src": "/images/IconCircleT-192.png", "sizes": "192x192", "type": "image/png" },
-    { "src": "/images/IconCircleT-512.png", "sizes": "512x512", "type": "image/png" }
+    { "src": "/images/IconCircleT192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "/images/IconCircleT192.png", "sizes": "512x512", "type": "image/png" }
   ]
 }
