@@ -1,20 +1,14 @@
 {
-  "name": "RobsonEDU Selectors",
+  "id": "/app-selectors",
+  "name": "RobsonEDU – Selectors",
   "short_name": "Selectors",
   "start_url": "/PageSelectors.html",
+  "scope": "/PageSelectors.html",
   "display": "standalone",
   "background_color": "#000000",
   "theme_color": "#002744",
   "icons": [
-    {
-      "src": "images/IconCircleS (192 x 192 px).png",
-      "sizes": "192x192",
-      "type": "image/png"
-    },
-    {
-      "src": "images/IconCircleS (512 x 512 px).png",
-      "sizes": "512x512",
-      "type": "image/png"
-    }
+    { "src": "/images/IconCircleS-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "/images/IconCircleS-512.png", "sizes": "512x512", "type": "image/png" }
   ]
 }
