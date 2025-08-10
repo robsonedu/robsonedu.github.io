@@ -1,6 +1,6 @@
 {
   "id": "/app-timers",
-  "name": "RobsonEDU – Timers",
+  "name": "RobsonEDU Timers",
   "short_name": "Timers",
   "start_url": "/PageTimers.html",
   "scope": "/PageTimers.html",
