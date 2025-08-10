@@ -1,9 +1,9 @@
 {
-  "id": "/app-timers",                // unique app identity
+  "id": "/app-telectors",
   "name": "RobsonEDU – Timers",
   "short_name": "Timers",
   "start_url": "/PageTimers.html",
-  "scope": "/PageTimers.html",        // keeps this app scoped to that page
+  "scope": "/PageTimers.html",
   "display": "standalone",
   "background_color": "#000000",
   "theme_color": "#002744",
