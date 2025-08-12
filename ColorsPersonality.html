@@ -1,0 +1,488 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>True Colors Personality Quiz</title>
+  <meta name="description" content="Ranked-choice True Colors personality quiz with instant scoring: Orange, Green, Blue, Gold." />
+  <style>
+    :root{
+      --c-orange:#f59e0b; --c-green:#10b981; --c-blue:#3b82f6; --c-gold:#d4af37;
+      --bg:#0b0f14; --card:#111827; --text:#e5e7eb; --muted:#9ca3af; --accent:#22d3ee;
+      --focus:#7dd3fc;
+    }
+    * { box-sizing: border-box; }
+    html,body { margin:0; background:var(--bg); color:var(--text); font-family: system-ui,-apple-system,Segoe UI,Roboto,Inter,Arial,sans-serif; }
+    .wrap { max-width: 960px; margin: 32px auto; padding: 16px; }
+    .title { font-size: 28px; font-weight: 800; letter-spacing:.2px; }
+    .desc { color: var(--muted); line-height: 1.55; }
+    .card { background: var(--card); border-radius: 16px; padding: 20px; box-shadow: 0 10px 30px rgba(0,0,0,.25); }
+
+    .legend { display:flex; gap:10px; flex-wrap:wrap; margin:8px 0 16px; }
+    .chip { padding:6px 10px; border-radius:999px; font-size:12px; font-weight:700; color:#0b0f14; white-space:nowrap; }
+    .chip.orange { background:var(--c-orange); }
+    .chip.green  { background:var(--c-green); }
+    .chip.blue   { background:var(--c-blue); }
+    .chip.gold   { background:var(--c-gold); color:#111; }
+
+    .q { border:1px solid rgba(255,255,255,.06); border-radius:14px; padding:16px; margin:14px 0; }
+    .q h3 { margin:0 0 10px; font-size:18px; }
+    .opt { display:grid; grid-template-columns:1fr 120px; gap:12px; align-items:center; padding:8px 10px; border-radius:10px; }
+    .opt:nth-child(odd) { background:rgba(255,255,255,.02); }
+    select { width:100%; padding:8px 10px; border-radius:10px; border:1px solid rgba(255,255,255,.14); background:#0f172a; color:var(--text); }
+    select:focus { outline: 3px solid var(--focus); outline-offset: 2px; }
+    .q-msg { color:#fecaca; font-size:13px; margin-top:6px; display:none; }
+
+    .btns { display:flex; gap:12px; margin-top:16px; flex-wrap:wrap; }
+    button { padding:10px 16px; border-radius:12px; border:0; cursor:pointer; font-weight:700; }
+    .primary { background:var(--accent); color:#002433; }
+    .ghost   { background:transparent; border:1px solid rgba(255,255,255,.14); color:var(--text); }
+    .muted   { background:transparent; color:var(--muted); border:1px dashed rgba(255,255,255,.14); }
+
+    /* Share tools + card */
+    .share-tools { display:none; gap:12px; margin-top:12px; flex-wrap:wrap; }
+    .share-card { 
+      display:none; 
+      margin-top:16px; 
+      border-radius:16px; 
+      padding:18px; 
+      background:linear-gradient(180deg,#0f172a, #0b1220); 
+      border:1px solid rgba(255,255,255,.06);
+      width:100%; 
+      max-width:900px; 
+      margin-left:auto; 
+      margin-right:auto;
+    }
+    .share-title { font-weight:800; font-size:20px; margin:0 0 10px; }
+    .share-line { display:flex; gap:16px; align-items:center; flex-wrap:wrap; margin:8px 0 10px; }
+    .share-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:8px; margin-top:6px; }
+    .score { background:rgba(255,255,255,.06); border-radius:10px; padding:10px; text-align:center; }
+    .score .lbl { font-size:12px; color:var(--muted); }
+    .score .val { font-size:18px; font-weight:800; margin-top:4px; }
+
+    .snapshots { 
+      margin-top:14px; 
+      display:grid; 
+      grid-template-columns:1fr; 
+      gap:14px; 
+    }
+    @media (min-width: 800px){ .snapshots { grid-template-columns:1fr 1fr; } }
+    .snap { background:rgba(255,255,255,.04); border:1px solid rgba(255,255,255,.06); border-radius:12px; padding:12px; }
+    .snap h4 { display:flex; align-items:center; gap:8px; margin:0 0 6px; font-size:14px; }
+    .snap p { margin:0; color:var(--muted); line-height:1.5; font-size:14px; }
+
+    .share-foot { margin-top:12px; font-size:12px; color:var(--muted); text-align:center; }
+
+    .footer { color: var(--muted); font-size: 12px; margin-top: 18px; text-align: center; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="title">True Colors Personality Quiz</div>
+    <p class="desc">
+      Rank each set of statements with <strong>4</strong> (most like you), <strong>3</strong>, <strong>2</strong>, and <strong>1</strong> (least like you).
+      Each value can be used <em>once per question</em>.
+    </p>
+
+    <div class="legend" aria-hidden="true">
+      <span class="chip orange">A = Orange</span>
+      <span class="chip green">B = Green</span>
+      <span class="chip blue">C = Blue</span>
+      <span class="chip gold">D = Gold</span>
+    </div>
+
+    <div class="card" id="quizCard" role="region" aria-label="True Colors quiz">
+      <form id="quizForm" novalidate></form>
+
+      <div class="btns">
+        <button type="button" class="primary" id="submitBtn">See My Color</button>
+        <button type="button" class="ghost" id="resetBtn">Reset</button>
+        <!-- Preview button for quick testing -->
+        <button type="button" class="muted" id="previewBtn" title="Show a sample result card">Preview Card</button>
+      </div>
+
+      <div id="errorBox" class="err" role="alert" style="color:#fecaca;display:none;margin-top:8px;"></div>
+
+      <!-- Download / Copy / Email -->
+      <div id="shareTools" class="share-tools">
+        <button type="button" class="ghost" id="downloadImgBtn">Download Image</button>
+        <button type="button" class="ghost" id="copySummaryBtn">Copy Summary</button>
+        <button type="button" class="ghost" id="emailBtn">Email My Results</button>
+      </div>
+
+      <!-- Screenshot-friendly card: mirrors the form’s look & includes snapshots -->
+      <div id="shareCard" class="share-card">
+        <div class="share-title">My True Colors Result</div>
+        <div class="share-line" id="shareLine"></div>
+        <div class="share-grid" id="shareGrid"></div>
+
+        <!-- Color snapshots baked into the card (two-column, same blurbs as form) -->
+        <div class="snapshots">
+          <div class="snap">
+            <h4><span class="chip orange">Orange</span> Snapshot</h4>
+            <p>Witty, bold, spontaneous; loves variety, action, freedom.</p>
+          </div>
+          <div class="snap">
+            <h4><span class="chip green">Green</span> Snapshot</h4>
+            <p>Analytical, logical, curious; values competence and ideas.</p>
+          </div>
+          <div class="snap">
+            <h4><span class="chip blue">Blue</span> Snapshot</h4>
+            <p>Warm, empathetic, idealistic; values harmony and relationships.</p>
+          </div>
+          <div class="snap">
+            <h4><span class="chip gold">Gold</span> Snapshot</h4>
+            <p>Dependable, organized, responsible; values structure and tradition.</p>
+          </div>
+        </div>
+
+        <div class="share-foot">Tip: Screenshot this card or use “Download Image”.</div>
+      </div>
+
+      <div class="desc" style="margin-top:10px">No sign-in required. Scoring and sharing happen locally in your browser.</div>
+    </div>
+
+    <div class="card" style="margin-top:16px">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+        <div>
+          <h3 style="margin:0 0 6px">Color Snapshots</h3>
+          <p class="desc"><span class="chip orange">Orange</span> Witty, bold, spontaneous; loves variety, action, freedom.</p>
+          <p class="desc"><span class="chip green">Green</span> Analytical, logical, curious; values competence and ideas.</p>
+          <p class="desc"><span class="chip blue">Blue</span> Warm, empathetic, idealistic; values harmony and relationships.</p>
+          <p class="desc"><span class="chip gold">Gold</span> Dependable, organized, responsible; values structure and tradition.</p>
+        </div>
+        <div>
+          <h3 style="margin:0 0 6px">What You’ll Get</h3>
+          <p class="desc">Instant primary & secondary color, totals for each color, a shareable summary card, image download (same layout), and a one-click email draft.</p>
+        </div>
+      </div>
+      <div class="footer">Built for classroom use—no data leaves the page unless the user emails it.</div>
+    </div>
+  </div>
+
+  <!-- Export DOM to image (pixel-perfect card) -->
+  <script src="https://unpkg.com/html-to-image@1.11.11/dist/html-to-image.min.js"></script>
+
+  <script>
+    const letterToColor = { A: 'Orange', B: 'Green', C: 'Blue', D: 'Gold' };
+
+    const questions = [
+      { title:"1) When I make decisions:", opts:{
+        A:"I do it quickly and go with the first impressions.",
+        B:"I think about it, consider the options and then decide.",
+        C:"I listen to my feelings and consider how my decisions will affect others.",
+        D:"I take it seriously and always try to make the right decision."
+      }},
+      { title:"2) The best way for others to show me they care about me is to:", opts:{
+        A:"Do fun things with me.",
+        B:"Give me space to be myself.",
+        C:"Spend time with me doing whatever.",
+        D:"Do what I want to do; not let me down or go back on their word."
+      }},
+      { title:"3) When I’m with my friends, I like to provide:", opts:{
+        A:"The excitement; the fun; the jokes.",
+        B:"Questions; answers; a logical way of looking at things.",
+        C:"Concern for others; a lot of caring.",
+        D:"The planning; a sense of security; a good standard."
+      }},
+      { title:"4) I like to:", opts:{
+        A:"Act on a moment’s notice; do risky things.",
+        B:"Provide answers or give thought to people’s questions.",
+        C:"Help maintain a sense of harmony and togetherness.",
+        D:"Be responsible, dependable, and helpful to others."
+      }},
+      { title:"5) One thing I am really good at is:", opts:{
+        A:"Acting courageously.",
+        B:"Thinking.",
+        C:"Being sensitive.",
+        D:"Organizing."
+      }},
+      { title:"6) Friends who know me best would say that I am:", opts:{
+        A:"Competitive.",
+        B:"Reserved, thoughtful.",
+        C:"Emotional, friendly.",
+        D:"Neat, prepared."
+      }},
+      { title:"7) My basic approach to life is:", opts:{
+        A:"To take one day at a time and have fun.",
+        B:"To figure out what life is all about.",
+        C:"To help others and be happy and succeed.",
+        D:"To plan for the future and make it as good as possible."
+      }},
+      { title:"8) When I am feeling discouraged or “down in the dumps”:", opts:{
+        A:"I often become rude, mad, or sometimes even mean.",
+        B:"I withdraw, don’t talk very much, and try to think my way out of the problem.",
+        C:"I feel emotional, am sad, and usually like to talk it over with someone close to me.",
+        D:"I try to figure out what’s causing the problem and fix it."
+      }},
+      { title:"9) I feel good about myself when:", opts:{
+        A:"I can do things that are difficult.",
+        B:"I can solve problems or figure things out.",
+        C:"I can help other people.",
+        D:"I am appreciated or rewarded for things I do."
+      }},
+      { title:"10) Teachers at school who saw me when I wasn’t on my best behavior might describe me as:", opts:{
+        A:"Rowdy or a little wild.",
+        B:"Arrogant.",
+        C:"Talkative.",
+        D:"Someone who wants things my way; dominant; worrying."
+      }},
+      { title:"11) Teachers at school (who like me and in whose class I do pretty well) would probably describe me as:", opts:{
+        A:"Charming, a natural leader, clever, someone who is fun to have around.",
+        B:"Thoughtful, someone who has good answers, someone who likes to figure out problems.",
+        C:"Nice, friendly, someone who gets along with other students and is helpful to the teacher and others.",
+        D:"Neat, organized, prepared, someone who does assignments and is a good student."
+      }},
+    ];
+
+    const quizForm = document.getElementById('quizForm');
+    const errorBox = document.getElementById('errorBox');
+    const submitBtn = document.getElementById('submitBtn');
+    const resetBtn = document.getElementById('resetBtn');
+    const previewBtn = document.getElementById('previewBtn');
+
+    const shareTools = document.getElementById('shareTools');
+    const shareCard = document.getElementById('shareCard');
+    const shareLine = document.getElementById('shareLine');
+    const shareGrid = document.getElementById('shareGrid');
+    const downloadImgBtn = document.getElementById('downloadImgBtn');
+    const copySummaryBtn = document.getElementById('copySummaryBtn');
+    const emailBtn = document.getElementById('emailBtn');
+
+    function makeSelect(name, letter) {
+      const sel = document.createElement('select');
+      sel.name = `${name}_${letter}`;
+      sel.setAttribute('aria-label', `${name} option ${letter} rank`);
+      const blank = document.createElement('option');
+      blank.value = ''; blank.textContent = '—';
+      sel.appendChild(blank);
+      [4,3,2,1].forEach(v => {
+        const o = document.createElement('option');
+        o.value = String(v); o.textContent = v;
+        sel.appendChild(o);
+      });
+      sel.addEventListener('change', () => updateQuestion(name));
+      return sel;
+    }
+
+    // Live per-question validation + disable duplicates
+    function updateQuestion(qName) {
+      const letters = ['A','B','C','D'];
+      const chosenCount = {};
+      let hasDup = false;
+
+      letters.forEach(L => {
+        const el = quizForm.elements[`${qName}_${L}`];
+        el.style.outline = '';
+        const val = el.value;
+        if (val) chosenCount[val] = (chosenCount[val] || 0) + 1;
+      });
+
+      letters.forEach(L => {
+        const el = quizForm.elements[`${qName}_${L}`];
+        const val = el.value;
+        if (val && chosenCount[val] > 1) {
+          hasDup = true;
+          el.style.outline = '3px solid #fb7185';
+          el.style.outlineOffset = '2px';
+          el.title = 'Duplicate rank in this question. Choose each rank once.';
+        } else {
+          el.title = '';
+        }
+      });
+
+      letters.forEach(L => {
+        const sel = quizForm.elements[`${qName}_${L}`];
+        Array.from(sel.options).forEach(opt => {
+          if (!opt.value) return;
+          const val = opt.value;
+          const thisHasVal = (sel.value === val);
+          opt.disabled = !thisHasVal && !!chosenCount[val];
+        });
+      });
+
+      const qDiv = document.getElementById(`${qName}_container`);
+      let msg = qDiv.querySelector('.q-msg');
+      if (!msg) { msg = document.createElement('div'); msg.className = 'q-msg'; qDiv.appendChild(msg); }
+      if (hasDup) { msg.textContent = 'Each rank (4, 3, 2, 1) must be used once in this question.'; msg.style.display = 'block'; }
+      else { msg.textContent = ''; msg.style.display = 'none'; }
+    }
+
+    function render() {
+      quizForm.innerHTML = '';
+      questions.forEach((q, idx) => {
+        const qName = `Q${idx+1}`;
+        const qDiv = document.createElement('div');
+        qDiv.className = 'q';
+        qDiv.id = `${qName}_container`;
+
+        const h = document.createElement('h3');
+        h.textContent = q.title;
+        qDiv.appendChild(h);
+
+        Object.entries(q.opts).forEach(([letter, text]) => {
+          const row = document.createElement('div');
+          row.className = 'opt';
+          const label = document.createElement('div');
+          label.innerHTML = `<strong>${letter}.</strong> ${text}`;
+          const sel = makeSelect(qName, letter);
+          row.appendChild(label);
+          row.appendChild(sel);
+          qDiv.appendChild(row);
+        });
+
+        const msg = document.createElement('div');
+        msg.className = 'q-msg';
+        qDiv.appendChild(msg);
+
+        quizForm.appendChild(qDiv);
+      });
+
+      shareCard.style.display = 'none';
+      shareTools.style.display = 'none';
+      errorBox.style.display = 'none';
+      errorBox.textContent = '';
+    }
+
+    function validateAll() {
+      for (let i=0;i<questions.length;i++) {
+        const qName = `Q${i+1}`;
+        const letters = ['A','B','C','D'];
+        const vals = letters.map(L => quizForm.elements[`${qName}_${L}`].value).filter(Boolean);
+        if (vals.length !== 4) return { ok:false, msg:`Question ${i+1}: please assign 4, 3, 2, and 1 (no blanks).` };
+        if (new Set(vals).size !== 4) { updateQuestion(qName); return { ok:false, msg:`Question ${i+1}: each rank must be unique.` }; }
+      }
+      return { ok:true };
+    }
+
+    function compute() {
+      const totals = { Orange:0, Green:0, Blue:0, Gold:0 };
+      const perQuestion = [];
+      questions.forEach((q, i) => {
+        const row = {};
+        ['A','B','C','D'].forEach(L => {
+          const val = Number(quizForm.elements[`Q${i+1}_${L}`].value);
+          row[L] = val;
+          totals[letterToColor[L]] += val;
+        });
+        perQuestion.push(row);
+      });
+
+      const sorted = Object.entries(totals).sort((a,b)=>b[1]-a[1]);
+      const topScore = sorted[0][1];
+      const primary = sorted.filter(([c,s])=>s===topScore).map(([c])=>c);
+
+      let secondary = [];
+      if (primary.length === 1) {
+        const nextScore = sorted.find(([c,s])=>s<topScore)?.[1] ?? null;
+        secondary = sorted.filter(([c,s])=>s===nextScore).map(([c])=>c);
+      }
+      return { totals, primary, secondary, perQuestion };
+    }
+
+    // Build the on-page share card (same layout used for download)
+    function buildShareCard(r) {
+      const pill = c => `<span class="chip ${c.toLowerCase()}">${c}</span>`;
+      const primary = r.primary.length ? r.primary.map(pill).join(' ') : '—';
+      const secondary = r.secondary.length ? r.secondary.map(pill).join(' ') : '—';
+
+      shareLine.innerHTML = `<strong>Primary:</strong> ${primary} &nbsp;&nbsp; <strong>Secondary:</strong> ${secondary}`;
+
+      shareGrid.innerHTML = '';
+      ['Orange','Green','Blue','Gold'].forEach(c => {
+        const div = document.createElement('div');
+        div.className = 'score';
+        div.innerHTML = `<div class="lbl">${c}</div><div class="val">${r.totals[c]}</div>`;
+        shareGrid.appendChild(div);
+      });
+
+      shareCard.style.display = 'block';
+      shareCard.scrollIntoView({behavior:'smooth', block:'center'});
+    }
+
+    function buildPlainSummary(r) {
+      const totals = `Orange ${r.totals.Orange}, Green ${r.totals.Green}, Blue ${r.totals.Blue}, Gold ${r.totals.Gold}`;
+      const primary = r.primary.join(' / ') || '—';
+      const secondary = r.secondary.join(' / ') || '—';
+      return `True Colors Result — Primary: ${primary} | Secondary: ${secondary}
+Totals: ${totals}`;
+    }
+
+    function emailResults(r) {
+      const subject = encodeURIComponent('My True Colors Result');
+      const body = encodeURIComponent(buildPlainSummary(r) + '\n\n(Shared from the classroom quiz)');
+      window.location.href = `mailto:?subject=${subject}&body=${body}`;
+    }
+
+    // Actions
+    submitBtn.addEventListener('click', () => {
+      errorBox.style.display = 'none';
+      const v = validateAll();
+      if (!v.ok) { errorBox.textContent = v.msg; errorBox.style.display = 'block'; return; }
+      const r = compute();
+      buildShareCard(r);
+      shareTools.style.display = 'flex';
+      submitBtn.dataset.hadResult = '1';
+      submitBtn.dataset.result = JSON.stringify(r);
+    });
+
+    resetBtn.addEventListener('click', render);
+
+    // Preview without answering (sample data)
+    previewBtn.addEventListener('click', () => {
+      const sample = {
+        totals: { Orange:30, Green:26, Blue:22, Gold:18 },
+        primary: ['Orange'],
+        secondary: ['Green'],
+        perQuestion: []
+      };
+      buildShareCard(sample);
+      shareTools.style.display = 'flex';
+      submitBtn.dataset.hadResult = '1';
+      submitBtn.dataset.result = JSON.stringify(sample);
+    });
+
+    // Download PNG: export the actual DOM card (pixel-perfect)
+    downloadImgBtn.addEventListener('click', async () => {
+      if (submitBtn.dataset.hadResult !== '1') return;
+
+      // Ensure card is visible during capture
+      const wasHidden = (shareCard.style.display === 'none');
+      if (wasHidden) shareCard.style.display = 'block';
+
+      try {
+        const dataUrl = await htmlToImage.toPng(shareCard, {
+          pixelRatio: 2,
+          backgroundColor: '#0f172a'
+        });
+        const link = document.createElement('a');
+        link.href = dataUrl;
+        link.download = `true-colors-result-${new Date().toISOString().replace(/[:.]/g,'-')}.png`;
+        link.click();
+      } catch (e) {
+        console.error(e);
+        alert('Sorry—could not generate the image. Try again.');
+      } finally {
+        if (wasHidden) shareCard.style.display = 'none';
+      }
+    });
+
+    copySummaryBtn.addEventListener('click', async () => {
+      if (submitBtn.dataset.hadResult !== '1') return;
+      const r = JSON.parse(submitBtn.dataset.result);
+      await navigator.clipboard.writeText(buildPlainSummary(r));
+      copySummaryBtn.textContent = 'Copied!';
+      setTimeout(()=> copySummaryBtn.textContent = 'Copy Summary', 1200);
+    });
+
+    emailBtn.addEventListener('click', () => {
+      if (submitBtn.dataset.hadResult !== '1') return;
+      const r = JSON.parse(submitBtn.dataset.result);
+      emailResults(r);
+    });
+
+    // Init
+    render();
+  </script>
+</body>
+</html>
