@@ -163,6 +163,8 @@
 
   <!-- Export DOM to image (pixel-perfect card) -->
   <script src="https://unpkg.com/html-to-image@1.11.11/dist/html-to-image.min.js"></script>
+  <!-- Fallback library in case the first one errors out on some browsers -->
+  <script src="https://cdn.jsdelivr.net/npm/dom-to-image-more@3.3.0/dist/dom-to-image-more.min.js"></script>
 
   <script>
     const letterToColor = { A: 'Orange', B: 'Green', C: 'Blue', D: 'Gold' };
@@ -187,33 +189,33 @@
         D:"The planning; a sense of security; a good standard."
       }},
       { title:"4) I like to:", opts:{
-        A:"Act on a moment’s notice; do risky things.",
+        A:"Act on a moment’s notice; do spontaneous things.",
         B:"Provide answers or give thought to people’s questions.",
         C:"Help maintain a sense of harmony and togetherness.",
         D:"Be responsible, dependable, and helpful to others."
       }},
       { title:"5) One thing I am really good at is:", opts:{
-        A:"Acting courageously.",
+        A:"Acting bravely.",
         B:"Thinking.",
-        C:"Being sensitive.",
+        C:"Being caring.",
         D:"Organizing."
       }},
       { title:"6) Friends who know me best would say that I am:", opts:{
         A:"Competitive.",
         B:"Reserved, thoughtful.",
-        C:"Emotional, friendly.",
-        D:"Neat, prepared."
+        C:"Caring, friendly.",
+        D:"Neat, extra prepared."
       }},
       { title:"7) My basic approach to life is:", opts:{
         A:"To take one day at a time and have fun.",
-        B:"To figure out what life is all about.",
+        B:"To figure out a purpose in life.",
         C:"To help others and be happy and succeed.",
         D:"To plan for the future and make it as good as possible."
       }},
       { title:"8) When I am feeling discouraged or “down in the dumps”:", opts:{
-        A:"I often become rude, mad, or sometimes even mean.",
+        A:"I often become irritable, mad, or sometimes rude.",
         B:"I withdraw, don’t talk very much, and try to think my way out of the problem.",
-        C:"I feel emotional, am sad, and usually like to talk it over with someone close to me.",
+        C:"I feel emotional, sad, and usually like to talk it over with someone close to me.",
         D:"I try to figure out what’s causing the problem and fix it."
       }},
       { title:"9) I feel good about myself when:", opts:{
@@ -222,14 +224,14 @@
         C:"I can help other people.",
         D:"I am appreciated or rewarded for things I do."
       }},
-      { title:"10) Teachers at school who saw me when I wasn’t on my best behavior might describe me as:", opts:{
+      { title:"10) Teachers at school who saw me when I wasn’t on my best might describe me as:", opts:{
         A:"Rowdy or a little wild.",
-        B:"Arrogant.",
+        B:"Judgemental.",
         C:"Talkative.",
-        D:"Someone who wants things my way; dominant; worrying."
+        D:"Someone who wants things my way; dominant; bossy."
       }},
       { title:"11) Teachers at school (who like me and in whose class I do pretty well) would probably describe me as:", opts:{
-        A:"Charming, a natural leader, clever, someone who is fun to have around.",
+        A:"Charming, social, confident, someone who is fun to have around.",
         B:"Thoughtful, someone who has good answers, someone who likes to figure out problems.",
         C:"Nice, friendly, someone who gets along with other students and is helpful to the teacher and others.",
         D:"Neat, organized, prepared, someone who does assignments and is a good student."
@@ -415,6 +417,48 @@ Totals: ${totals}`;
       window.location.href = `mailto:?subject=${subject}&body=${body}`;
     }
 
+    // ---- Robust DOM->PNG with fallback ----
+    async function downloadCardPNG(node) {
+      // Ensure fonts are loaded (prevents early capture glitches)
+      if (document.fonts && document.fonts.ready) {
+        try { await document.fonts.ready; } catch {}
+      }
+      const opts = {
+        pixelRatio: 2,
+        cacheBust: true,
+        backgroundColor: '#0f172a',
+        style: { margin: 0, transform: 'none' }
+      };
+
+      // Try html-to-image first
+      try {
+        if (!window.htmlToImage || !window.htmlToImage.toPng) throw new Error('html-to-image not available');
+        const dataUrl = await window.htmlToImage.toPng(node, opts);
+        triggerDownload(dataUrl);
+        return;
+      } catch (e1) {
+        console.warn('html-to-image failed:', e1);
+      }
+
+      // Fallback: dom-to-image-more
+      try {
+        if (!window.domtoimage || !window.domtoimage.toPng) throw new Error('dom-to-image-more not available');
+        const dataUrl = await window.domtoimage.toPng(node, opts);
+        triggerDownload(dataUrl);
+        return;
+      } catch (e2) {
+        console.warn('dom-to-image-more failed:', e2);
+        alert('Sorry — could not generate the image in this browser. Try another browser or take a screenshot.');
+      }
+    }
+
+    function triggerDownload(dataUrl) {
+      const link = document.createElement('a');
+      link.href = dataUrl;
+      link.download = `true-colors-result-${new Date().toISOString().replace(/[:.]/g,'-')}.png`;
+      link.click();
+    }
+
     // Actions
     submitBtn.addEventListener('click', () => {
       errorBox.style.display = 'none';
@@ -443,26 +487,13 @@ Totals: ${totals}`;
       submitBtn.dataset.result = JSON.stringify(sample);
     });
 
-    // Download PNG: export the actual DOM card (pixel-perfect)
+    // Download PNG: export the actual DOM card (pixel-perfect) with fallback
     downloadImgBtn.addEventListener('click', async () => {
       if (submitBtn.dataset.hadResult !== '1') return;
-
-      // Ensure card is visible during capture
       const wasHidden = (shareCard.style.display === 'none');
       if (wasHidden) shareCard.style.display = 'block';
-
       try {
-        const dataUrl = await htmlToImage.toPng(shareCard, {
-          pixelRatio: 2,
-          backgroundColor: '#0f172a'
-        });
-        const link = document.createElement('a');
-        link.href = dataUrl;
-        link.download = `true-colors-result-${new Date().toISOString().replace(/[:.]/g,'-')}.png`;
-        link.click();
-      } catch (e) {
-        console.error(e);
-        alert('Sorry—could not generate the image. Try again.');
+        await downloadCardPNG(shareCard);
       } finally {
         if (wasHidden) shareCard.style.display = 'none';
       }
