@@ -394,49 +394,65 @@
     document.getElementById("dingSound").volume = 0.5;
 
     function selectRandomNumber() {
-      const maxValue = parseInt(document.getElementById("maxValue").value);
+  const maxValue = parseInt(document.getElementById("maxValue").value);
 
-      if (isNaN(maxValue) || maxValue < 1) {
-        alert("Please enter a valid number greater than 0.");
-        return;
-      }
+  if (isNaN(maxValue) || maxValue < 1) {
+    alert("Please enter a valid number greater than 0.");
+    return;
+  }
 
-      const minValue = 1;
+  const minValue = 1;
+  const resultDisplay = document.getElementById("selectedResult");
+  document.querySelector('.custom-number').style.display = 'none';
+  resultDisplay.style.fontSize = "3rem";
+  document.getElementById("dingSound").pause();
+  document.getElementById("dingSound").currentTime = 0;
 
-      if (noRepeatNumbers && selectedNumbers.length >= maxValue) {
-        resetHistory('number');
-        return;
-      }
-
-      let randomNum;
-      let counter = 0;
-      const resultDisplay = document.getElementById("selectedResult");
-      document.querySelector('.custom-number').style.display = 'none';
-      resultDisplay.style.fontSize = "3rem";
-
-      document.getElementById("dingSound").pause();
-      document.getElementById("dingSound").currentTime = 0;
-
-      const cyclingEffect = setInterval(() => {
-        randomNum = Math.floor(Math.random() * maxValue) + minValue;
-        resultDisplay.textContent = randomNum;
-        counter++;
-
-        document.getElementById("tickingSound").play();
-
-        if (counter >= 15) {
-          clearInterval(cyclingEffect);
-          selectedNumbers.push(randomNum);
-          resultDisplay.textContent = randomNum;
-          resultDisplay.style.fontSize = "10rem";
-
-          document.getElementById("tickingSound").pause();
-          document.getElementById("tickingSound").currentTime = 0;
-
-          document.getElementById("dingSound").play();
-        }
-      }, 100);
+  // Build possible pool
+  let possibleNumbers = [];
+  if (noRepeatNumbers) {
+    for (let i = minValue; i <= maxValue; i++) {
+      if (!selectedNumbers.includes(i)) possibleNumbers.push(i);
     }
+    if (possibleNumbers.length === 0) {
+      resetHistory('number');
+      alert("All numbers have been used. History reset!");
+      return;
+    }
+  } else {
+    for (let i = minValue; i <= maxValue; i++) {
+      possibleNumbers.push(i);
+    }
+  }
+
+  // Cycling effect (animate from possibleNumbers only)
+  let counter = 0;
+  let finalNum;
+  const cyclingEffect = setInterval(() => {
+    // Pick random from possibleNumbers for animation
+    let randomNum = possibleNumbers[Math.floor(Math.random() * possibleNumbers.length)];
+    resultDisplay.textContent = randomNum;
+    counter++;
+
+    document.getElementById("tickingSound").play();
+
+    if (counter >= 15) {
+      clearInterval(cyclingEffect);
+
+      // FINAL SELECTION (still ensure no repeats on last pick)
+      finalNum = possibleNumbers[Math.floor(Math.random() * possibleNumbers.length)];
+      selectedNumbers.push(finalNum);
+      resultDisplay.textContent = finalNum;
+      resultDisplay.style.fontSize = "10rem";
+
+      document.getElementById("tickingSound").pause();
+      document.getElementById("tickingSound").currentTime = 0;
+
+      document.getElementById("dingSound").play();
+    }
+  }, 100);
+}
+
 
     function resetHistory(type) {
       if (type === 'number') {
