@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Turn Timer</title>
+<link rel="icon" type="image/png" href="images/FaviconCircleR.png">
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap');
+
+  .logo-img {
+    position: fixed;
+    top: 20px;
+    left: 20px;
+    height: 56px;
+    width: auto;
+    z-index: 2000;
+    background: transparent;
+    pointer-events: auto;
+  }
+
+  body {
+    margin:0; height:100vh;
+    background-image: url('images/Tech3409297.jpg');
+    background-repeat: no-repeat;
+    background-size:cover;
+    font-family:'Inter',sans-serif;
+    color:#fff; display:flex; flex-direction:column;
+    align-items:center; justify-content:center;
+    text-shadow:0 0 8px rgba(0,0,0,0.7);
+  }
+  body::before {content:"";position:fixed;inset:0;background:rgba(0,0,0,0.4);z-index:0;}
+
+  .main {position:relative;z-index:1;display:grid;gap:18px;justify-items:center;padding:16px;}
+
+  /* Chips row */
+  .chip-row {
+    display:grid;
+    grid-auto-flow:column;
+    gap:28px;
+    align-items:center;justify-items:center;
+    min-height:160px;
+    position: relative;
+  }
+  .turn-wrapper {
+    position:relative;
+    width:160px;height:160px;
+    display:grid;place-items:center;
+    flex-shrink:0;
+  }
+  .turn-chip {
+    position:relative;
+    width:120px;height:120px;
+    border-radius:50%;
+    display:grid;place-items:center;
+    font-size:2.5rem;font-weight:700;
+    box-shadow:0 0 20px rgba(0,0,0,0.6);
+    transition:opacity 0.4s, transform 0.18s ease;
+    cursor:pointer;
+  }
+  .turn-chip.active {transform:scale(1.08);}
+  .turn-chip.dim {opacity:0.25;}
+
+  /* Colors */
+  .turn1 {background:#e03131;} /* Red */
+  .turn2 {background:#2fb344;} /* Green */
+  .turn3 {background:#ffd43b;color:#fff;} /* Yellow */
+  .turn4 {background:#1e66f5;} /* Blue */
+
+  /* Ring */
+  .ring {position:absolute;inset:0;transform:rotate(-90deg);}
+  .ring circle {fill:none;stroke-width:10;stroke-linecap:round;} /* baseline thickness */
+  .ring-bg {stroke:rgba(255,255,255,0.25);}
+  .ring-bar {
+    stroke:#fff;
+    filter:drop-shadow(0 0 6px rgba(255,255,255,0.85));
+    transition:stroke-dashoffset 0.1s linear;
+  }
+
+  /* Timer */
+  .timer {font-size:2.6rem;font-weight:700;}
+
+  /* Buttons */
+  .controls,.presets,.custom-time {
+    margin-top:6px;display:flex;flex-wrap:wrap;gap:16px;justify-content:center;
+  }
+  button {
+    padding:15px 35px;font-size:1.5rem;font-weight:700;
+    border:2px solid rgba(255,255,255,0.6);background:transparent;color:#fff;
+    border-radius:30px;cursor:pointer;
+    transition:background 0.3s,color 0.3s,transform 0.2s;
+    backdrop-filter:blur(5px);
+  }
+  button:hover {background:rgba(255,255,255,0.4);color:#000;transform:scale(1.05);}
+  button:active {transform:scale(0.97);}
+  .presets button {width:80px;height:80px;border-radius:50%;padding:0;font-size:1.2rem;}
+  .custom-time input {
+    width:110px;padding:10px;font-size:1.3rem;font-weight:700;
+    border-radius:8px;border:1px solid #ccc;text-align:center;
+    background:rgba(255,255,255,0.9);color:#000;
+  }
+
+  /* Pulsating animations */
+  @keyframes chipPulse {
+    0%, 100% { transform: scale(1); opacity: 1; box-shadow: 0 0 12px #fff; }
+    50% { transform: scale(1.12); opacity: 0.7; box-shadow: 0 0 30px #fff; }
+  }
+  @keyframes timerPulse {
+    0%, 100% { opacity: 1; text-shadow: 0 0 10px #fff, 0 0 20px #fff; }
+    50% { opacity: 0.7; text-shadow: 0 0 25px #fff, 0 0 45px #fff; }
+  }
+  .chip-pulsate { animation: chipPulse 1.5s infinite ease-in-out; }
+  .chip1-pulse { animation-delay: 0s; }
+  .chip2-pulse { animation-delay: 0.3s; }
+  .chip3-pulse { animation-delay: 0.6s; }
+  .chip4-pulse { animation-delay: 0.9s; }
+  .timer-pulsate { animation: timerPulse 1.5s infinite ease-in-out; }
+
+  /* Feedback animations */
+  @keyframes flashAdd {
+    0%   { color:#0f0; text-shadow:0 0 20px #0f0; }
+    100% { color:#fff; text-shadow:none; }
+  }
+  .timer.flash-add { animation: flashAdd 0.6s; }
+
+  .add-label {
+    position:absolute;font-size:1.2rem;font-weight:700;color:#0f0;
+    animation: floatUp 1s forwards;
+  }
+  @keyframes floatUp {
+    0% { opacity:1; transform:translateY(0); }
+    100% { opacity:0; transform:translateY(-25px); }
+  }
+  @keyframes selectFlash {
+    0% { box-shadow: 0 0 0px #fff; transform: scale(1); }
+    50% { box-shadow: 0 0 25px #fff; transform: scale(1.1); }
+    100% { box-shadow: 0 0 0px #fff; transform: scale(1); }
+  }
+  .chip-flash { animation: selectFlash 0.6s ease; }
+
+  .selection-label {
+    position: absolute;top: -30px;
+    font-size: 1.2rem;font-weight:700;color:#00f4ff;
+    animation: floatUp 1s forwards;
+  }
+
+  /* Responsive */
+  @media (max-width: 768px) {
+    .chip-row {
+      grid-template-columns: repeat(2, 1fr);
+      grid-auto-flow: row;
+      gap: 20px;
+    }
+    .turn-wrapper {width: 120px; height: 120px;}
+    .turn-chip {width: 90px; height: 90px; font-size: 2rem;}
+    .timer {font-size: 2rem;}
+  }
+  @media (max-width: 480px) {
+    .turn-wrapper {width: 100px; height: 100px;}
+    .turn-chip {width: 75px; height: 75px; font-size: 1.6rem;}
+    .timer {font-size: 1.6rem;}
+    .presets button {width:60px;height:60px;font-size:1rem;}
+    button {padding:10px 20px;font-size:1.2rem;}
+  }
+  @media (max-width: 600px) {
+  .logo-img {
+    display: none;
+  }
+}
+</style>
+</head>
+<body>
+  <a href="PageTimers.html">
+    <img src="images/Turn%20TIMEr%20Wh%20Logo.png" alt="Logo" class="logo-img">
+  </a>
+
+  <div class="main">
+    <div class="chip-row" id="chipRow"></div>
+    <div class="timer" id="timer">0:30</div>
+
+    <div class="controls">
+      <button id="startBtn">▶</button>
+      <button id="pauseBtn">‖</button>
+      <button id="resetBtn">Reset</button>
+      <button id="add15Btn">+15 sec</button>
+    </div>
+
+    <div class="presets">
+      <button data-min="0" data-sec="15">:15</button>
+      <button data-min="0" data-sec="20">:20</button>
+      <button data-min="0" data-sec="25">:25</button>
+      <button data-min="0" data-sec="30">:30</button>
+      <button data-min="0" data-sec="45">:45</button>
+      <button data-min="1" data-sec="0">1:00</button>
+      <button data-min="1" data-sec="30">1:30</button>
+    </div>
+
+    <div class="custom-time">
+      <button id="setCustomBtn">Set</button>
+      <input type="text" id="customTime" placeholder="MM:SS"/>
+    </div>
+  </div>
+
+  <!-- Regular turn sound -->
+  <audio id="endSound">
+    <source src="audio/TurnAlert.mp3" type="audio/mpeg">
+  </audio>
+
+  <!-- Final turn sound -->
+  <audio id="finalSound">
+    <source src="audio/ac-bel-105874.mp3" type="audio/mpeg">
+  </audio>
+
+<script>
+const chipRow=document.getElementById('chipRow');
+const timerDisplay=document.getElementById('timer');
+const endSound=document.getElementById('endSound');
+const finalSound=document.getElementById('finalSound');
+const startBtn=document.getElementById('startBtn');
+const pauseBtn=document.getElementById('pauseBtn');
+const resetBtn=document.getElementById('resetBtn');
+const add15Btn=document.getElementById('add15Btn');
+const setCustomBtn=document.getElementById('setCustomBtn');
+const presets=document.querySelector('.presets');
+const customTimeInput=document.getElementById('customTime');
+
+const R=68,C=2*Math.PI*R;
+let totalTurns=4,currentTurn=1;
+let durationMs=30*1000,startTime,rafId,isRunning=false;
+
+// Build chips
+function buildChips(){
+  chipRow.innerHTML='';
+  for(let i=1;i<=4;i++){
+    const wrap=document.createElement('div');
+    wrap.className='turn-wrapper';
+    const chip=document.createElement('div');
+    chip.className='turn-chip turn'+i;
+    chip.textContent=i;
+    chip.dataset.turn=i;
+    const svg=document.createElementNS('http://www.w3.org/2000/svg','svg');
+    svg.setAttribute('class','ring');
+    svg.setAttribute('viewBox','0 0 160 160');
+    svg.setAttribute('width','100%');
+    svg.setAttribute('height','100%');
+    const bg=document.createElementNS('http://www.w3.org/2000/svg','circle');
+    bg.setAttribute('class','ring-bg');bg.setAttribute('cx','80');bg.setAttribute('cy','80');bg.setAttribute('r',R);
+    const bar=document.createElementNS('http://www.w3.org/2000/svg','circle');
+    bar.setAttribute('class','ring-bar');bar.setAttribute('cx','80');bar.setAttribute('cy','80');bar.setAttribute('r',R);
+    bar.style.strokeDasharray=C;bar.style.strokeDashoffset=C;
+    svg.appendChild(bg);svg.appendChild(bar);
+    wrap.appendChild(svg);wrap.appendChild(chip);
+    chipRow.appendChild(wrap);
+  }
+}
+buildChips();
+
+// Helpers
+function fmt(ms){const s=Math.max(0,Math.ceil(ms/1000));return `${Math.floor(s/60)}:${String(s%60).padStart(2,'0')}`;}
+function updateTime(ms){timerDisplay.textContent=fmt(ms);}
+function playEnd(){endSound.currentTime=0;endSound.play().catch(()=>{});}
+function playFinal(){finalSound.currentTime=0;finalSound.play().catch(()=>{});}
+function stopAllSounds(){endSound.pause();endSound.currentTime=0;finalSound.pause();finalSound.currentTime=0;}
+function bars(){return [...chipRow.querySelectorAll('.ring-bar')];}
+function chips(){return [...chipRow.querySelectorAll('.turn-chip')];}
+
+function setActive(turn){
+  currentTurn=turn;
+  chips().forEach((c)=>c.classList.remove('active'));
+  bars().forEach(b=>b.style.strokeDashoffset=C);
+  const c=chips()[turn-1];
+  if(c){c.classList.add('active');c.classList.remove('dim');}
+}
+function markDone(turn){
+  const c=chips()[turn-1];if(c)c.classList.add('dim');
+  const b=bars()[turn-1];if(b)b.style.strokeDashoffset=C;
+}
+
+// Timer loop
+function tick(){
+  if(!isRunning)return;
+  const now=performance.now();
+  const elapsed=now-startTime;
+  const remain=Math.max(0,durationMs-elapsed);
+  updateTime(remain);
+  const bar=bars()[currentTurn-1];
+  if(bar)bar.style.strokeDashoffset=C*(elapsed/durationMs);
+  if(elapsed>=durationMs){
+    if(currentTurn<totalTurns){
+      playEnd();markDone(currentTurn);
+      currentTurn++;setActive(currentTurn);
+      startTime=performance.now();
+      rafId=requestAnimationFrame(tick);
+    }else{
+      const bar=bars()[currentTurn-1];
+      if(bar) bar.style.strokeDashoffset=C;
+      playFinal();
+      isRunning=false;
+      timerDisplay.classList.add('timer-pulsate');
+      chips().forEach((c,i)=>c.classList.add('chip-pulsate','chip'+(i+1)+'-pulse'));
+    }
+  }else{rafId=requestAnimationFrame(tick);}
+}
+
+// Controls
+function start(){if(isRunning)return;isRunning=true;chips().forEach((c,i)=>{if(i+1!==currentTurn)c.classList.add('dim');});setActive(currentTurn);startTime=performance.now();rafId=requestAnimationFrame(tick);}
+function pause(){if(!isRunning)return;isRunning=false;cancelAnimationFrame(rafId);}
+function reset(){isRunning=false;cancelAnimationFrame(rafId);stopAllSounds();buildChips();totalTurns=4;currentTurn=1;timerDisplay.classList.remove('timer-pulsate','flash-add');updateTime(durationMs);}
+function setDurationOnly(m,s){durationMs=(m*60+s)*1000;if(!isRunning) updateTime(durationMs);}
+
+// Events
+chipRow.addEventListener('click',e=>{
+  const chip=e.target.closest('.turn-chip');if(!chip||isRunning)return;
+  totalTurns=parseInt(chip.dataset.turn);
+  chips().forEach((c,i)=>{c.parentElement.style.display=(i+1>totalTurns)?"none":"grid";});
+  currentTurn=1;
+  chips().forEach(c=>c.classList.remove('dim','active'));
+  bars().forEach(b=>b.style.strokeDashoffset=C);
+  updateTime(durationMs);
+
+  chip.classList.add('chip-flash');setTimeout(()=>chip.classList.remove('chip-flash'),600);
+  const label=document.createElement('div');label.className='selection-label';label.textContent=`${totalTurns} turns selected`;chipRow.appendChild(label);setTimeout(()=>label.remove(),1000);
+});
+
+startBtn.onclick=start;
+pauseBtn.onclick=pause;
+resetBtn.onclick=reset;
+
+add15Btn.onclick=()=>{
+  durationMs += 15000;
+  if(isRunning){
+    const elapsed=performance.now()-startTime;
+    const remain=Math.max(0,durationMs - elapsed);
+    updateTime(remain);
+    const bar=bars()[currentTurn-1];
+    if(bar) bar.style.strokeDashoffset = C * (elapsed / durationMs);
+  } else {updateTime(durationMs);}
+  timerDisplay.classList.add('flash-add');setTimeout(()=>timerDisplay.classList.remove('flash-add'),600);
+  const label=document.createElement('div');label.className='add-label';label.textContent='+15s';document.querySelector('.main').appendChild(label);setTimeout(()=>label.remove(),1000);
+  add15Btn.disabled=true;setTimeout(()=>add15Btn.disabled=false,1000);
+};
+
+setCustomBtn.onclick=()=>{
+  const val=customTimeInput.value.trim();const m=val.match(/^(\d{1,2}):(\d{2})$/);if(!m)return alert('Use MM:SS');
+  const mm=parseInt(m[1],10),ss=parseInt(m[2],10);if(ss>=60)return alert('Seconds must be 00–59');setDurationOnly(mm,ss);
+};
+
+presets.addEventListener('click',e=>{
+  const b=e.target.closest('button');if(!b)return;
+  setDurationOnly(parseInt(b.dataset.min),parseInt(b.dataset.sec));
+});
+
+// Init
+updateTime(durationMs);
+</script>
+</body>
+</html>
