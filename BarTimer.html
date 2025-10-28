@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Bar Timer</title>
+<link rel="icon" type="image/png" href="images/FaviconCircleR.png">
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap');
+
+  :root{
+    --glass: rgba(255,255,255,0.15);
+    --glass-strong: rgba(255,255,255,0.35);
+    --cyan: #00cdff;
+  }
+
+  .logo-img {
+    position: fixed;
+    top: 20px;
+    left: 20px;
+    height: 56px;
+    width: auto;
+    z-index: 2000;
+  }
+
+  body {
+    margin:0; height:100vh;
+    background-image:url('images/Tech3409297.jpg');
+    background-size:cover;
+    background-position:center;
+    font-family:'Inter',sans-serif;
+    color:#fff;
+    display:flex; align-items:center; justify-content:center;
+    text-shadow:0 0 8px rgba(0,0,0,0.7);
+  }
+  body::before {content:"";position:fixed;inset:0;background:rgba(0,0,0,0.4);z-index:0;}
+
+  .main {
+  position:relative; z-index:1;
+  display:grid; gap:12px;
+  justify-items:center;
+  padding:16px;
+  padding-top:48px; /* moved up ~0.5 inch */
+  width:min(92vw,1000px);
+}
+
+  /* Timer */
+  .timer {
+    font-size:2.2rem;font-weight:700;
+  }
+  @keyframes timerPulse {
+    0%,100% {opacity:1;text-shadow:0 0 10px #fff,0 0 20px #fff;}
+    50% {opacity:0.7;text-shadow:0 0 25px #fff,0 0 45px #fff;}
+  }
+  .timer-pulsate {animation:timerPulse 1.5s infinite;}
+
+  /* Bars */
+  .bars-wrap{width:100%;display:flex;flex-direction:column;gap:12px;}
+
+  .bar-row{
+    display:grid;
+    grid-template-columns:70px 1fr;
+    align-items:center;
+    gap:12px;
+  }
+
+  .count-btn{
+    width:64px;height:64px;border-radius:50%;
+    font-size:1.6rem;font-weight:800;
+    border:2px solid rgba(255,255,255,0.6);
+    background:transparent;color:#fff;
+    cursor:pointer;
+  }
+  .count-btn:hover{background:var(--glass-strong);color:#000;transform:scale(1.05);}
+  .bar-row.row-active .count-btn{
+    background:#fff;color:#000;border-color:#fff;
+    box-shadow:0 0 16px var(--cyan);
+    transform:scale(1.05);
+  }
+
+  .bar-shell{
+    width:100%;height:26px;
+    border-radius:999px;
+    background:rgba(255,255,255,0.18);
+    overflow:hidden;
+    box-shadow:inset 0 0 10px rgba(0,0,0,0.45);
+    position:relative;
+  }
+
+  .bar-fill{
+    position:absolute;inset:0;width:100%;
+    background:linear-gradient(90deg, var(--cyan) 0%, #009cc7 100%);
+    box-shadow:0 0 24px rgba(0,205,255,0.95);
+    transition:width .1s linear;
+  }
+
+  /* Pulse + shimmer visible on container */
+  @keyframes shellPulse {
+    0%,100% {box-shadow:inset 0 0 10px rgba(0,0,0,0.45),0 0 10px rgba(0,205,255,0.6),0 0 24px rgba(0,205,255,0.85);}
+    50%     {box-shadow:inset 0 0 10px rgba(0,0,0,0.45),0 0 18px rgba(0,205,255,0.85),0 0 40px rgba(0,205,255,1);}
+  }
+  .row-active .bar-shell{animation:shellPulse 1.25s ease-in-out infinite;}
+
+  .bar-shell::after{
+    content:"";position:absolute;inset:0;
+    background:linear-gradient(120deg,transparent 0%,rgba(255,255,255,0.35) 35%,rgba(255,255,255,0.1) 50%,transparent 65%);
+    transform:translateX(-120%);
+  }
+  @keyframes shimmer{
+    0%{transform:translateX(-120%);}
+    100%{transform:translateX(120%);}
+  }
+  .row-active .bar-shell::after{animation:shimmer 1.8s linear infinite;}
+
+  /* State */
+  .row-dim {opacity:0.35;}
+  .row-active {opacity:1;}
+  .row-done .bar-shell{background:rgba(255,255,255,0.28);}
+
+  /* Smaller controls */
+  .controls,.presets,.custom-time{display:flex;gap:10px;justify-content:center;}
+  button.std{
+    padding:8px 18px;border:2px solid rgba(255,255,255,0.6);
+    background:transparent;color:#fff;font-size:1rem;font-weight:700;
+    border-radius:24px;cursor:pointer;
+  }
+  button.std:hover{background:var(--cyan);color:#000;}
+  .presets .std{width:56px;height:56px;border-radius:50%;padding:0;}
+
+  .custom-time input{
+    width:100px;padding:8px;font-size:1rem;font-weight:700;
+    border-radius:8px;border:1px solid #ccc;
+    background:rgba(255,255,255,0.9);color:#000;text-align:center;
+  }
+
+  @media(max-width:900px){
+    .bar-row{grid-template-columns:60px 1fr;}
+    .count-btn{width:56px;height:56px;font-size:1.4rem;}
+  }
+  @media(max-width:600px){
+    .logo-img{display:none;}
+    .bar-shell{height:22px;}
+    .timer{font-size:1.9rem;}
+    .main{padding-top:24px;}
+  }
+</style>
+</head>
+<body>
+
+<a href="PageTimers.html">
+  <img class="logo-img" src="images/Bar%20TIMEr%20Wh%20Logo.png">
+</a>
+
+<div class="main">
+
+  <div id="timer" class="timer">0:30</div>
+  <div id="barsWrap" class="bars-wrap"></div>
+
+  <div class="controls">
+    <button id="startBtn" class="std">▶</button>
+    <button id="pauseBtn" class="std">‖</button>
+    <button id="resetBtn" class="std">Reset</button>
+    <button id="add15Btn" class="std">+15</button>
+  </div>
+
+  <div class="presets">
+    <button class="std" data-min="0" data-sec="15">:15</button>
+    <button class="std" data-min="0" data-sec="20">:20</button>
+    <button class="std" data-min="0" data-sec="25">:25</button>
+    <button class="std" data-min="0" data-sec="30">:30</button>
+    <button class="std" data-min="0" data-sec="45">:45</button>
+    <button class="std" data-min="1" data-sec="0">1:00</button>
+    <button class="std" data-min="1" data-sec="30">1:30</button>
+  </div>
+
+  <div class="custom-time">
+    <button class="std" id="setCustomBtn">Set</button>
+    <input type="text" id="customTime" placeholder="MM:SS">
+  </div>
+
+</div>
+
+<audio id="endSound" preload="auto"><source src="audio/TurnAlert.mp3"></audio>
+<audio id="finalSound" preload="auto"><source src="audio/ac-bel-105874.mp3"></audio>
+
+<script>
+const barsWrap=document.getElementById('barsWrap');
+const timerDisplay=document.getElementById('timer');
+const endSound=document.getElementById('endSound');
+const finalSound=document.getElementById('finalSound');
+const presets=document.querySelector('.presets');
+const customTimeInput=document.getElementById('customTime');
+
+let totalBars=6,currentTurn=1,durationMs=30000,isRunning=false,rafId=null,audioUnlocked=false;
+
+function unlockAudio(){
+  if(audioUnlocked)return;
+  [endSound,finalSound].forEach(a=>{
+    a.muted=true;
+    const p=a.play();
+    if(p)p.then(()=>{a.pause();a.currentTime=0;a.muted=false;}).catch(()=>{});
+  });
+  audioUnlocked=true;
+}
+
+function safePlay(a){try{a.currentTime=0;a.play().catch(()=>{});}catch{}}
+function playEnd(){safePlay(endSound);}
+function playFinal(){safePlay(finalSound);}
+
+function fmt(ms){const s=Math.max(0,Math.ceil(ms/1000));return`${Math.floor(s/60)}:${String(s%60).padStart(2,'0')}`;}
+function updateTime(ms){timerDisplay.textContent=fmt(ms);}
+function rows(){return [...barsWrap.querySelectorAll('.bar-row')];}
+function fills(){return [...barsWrap.querySelectorAll('.bar-fill')];}
+
+function buildBars(){
+  barsWrap.innerHTML='';
+  for(let i=1;i<=6;i++){
+    const row=document.createElement('div');
+    row.className='bar-row';
+    const btn=document.createElement('button');
+    btn.className='count-btn';btn.textContent=i;btn.dataset.value=i;
+    const shell=document.createElement('div');shell.className='bar-shell';
+    const fill=document.createElement('div');fill.className='bar-fill';fill.style.width='100%';
+    shell.appendChild(fill);
+    row.appendChild(btn);row.appendChild(shell);
+    barsWrap.appendChild(row);
+  }
+  paint();
+}
+
+function paint(){
+  rows().forEach((r,i)=>{
+    r.style.display=(i+1)<=totalBars?'grid':'none';
+    r.classList.remove('row-active','row-dim','row-done');
+    if(i+1===currentTurn)r.classList.add('row-active');else r.classList.add('row-dim');
+  });
+  if(!isRunning)fills().forEach((f,i)=>f.style.width=(i+1<currentTurn)?'0%':'100%');
+}
+
+function tick(){
+  if(!isRunning)return;
+  const now=performance.now(),elapsed=now-startTime,remain=Math.max(0,durationMs-elapsed);
+  updateTime(remain);
+  const f=fills()[currentTurn-1];
+  if(f)f.style.width=`${Math.max(0,100-(elapsed/durationMs)*100)}%`;
+  if(elapsed>=durationMs){
+    const r=rows()[currentTurn-1];
+    if(r){r.classList.remove('row-active');r.classList.add('row-done','row-dim');if(f)f.style.width='0%';}
+    if(currentTurn<totalBars){
+      playEnd();currentTurn++;
+      rows()[currentTurn-1].classList.replace('row-dim','row-active');
+      startTime=performance.now();
+      rafId=requestAnimationFrame(tick);
+    }else{
+      playFinal();
+      isRunning=false;
+      timerDisplay.classList.add('timer-pulsate');
+      rafId=null;
+    }
+  }else rafId=requestAnimationFrame(tick);
+}
+
+let startTime;
+function start(){
+  unlockAudio();
+  if(isRunning)return;
+  isRunning=true;
+  timerDisplay.classList.remove('timer-pulsate');
+  rows().forEach((r,i)=>{r.classList.toggle('row-active',i+1===currentTurn);});
+  startTime=performance.now();
+  rafId=requestAnimationFrame(tick);
+}
+function pause(){if(!isRunning)return;isRunning=false;if(rafId){cancelAnimationFrame(rafId);rafId=null;}}
+function reset(){if(rafId){cancelAnimationFrame(rafId)}isRunning=false;totalBars=6;currentTurn=1;buildBars();updateTime(durationMs);timerDisplay.classList.remove('timer-pulsate');}
+function setDuration(m,s){durationMs=(m*60+s)*1000;if(!isRunning)updateTime(durationMs);}
+
+barsWrap.onclick=e=>{
+  const b=e.target.closest('.count-btn');if(!b)return;unlockAudio();if(isRunning)return;
+  totalBars=Number(b.dataset.value);currentTurn=1;buildBars();
+};
+startBtn.onclick=start;
+pauseBtn.onclick=pause;
+resetBtn.onclick=reset;
+add15Btn.onclick=()=>{unlockAudio();durationMs+=15000;if(!isRunning)updateTime(durationMs);};
+presets.onclick=e=>{
+  unlockAudio();const b=e.target.closest('button.std');if(!b)return;
+  setDuration(parseInt(b.dataset.min),parseInt(b.dataset.sec));
+};
+setCustomBtn.onclick=()=>{
+  unlockAudio();
+  const m=customTimeInput.value.match(/^(\d{1,2}):(\d{2})$/);
+  if(m){setDuration(parseInt(m[1]),parseInt(m[2]));}
+};
+
+buildBars();
+updateTime(durationMs);
+</script>
+</body>
+</html>
