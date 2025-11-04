@@ -42,6 +42,7 @@
     margin-bottom: 20px;
   }
 
+  /* Color Circles (Turn Timer Style, no labels) */
   .color-display {
     display: flex;
     gap: 30px;
@@ -75,9 +76,12 @@
   }
   .color-chip.red    { background: #e03131; color: #fff; }
   .color-chip.green  { background: #2fb344; color: #fff; }
-  .color-chip.yellow { background: #e7da40; color: #fff;}
+  .color-chip.yellow { background: #e7da40; color: #fff; }
   .color-chip.blue   { background: #1e66f5; color: #fff; }
+  .color-chip.purple { background: #8b30e0; color: #fff; }
+  .color-chip.orange { background: #ffa715; color: #fff; }
 
+  /* GO Button row */
   .go-button-row {
     display: flex;
     justify-content: center;
@@ -110,6 +114,7 @@
     transform: scale(0.97);
   }
 
+  /* No Repeat + Reset row */
   .secondary-controls-row {
     display: flex;
     justify-content: center;
@@ -167,7 +172,7 @@
     color: #fff;
     text-transform: uppercase;
     display: block;
-    margin: 0 auto;
+    margin: 0 auto; /* Always centered and compact */
     width: auto;
     min-width: 0;
     max-width: 220px;
@@ -182,6 +187,7 @@
     transform: scale(0.97);
   }
 
+  /* Logo */
   .logo-header {
     position: fixed;
     top: 0;
@@ -200,6 +206,7 @@
     width: auto;
   }
 
+  /* ------ MOBILE RESPONSIVENESS BELOW ------ */
   @media (max-width: 1020px) {
     .color-chip { width: 62px; height: 62px; font-size: 1.2rem; }
     .go-button { width: 80px; height: 80px; font-size: 1.2rem; padding: 0; }
@@ -255,6 +262,8 @@
       <div class="color-chip green"  data-color="green">G</div>
       <div class="color-chip yellow" data-color="yellow">Y</div>
       <div class="color-chip blue"   data-color="blue">B</div>
+      <div class="color-chip purple" data-color="purple">P</div>
+      <div class="color-chip orange" data-color="orange">O</div>
     </div>
     <div class="go-button-row">
       <button class="go-button" onclick="selectRandomColor()">GO!</button>
@@ -273,8 +282,8 @@
   <audio id="tickingSound" src="audio/ticking.mp3" preload="auto"></audio>
   <audio id="dingSound" src="audio/ding.mp3" preload="auto"></audio>
   <script>
-    // Changed order: red, green, yellow, blue
-    const colors = ["red", "green", "yellow", "blue"];
+    // Updated array/order for new chips
+    const colors = ["red", "green", "yellow", "blue", "purple", "orange"];
     let selectedColors = [];
     let noRepeat = true;
 
