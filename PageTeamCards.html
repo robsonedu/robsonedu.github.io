@@ -1,0 +1,194 @@
+<!DOCTYPE HTML>
+<html lang="en">
+<head>
+  <title>TeamCards</title>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
+  <meta name="rating" content="child">
+  <meta name="description" content="RobsonEDU is an ad-free classroom tool for teachers and students.">
+  <link rel="stylesheet" href="assets/css/main.css" />
+  <noscript><link rel="stylesheet" href="assets/css/noscript.css" /></noscript>
+  <link rel="icon" type="image/png" href="images/FaviconCircleR.png">
+  <link rel="icon" type="image/svg+xml" href="images/FaviconCircleR.svg">
+  <link rel="shortcut icon" href="images/FaviconCircleR.ico" type="image/x-icon">
+  <link rel="manifest" href="/manifest-timers.json">
+  <link rel="apple-touch-icon" href="images/IconCircleT%20(512%20x%20512%20px).png">
+
+  <!-- Hover effect + fully proportional responsive image -->
+  <style>
+    .img-link-wrap {
+      position: relative;
+      overflow: hidden;
+      border-radius: 0.5rem; /* optional rounding */
+      margin-bottom: 2em;    /* same spacing as PageTimers.html */
+    }
+    .hover-img {
+      display: block;          /* removes inline gap */
+      width: 100%;             /* scale to container width */
+      height: auto;            /* keep natural aspect ratio */
+      max-width: 100%;         /* prevent overflow */
+      transition: transform 0.3s ease, box-shadow 0.3s ease, filter 0.3s ease;
+      backface-visibility: hidden;
+    }
+    .hover-img:hover {
+      transform: scale(1.05);  /* subtle zoom */
+      box-shadow: 0 0 15px rgba(0,0,0,0.45);
+      filter: brightness(1.05);
+    }
+
+    /* Compact card grid so TeamCard sizes sit side-by-side instead of stacking full-width */
+    .tc-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 1.5em;
+      margin: 1.5em 0 2.5em;
+    }
+    .tc-card {
+      display: flex;
+      flex-direction: column;
+    }
+    .tc-card .img-link-wrap {
+      margin-bottom: 0.6em;
+      border: 1px solid #000;
+      aspect-ratio: 1 / 1;
+    }
+    .tc-card .hover-img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+    .tc-card h3 {
+      font-size: 1.05em;
+      margin: 0 0 0.3em;
+    }
+    .tc-card p {
+      font-size: 0.92em;
+      margin: 0;
+    }
+    .section-heading {
+      font-size: 20px;
+      font-weight: bold;
+      display: block;
+      margin-top: 1.6em;
+    }
+    
+  </style>
+</head>
+<body class="is-preload">
+  <div id="wrapper">
+    <header id="header">
+      <div class="inner">
+        <a href="index.html">
+          <span class="symbol">
+            <img src="images/Gray%20Redu%20Narrow%20logo.png" alt="Robson EDU Logo" class="logo-large" />
+          </span>
+        </a>
+        <nav><ul><li><a href="#menu">Menu</a></li></ul></nav>
+      </div>
+    </header>
+
+    <nav id="menu">
+      <h2>Menu</h2>
+      <ul>
+        <li><a href="index.html">Home</a></li>
+		<li><a href="PageTimers.html">Timers</a></li>
+		<li><a href="PageSelectors.html">Selectors</a></li>
+		<li><a href="PageGrouping.html">Grouping</a></li>
+		<li><a href="index.html">Cooperative Learning</a></li>
+      </ul>
+    </nav>
+
+    <div id="main">
+      <div class="inner">
+        <h1 class="tight-heading">TeamCards</h1>
+        <p>
+          <strong>TeamCards</strong> give every student a clear number, partner, and role right on the table — so you can randomly call on students, check for understanding, and assign jobs like who starts, who shares, or who collects materials. Each file includes several colors: use one per team, match your décor, or go multi for an extra layer of strategic grouping. TeamCards work best on tables; for individual seats, try labels or stickers instead.
+        </p>
+
+        <span class="section-heading">Choose a team size that works best for your layout.</span>
+        <p>Click any card to open the printable file. Teams of 4 are recommended, but any size below works well.</p>
+
+        <div class="tc-grid">
+  <div class="tc-card">
+    <div class="img-link-wrap">
+      <a href="https://docs.google.com/document/d/18_7PnyNib23Ib5n2uWNNdmdy-g7Kl9CeNo0c0J3Swac/edit?usp=sharing" target="_blank" rel="noopener noreferrer">
+        <img src="images/TeamCard%204%20THUMB.png" alt="TeamCard 4" class="hover-img" loading="lazy" decoding="async">
+      </a>
+    </div>
+    <p><strong>TeamCard 4</strong>: The sweet spot: built-in pair work, no odd one out, and maximum participation.</p>
+  </div>
+
+          <div class="tc-card">
+            <div class="img-link-wrap">
+              <a href="https://docs.google.com/document/d/18_7PnyNib23Ib5n2uWNNdmdy-g7Kl9CeNo0c0J3Swac/edit?usp=sharing" target="_blank" rel="noopener noreferrer">
+                <img src="images/TeamCard%203%20THUMB.png" alt="TeamCard 3" class="hover-img" loading="lazy" decoding="async">
+              </a>
+            </div>
+            <p><strong>TeamCard 3</strong>: For classes with an odd number of students — covers a remainder team of 3.</p>
+          </div>
+
+          <div class="tc-card">
+            <div class="img-link-wrap">
+              <a href="https://docs.google.com/document/d/18_7PnyNib23Ib5n2uWNNdmdy-g7Kl9CeNo0c0J3Swac/edit?usp=sharing" target="_blank" rel="noopener noreferrer">
+                <img src="images/TeamCard%205%20THUMB.png" alt="TeamCard 5" class="hover-img" loading="lazy" decoding="async">
+              </a>
+            </div>
+            <p><strong>TeamCard 5</strong>: Same idea, for a remainder team of 5.</p>
+          </div>
+
+          <div class="tc-card">
+            <div class="img-link-wrap">
+              <a href="https://docs.google.com/document/d/18_7PnyNib23Ib5n2uWNNdmdy-g7Kl9CeNo0c0J3Swac/edit?usp=sharing" target="_blank" rel="noopener noreferrer">
+                <img src="images/TeamCard%206%20THUMB.png" alt="TeamCard 6" class="hover-img" loading="lazy" decoding="async">
+              </a>
+            </div>
+            <p><strong>TeamCard 6</strong>: Shoulder partners stay 1:2, 3:4, 5:6. Face partners become "Flip Partners" (1:6, 2:3, 4:5) to avoid confusion.</p>
+          </div>
+        </div>
+
+        <span class="section-heading">Seating Arrangement + Teaming</span>
+        <p>Any layout can utilize a teaming system. Here are some common arrangements that maximizes operation, efficiency, and learning:</p>
+        <div class="img-link-wrap">
+          <a href="images/Fixed%20Seating%20Groups.jpg" target="_blank" rel="noopener noreferrer">
+            <img src="images/Fixed%20Seating%20Groups.jpg" alt="Building Effective Groups README" class="hover-img" loading="lazy" decoding="async">
+          </a>
+        </div>
+        <p><strong><a href="index.html" target="_blank" rel="noopener noreferrer">Learn more</a></strong> about how Teaming and Cooperative Learning enhance the student learning experience.</p>
+      </div>
+    </div>
+
+    <footer id="footer">
+      <div class="inner">
+        <section>
+          <h2>Get in touch</h2>
+          <form method="post" action="https://formspree.io/f/xyzpwrlp">
+            <div class="fields">
+              <div class="field half"><input type="text" name="name" id="name" placeholder="Name" /></div>
+              <div class="field half"><input type="email" name="email" id="email" placeholder="Email" /></div>
+              <div class="field"><textarea name="message" id="message" placeholder="Message"></textarea></div>
+            </div>
+            <ul class="actions"><li><input type="submit" value="Send" class="primary" /></li></ul>
+          </form>
+        </section>
+        <section>
+          <h2>Follow</h2>
+          <ul class="icons">
+            <li><a href="mailto:krobson@bryantschools.org" class="icon solid style2 fa-envelope" target="_blank" rel="noopener noreferrer"><span class="label">Email</span></a></li>
+            <li><a href="https://www.facebook.com/allen.robson/" class="icon brands style2 fa-facebook-f" target="_blank" rel="noopener noreferrer"><span class="label">Facebook</span></a></li>
+            <li><a href="https://www.instagram.com/all_robs/profilecard/?igsh=cnpraHU4eG5lYzJs" class="icon brands style2 fa-instagram" target="_blank" rel="noopener noreferrer"><span class="label">Instagram</span></a></li>
+          </ul>
+        </section>
+        <ul class="copyright">
+          <li>&copy; RobsonEDU. All rights reserved</li><li>Design: <a href="http://html5up.net">HTML5 UP</a></li>
+        </ul>
+      </div>
+    </footer>
+  </div>
+
+  <script src="assets/js/jquery.min.js"></script>
+  <script src="assets/js/browser.min.js"></script>
+  <script src="assets/js/breakpoints.min.js"></script>
+  <script src="assets/js/util.js"></script>
+  <script src="assets/js/main.js"></script>
+</body>
+</html>
