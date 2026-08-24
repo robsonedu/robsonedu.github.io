@@ -8,37 +8,62 @@
   <meta name="description" content="RobsonEDU is an ad-free classroom tool for teachers and students.">
   <link rel="stylesheet" href="assets/css/main.css" />
   <noscript><link rel="stylesheet" href="assets/css/noscript.css" /></noscript>
+
+  <!-- Favicons -->
   <link rel="icon" type="image/png" href="images/FaviconCircleR.png">
   <link rel="icon" type="image/svg+xml" href="images/FaviconCircleR.svg">
   <link rel="shortcut icon" href="images/FaviconCircleR.ico" type="image/x-icon">
   <link rel="manifest" href="/manifest-timers.json">
   <link rel="apple-touch-icon" href="images/IconCircleT%20(512%20x%20512%20px).png">
 
-  <!-- Hover effect + fully proportional responsive image -->
   <style>
-    .img-link-wrap {
-      position: relative;
-      overflow: hidden;
-      border-radius: 0.5rem; /* optional rounding */
-      margin-bottom: 2em;    /* same spacing as PageTimers.html */
+    /* Match PageSelectors thumbnail-card layout */
+    .thumb-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 16px;
+      margin: 20px 0;
     }
-    .hover-img {
-      display: block;          /* removes inline gap */
-      width: 100%;             /* scale to container width */
-      height: auto;            /* keep natural aspect ratio */
-      max-width: 100%;         /* prevent overflow */
-      transition: transform 0.3s ease, box-shadow 0.3s ease, filter 0.3s ease;
-      backface-visibility: hidden;
+
+    .thumb-grid a {
+      display: block;
+      text-align: center;
+      text-decoration: none;
+      border-bottom: none;
     }
-    .hover-img:hover {
-      transform: scale(1.05);  /* subtle zoom */
-      box-shadow: 0 0 15px rgba(0,0,0,0.45);
-      filter: brightness(1.05);
+
+    .thumb-grid img {
+      width: 100%;
+      aspect-ratio: 16 / 9;
+      object-fit: fill;
+      border-radius: 6px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.25);
+      transition: transform 0.2s ease;
+    }
+
+    .thumb-grid img:hover {
+      transform: scale(1.05);
+    }
+
+    .tool-card h2 {
+      margin-bottom: 0.75em;
+    }
+
+    .tool-card p {
+      margin-top: 0.9em;
+    }
+
+    @media screen and (max-width: 736px) {
+      .thumb-grid {
+        grid-template-columns: 1fr;
+      }
     }
   </style>
 </head>
 <body class="is-preload">
   <div id="wrapper">
+
+    <!-- Header -->
     <header id="header">
       <div class="inner">
         <a href="index.html">
@@ -46,89 +71,84 @@
             <img src="images/Gray%20Redu%20Narrow%20logo.png" alt="Robson EDU Logo" class="logo-large" />
           </span>
         </a>
-        <nav><ul><li><a href="#menu">Menu</a></li></ul></nav>
+        <nav>
+          <ul>
+            <li><a href="#menu">Menu</a></li>
+          </ul>
+        </nav>
       </div>
     </header>
 
+    <!-- Menu -->
     <nav id="menu">
       <h2>Menu</h2>
       <ul>
         <li><a href="index.html">Home</a></li>
-		<li><a href="PageTimers.html">Timers</a></li>
-		<li><a href="PageSelectors.html">Selectors</a></li>
-		<li><a href="PageGrouping.html">Grouping</a></li>
-		<li><a href="index.html">Cooperative Learning</a></li>
+        <li><a href="PageTimers.html">Timers</a></li>
+        <li><a href="PageSelectors.html">Selectors</a></li>
+        <li><a href="PageGrouping.html">Grouping</a></li>
+        <li><a href="index.html">Cooperative Learning</a></li>
       </ul>
     </nav>
 
+    <!-- Main -->
     <div id="main">
       <div class="inner">
-        <h1 class="tight-heading">Grouping</h1>
-		  <p>
-  <span style="font-size: 20px; font-weight: bold;">
-    Boost engagement and learning through the right grouping strategy - see how below.
-  </span>.
-</p>
-		  
-        <p>By <strong>intentionally grouping students</strong>, teachers can balance skills, foster collaboration, and create learning communities that match the purpose of each activity all while ensuring each group has the right mix of abilities and perspectives for the situation at hand thus helping students learn both the content and how to work effectively with others.<strong> Groups can be built</strong> based on ability, personality, familiarity, or randomized with creative tools like colors, stickers, puzzles, or line-ups—giving teachers flexibility to match grouping strategy with purpose.</p>	
-        <p><strong>Strategic grouping</strong> is ideal for content learning, long-term projects, and high-stakes tasks, as it ensures balanced skills, targeted support, and better outcomes—though it requires more planning and data.</p>
-        <p><strong>Random grouping</strong> is quick, low-prep, and effective for community-building, equity, and adaptability, but may create imbalances or behavior challenges. </p>
-        <p><strong>Strategic and random grouping each have distinct strengths</strong>, and a blended approach offers the best balance. Teachers can combine both methods throughout the year to provide students the comfort of familiar peers and the growth of new collaborations.</p>
 
-    
-        <div class="img-link-wrap">
-          <a href="images/Classroom%20Grouping%20Strategies.png" target="_blank" rel="noopener noreferrer">
-            <img
-              src="images/Classroom%20Grouping%20Strategies.png"
-              alt="Classroom Grouping Strategies"
-              class="hover-img"
-              loading="lazy" decoding="async">
-          </a>
+        <h1 class="tight-heading">Grouping</h1>
+
+        <!-- Jump Links -->
+        <p><strong>Quick Jump:</strong>
+          <a href="#strategies">Grouping Strategies</a> |
+          <a href="#readme">Grouping README</a> |
+          <a href="#tool">Grouping Tool</a> |
+          <a href="#fixed">Fixed Grouping</a>
+        </p>
+
+        <p><strong>Boost engagement and learning through the right grouping strategy.</strong> By intentionally grouping students, teachers can balance skills, foster collaboration, and create learning communities that match the purpose of each activity.</p>
+
+        <p><strong>Strategic grouping</strong> is ideal for content learning, long-term projects, and high-stakes tasks because it supports balanced skills, targeted support, and stronger outcomes. <strong>Random grouping</strong> is quick, low-prep, and useful for community-building, equity, and adaptability. A blended approach gives teachers flexibility to match the grouping strategy to the purpose.</p>
+
+        <!-- Grouping Resources -->
+        <div class="thumb-grid">
+
+          <section class="tool-card" id="strategies">
+            <h2>Grouping Strategies</h2>
+            <a href="images/Classroom%20Grouping%20Strategies.png" target="_blank" rel="noopener noreferrer">
+              <img src="images/Classroom%20Grouping%20Strategies.png" alt="Classroom Grouping Strategies" loading="lazy" decoding="async">
+            </a>
+            <p>Explore strategic and random grouping approaches and when each works best.</p>
+          </section>
+
+          <section class="tool-card" id="readme">
+            <h2>Grouping README</h2>
+            <a href="https://docs.google.com/document/d/1UHx-mooagXoZ2d8oX-uprXwUi13oxjusziReNgRgfKA/edit?usp=sharing" target="_blank" rel="noopener noreferrer">
+              <img src="images/GROUPING%20README.jpg" alt="Building Effective Groups README" loading="lazy" decoding="async">
+            </a>
+            <p>Discover smarter ways to group your students and learn more in the Grouping README.</p>
+          </section>
+
+          <section class="tool-card" id="tool">
+            <h2>Grouping Tool</h2>
+            <a href="https://docs.google.com/spreadsheets/d/1AQi_dxLpq-7gbj6g01ToGMBjbi9OWa3MGvODRb2fyHY/copy" target="_blank" rel="noopener noreferrer">
+              <img src="images/Grouping%20Tool%20THUMB.jpg" alt="Grouping Tool" loading="lazy" decoding="async">
+            </a>
+            <p>Build strategic groups of mixed or similar ability.</p>
+          </section>
+
+          <section class="tool-card" id="fixed">
+            <h2>Fixed Grouping</h2>
+            <a href="images/Fixed%20Seating%20Groups.jpg" target="_blank" rel="noopener noreferrer">
+              <img src="images/Fixed%20Seating%20Groups.jpg" alt="Fixed Seating Groups" loading="lazy" decoding="async">
+            </a>
+            <p>Use strategic grouping to build groups and seating charts for effective content learning.</p>
+          </section>
+
         </div>
-	<p>
-  	<span style="font-size: 20px; font-weight: bold;">
-    Grouping README
-  	</span> - Discover smarter ways to group your students...learn more in this README Doc.
-	</p>
-       
- 		<div class="img-link-wrap">
-          <a href="https://docs.google.com/document/d/1UHx-mooagXoZ2d8oX-uprXwUi13oxjusziReNgRgfKA/edit?usp=sharing" target="_blank" rel="noopener noreferrer">
-            <img
-              src="images/GROUPING%20README.jpg"
-              alt="Building Effective Groups README"
-              class="hover-img"
-              loading="lazy" decoding="async">
-          </a>
-        </div>
-		<p>
-  	<span style="font-size: 20px; font-weight: bold;">
-    Grouping Tool
-  	</span> - Build strategic groups of mixed or similar ability.
-	</p>
-		
-		 <div class="img-link-wrap">
-          <a href="https://docs.google.com/spreadsheets/d/1AQi_dxLpq-7gbj6g01ToGMBjbi9OWa3MGvODRb2fyHY/copy" target="_blank" rel="noopener noreferrer">
-            <img
-              src="images/Grouping%20Tool%20THUMB.jpg"
-              alt="Building Effective Groups README"
-              class="hover-img"
-              loading="lazy" decoding="async">
-          </a>
-        </div>
-		<p><strong>Use strategic grouping to build groups and make seating charts</strong> - extremely effective for learning content.</p>
-		 <div class="img-link-wrap">
-          <a href="images/Fixed%20Seating%20Groups.jpg" target="_blank" rel="noopener noreferrer">
-            <img
-              src="images/Fixed%20Seating%20Groups.jpg"
-              alt="Building Effective Groups README"
-              class="hover-img"
-              loading="lazy" decoding="async">
-          </a>
-        </div>
-     <p><strong>Learn more about how Strategic Fixed Grouping bolsters Cooperative Learning</strong> - Coming Soon!</p>
-		</div>
+      </div>
     </div>
 
+    <!-- Footer -->
     <footer id="footer">
       <div class="inner">
         <section>
@@ -157,6 +177,7 @@
     </footer>
   </div>
 
+  <!-- Scripts -->
   <script src="assets/js/jquery.min.js"></script>
   <script src="assets/js/browser.min.js"></script>
   <script src="assets/js/breakpoints.min.js"></script>
