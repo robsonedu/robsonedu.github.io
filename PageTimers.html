@@ -39,11 +39,58 @@
   transition: transform 0.2s ease;
 }
 
-
 .thumb-grid img:hover {
   transform: scale(1.05);
 }
 
+  /* Timer intro + clickable instruction graphic */
+  .timer-intro {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 32px;
+    align-items: center;
+    margin: 24px 0 42px;
+  }
+  .timer-intro-text {
+    min-width: 0;
+  }
+  .timer-intro-text p:last-child {
+    margin-bottom: 0;
+  }
+  .timer-intro-graphic {
+    min-width: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+  .timer-intro-graphic a {
+    display: block;
+    width: 100%;
+    max-width: 100%;
+    border-bottom: none;
+    text-decoration: none;
+  }
+  .timer-intro-graphic img {
+    display: block;
+    width: 100%;
+    height: auto;
+    border-radius: 8px;
+    box-shadow: 0 3px 10px rgba(0,0,0,0.22);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+  }
+  @media (hover: hover) and (pointer: fine) {
+    .timer-intro-graphic img:hover {
+      transform: scale(1.015);
+      box-shadow: 0 5px 16px rgba(0,0,0,0.28);
+    }
+  }
+  @media screen and (max-width: 800px) {
+    .timer-intro {
+      grid-template-columns: 1fr;
+      gap: 20px;
+      margin-bottom: 34px;
+    }
+  }
 
 </style>
 
@@ -90,9 +137,20 @@
           <a href="#seasonal">Seasonal</a> |
           <a href="#turn">Turn</a>
         </p>
-							<p><strong>Tip:</strong> We recommend opening the tool in a new window on desktop. <strong>Right-click and select "Open Link in New Window."</strong> This makes the tool easier to manage and keeps it visible alongside other tabs or apps.</p>
-							<p> For even more usability, <a href="https://docs.google.com/document/d/1Zbu1rMa0OyI_rcKiobL84ipw7_EOrRrDA1KUxoiLY4I/edit?usp=sharing" target="_blank"><strong>follow these instructions</strong></a> to save this page as an <strong>app</strong> on your device.</p>
-							<p><strong>Timers</strong> are often underutilized, but they can make a big difference! Use a timer for everything: work time, share time, transitions, and more. You'll find that using timers helps things run more smoothly and keeps everyone on track.</p>
+
+        <!-- Intro + Timer Instruction Graphic -->
+        <div class="timer-intro">
+          <div class="timer-intro-text">
+            <p><strong>Timers</strong> are often underutilized, but they can make a big difference! Use a timer for everything: work time, share time, transitions, and more. You'll find that using timers helps things run more smoothly and keeps everyone on track.</p>
+            <p>For even more usability, <a href="https://docs.google.com/document/d/1Zbu1rMa0OyI_rcKiobL84ipw7_EOrRrDA1KUxoiLY4I/edit?usp=sharing" target="_blank" rel="noopener noreferrer"><strong>follow these instructions</strong></a> to save this page as an <strong>app</strong> on your device.</p>
+          </div>
+
+          <div class="timer-intro-graphic">
+            <a href="images/Timer%20Instruction%20Graphic.jpg" target="_blank" rel="noopener noreferrer" aria-label="Open timer instruction graphic full size">
+              <img src="images/Timer%20Instruction%20Graphic.jpg" alt="Timer controls and instructions showing how to set custom times, start and reset the timer, add 30 seconds, use preset intervals, and toggle the YouTube music player">
+            </a>
+          </div>
+        </div>
 						
         <!-- Static Timers -->
         <h2 id="static">Static Timers</h2>
