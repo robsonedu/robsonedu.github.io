@@ -1,0 +1,2825 @@
+<title>SELECTr Plus</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap">
+<style>
+/* Layout: full-bleed dark stage, wheel centered, floating glass dock at bottom, sheets slide in from the right.
+   Deliberately single-theme (dark glass) to match the RobsonEDU tools. */
+:root{
+  --bg:#060509;
+  --glass:rgba(255,255,255,.07);
+  --glass-2:rgba(255,255,255,.12);
+  --glass-3:rgba(255,255,255,.18);
+  --sheet:rgba(17,14,28,.82);
+  --line:rgba(255,255,255,.14);
+  --fg:#f3f5f9;
+  --muted:rgba(232,237,247,.60);
+  --accent:#a99bff;          /* keep in sync with ACCENT in the script */
+  --accent-ink:#120c2c;
+  /* Lilac-to-blue gradient from the reference "Sign in" button */
+  --grad:linear-gradient(90deg,#dcbcff 0%,#b29dff 38%,#8a9cff 66%,#5b9bff 100%);
+  /* Hot gradient for highlights, like the Smart Chat card */
+  --grad-hot:linear-gradient(135deg,#c9a9ff 0%,#8a9cff 55%,#5b9bff 100%);
+  --grad-warm:linear-gradient(90deg,#e2c6ff 0%,#b29dff 45%,#6fa6ff 100%);
+  --sans:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',system-ui,sans-serif;
+  --ease:cubic-bezier(.2,.8,.2,1);
+  color-scheme:dark;
+}
+[hidden]{display:none!important}
+html,body{height:100%}
+body{background:var(--bg);color:var(--fg);font-family:var(--sans);font-size:15px;overflow:hidden;-webkit-font-smoothing:antialiased;user-select:none;-webkit-user-select:none}
+button,select,textarea,input{font:inherit;color:inherit}
+button{cursor:pointer}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+
+/* Backdrop. On your site, swap these gradients for your photo or video background. */
+.backdrop{position:fixed;inset:0;z-index:0;background:
+  radial-gradient(50% 55% at 8% 18%,rgba(92,40,230,.55) 0,transparent 70%),
+  radial-gradient(45% 50% at 95% 75%,rgba(120,50,255,.50) 0,transparent 70%),
+  radial-gradient(35% 30% at 60% 0%,rgba(40,50,200,.35) 0,transparent 70%),
+  radial-gradient(40% 35% at 40% 105%,rgba(70,30,190,.45) 0,transparent 70%),
+  linear-gradient(#08060f,#050408)}
+
+/* Spin flair: pop colors swirl behind the stage while spinning */
+.spin-aura{position:fixed;inset:-25%;z-index:0;pointer-events:none;opacity:0;mix-blend-mode:screen;filter:blur(90px);
+  background:conic-gradient(from var(--ang,0deg) at 50% 58%,rgba(220,188,255,.5),rgba(178,157,255,.55),rgba(120,110,255,.5),rgba(91,155,255,.55),rgba(150,170,255,.45),rgba(220,188,255,.5))}
+@media (prefers-reduced-motion:reduce){.spin-aura{display:none}}
+/* Timer panel (top left) */
+.timer-panel{position:fixed;z-index:22;top:calc(70px + env(safe-area-inset-top,0px));right:20px;width:236px;box-sizing:border-box;padding:14px 14px 14px;border-radius:22px;
+  background:rgba(14,11,26,.72);border:1px solid var(--line);backdrop-filter:blur(24px) saturate(150%);-webkit-backdrop-filter:blur(24px) saturate(150%);
+  box-shadow:0 20px 50px rgba(0,0,0,.45),inset 0 1px 0 rgba(255,255,255,.08);display:flex;flex-direction:column;gap:10px;
+  animation:tpIn .35s var(--ease)}
+@keyframes tpIn{from{opacity:0;transform:translateY(-8px) scale(.97)}to{opacity:1;transform:none}}
+.tp-time{font-size:64px;font-weight:800;letter-spacing:-.04em;line-height:1;text-align:center;font-variant-numeric:tabular-nums;padding:4px 0 2px;
+  background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent}
+.timer-panel.running .tp-time{background:linear-gradient(180deg,#fff,#efe3ff);-webkit-background-clip:text;background-clip:text}
+.timer-panel.warn .tp-time{background:linear-gradient(135deg,#ffb36b,#ff6a3d);-webkit-background-clip:text;background-clip:text}
+.timer-panel.done{border-color:rgba(224,91,255,.7);animation:tpDone 1.4s ease-in-out infinite}
+.timer-panel.done .tp-time{background:linear-gradient(135deg,#ffffff,#e3a8ff);-webkit-background-clip:text;background-clip:text;filter:drop-shadow(0 0 18px rgba(200,100,255,.6))}
+@keyframes tpDone{0%,100%{box-shadow:0 20px 50px rgba(0,0,0,.45),0 0 0 0 rgba(200,90,255,0)}50%{box-shadow:0 20px 50px rgba(0,0,0,.45),0 0 34px 4px rgba(200,90,255,.55)}}
+.tp-adjust{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.tp-step{display:flex;align-items:center;height:36px;border-radius:11px;border:1.5px solid var(--line);background:rgba(0,0,0,.25);overflow:hidden}
+.tp-step span{flex:1;text-align:center;font-size:12px;font-weight:700;color:var(--muted);letter-spacing:.02em}
+.tp-step button{height:calc(100% - 6px);min-width:28px;margin:3px;border:0;border-radius:8px;background:transparent;color:var(--muted);font:700 16px var(--sans);cursor:pointer;transition:background .2s,color .2s}
+.tp-step:hover{border-color:transparent;background:linear-gradient(#0b0a12,#0b0a12) padding-box,linear-gradient(135deg,#7a3cff,#e05bff) border-box}
+.tp-step:hover button{background:var(--grad);color:var(--accent-ink)}
+.tp-step:hover button:hover{filter:brightness(1.1)}
+.tp-actions{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.tp-actions button{height:40px;border-radius:12px;font:700 14px var(--sans);cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;transition:filter .2s,background .2s,border-color .2s}
+.tp-play{border:0;background:var(--grad);color:var(--accent-ink);box-shadow:0 6px 18px rgba(140,120,255,.35)}
+.tp-play:hover{filter:brightness(1.08)}
+.tp-play svg{width:16px;height:16px}
+.tp-reset{border:1.5px solid var(--line);background:rgba(0,0,0,.25);color:var(--fg)}
+.tp-reset:hover{border-color:transparent;background:linear-gradient(#0b0a12,#0b0a12) padding-box,linear-gradient(135deg,#7a3cff,#e05bff) border-box}
+#btnTask[aria-pressed="true"],#btnTimer[aria-pressed="true"]{border-color:transparent;background:linear-gradient(#0b0a12,#0b0a12) padding-box,linear-gradient(135deg,#7a3cff,#e05bff) border-box}
+#btnTimer.ticking{color:#d6c4ff}
+@media (max-width:760px){.timer-panel{right:12px;width:200px;padding:10px}.tp-time{font-size:48px}}
+@media (prefers-reduced-motion:reduce){.timer-panel.done{animation:none;box-shadow:0 0 0 2px rgba(224,91,255,.7)}}
+/* Dock view buttons that aren't selected are tinted purple */
+.dock .seg button[aria-pressed="false"]{color:#a98bff}
+.dock .seg button[aria-pressed="false"]:hover{color:#c9b4ff}
+/* Text size: scales menus, labels and controls, not the big display text */
+.topbar,.dock,.sheet,.toast,.hint,.timer-panel,.reveal-eyebrow,.reveal-actions,.reveal-minor,.num-pick,.count-pick,#numHint,#colorHint,#firstHint,.num-board,#taskWrap .cap-row,.ov-head,.ov-close,.reveal-task.pending{zoom:var(--uiz,1)}
+.textsize button b{line-height:1}
+/* When larger text makes the dock too wide, labels step down to icons */
+.dk1 .dock .seg button[aria-pressed="false"] .lbl{display:none}
+.dk2 .dock #btnHistory .lbl,.dk2 .dock #btnSettings .lbl,.dk2 .dock #btnRoster .lbl{display:none}
+.dk3 .dock #btnGroups .lbl{display:none}
+.dk3 .dock .sep{display:none}
+.ov-head{max-width:calc(1200px / var(--uiz,1))!important}
+/* Top bar */
+.topbar{position:fixed;top:0;left:0;right:0;z-index:20;display:flex;align-items:center;justify-content:space-between;gap:12px;padding:calc(16px + env(safe-area-inset-top,0px)) 20px 0;pointer-events:none}
+.topbar>*{pointer-events:auto}
+.mark{display:flex;align-items:baseline;gap:10px;white-space:nowrap}
+.mark b{font-size:26px;font-weight:800;letter-spacing:-.03em}
+.mark b i{font-style:normal;font-weight:600;background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent}
+.mark small{font-size:11px;font-weight:600;letter-spacing:.16em;text-transform:uppercase;color:var(--muted)}
+.logo-slot{display:flex;align-items:center;height:40px;text-decoration:none}
+.logo-img{height:40px;width:auto;display:block}
+/* Keep the class chip centered on screen no matter how wide the logo is */
+.topbar .class-chip{position:absolute;left:50%;transform:translateX(-50%);top:calc(17px + env(safe-area-inset-top,0px))}
+.class-chip{display:flex;align-items:center;gap:10px;padding:9px 16px;border-radius:999px;background:var(--glass);border:1px solid var(--line);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);font-weight:600;font-size:14px;white-space:nowrap}
+.class-chip:hover{background:var(--glass-2)}
+.class-chip .count{color:var(--muted);font-variant-numeric:tabular-nums;font-weight:500}
+.class-chip .sample{color:#c7b6ff;font-weight:500}
+.top-right{display:flex;align-items:center;gap:8px}
+.status{font-size:12px;font-weight:600;padding:6px 10px;border-radius:999px;background:var(--glass);border:1px solid var(--line);color:var(--muted);white-space:nowrap}
+.icon-btn{width:40px;height:40px;display:grid;place-items:center;border-radius:12px;background:var(--glass);border:1px solid var(--line);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px)}
+.icon-btn:hover{background:var(--glass-2)}
+.icon-btn svg,.dbtn svg{width:20px;height:20px;flex:none}
+
+/* Stage */
+#stage{position:fixed;left:0;right:0;top:calc(72px + env(safe-area-inset-top,0px));bottom:calc(108px + env(safe-area-inset-bottom,0px));padding-inline:16px;display:flex;align-items:center;justify-content:center;z-index:1}
+.wrap{position:relative;flex:none}
+.wrap canvas,.tw canvas{position:absolute;left:0;top:0;width:100%;height:100%;touch-action:none;display:block}
+.glass-disc{position:absolute;inset:6%;border-radius:50%;backdrop-filter:blur(18px) saturate(140%);-webkit-backdrop-filter:blur(18px) saturate(140%);background:rgba(255,255,255,.02);transition:inset .6s var(--ease),border-radius .6s var(--ease)}
+.drum-mode .glass-disc{opacity:0}
+#taskWrap{position:absolute;display:flex;flex-direction:column;align-items:center;gap:6px}
+.cap-row{display:flex;align-items:center;gap:8px}
+.task-x{width:22px;height:22px;border-radius:50%;border:1px solid var(--line);background:rgba(0,0,0,.3);color:var(--muted);display:grid;place-items:center;cursor:pointer;padding:0;transition:color .2s,background .2s,border-color .2s}
+.task-x svg{width:12px;height:12px}
+.task-x:hover{color:var(--accent-ink);border-color:transparent;background:var(--grad)}
+#taskWrap .cap{font-size:11px;font-weight:700;letter-spacing:.18em;text-transform:uppercase;color:var(--muted)}
+#taskWrap .tw{position:relative}
+
+/* Reveal card */
+.reveal{background:rgba(16,12,30,.6)!important;position:absolute;left:50%;top:50%;z-index:5;width:min(80%,660px);transform:translate(-50%,-50%) scale(.9);opacity:0;transition:opacity .35s ease,transform .55s cubic-bezier(.2,.9,.25,1.15);padding:24px 28px 38px;border-radius:28px;background:rgba(13,15,21,.62);backdrop-filter:blur(26px) saturate(160%);-webkit-backdrop-filter:blur(26px) saturate(160%);border:1px solid rgba(255,255,255,.18);box-shadow:0 30px 90px rgba(0,0,0,.55),inset 0 1px 0 rgba(255,255,255,.12);display:flex;flex-direction:column;align-items:center;gap:8px;text-align:center}
+.reveal.show{opacity:1;transform:translate(-50%,-50%) scale(1)}
+.reveal-eyebrow{font-size:12px;font-weight:700;letter-spacing:.18em;text-transform:uppercase;color:var(--muted);font-variant-numeric:tabular-nums}
+.reveal-name{font-size:clamp(40px,10vmin,128px);font-weight:800;letter-spacing:-.035em;line-height:1.04;white-space:nowrap;max-width:100%;animation:glow 2.6s ease-in-out infinite;text-wrap:balance}
+.reveal-name.done{font-size:clamp(28px,5vmin,52px);white-space:normal}
+@keyframes glow{0%,100%{text-shadow:0 0 16px rgba(255,255,255,.30),0 0 50px rgba(140,150,255,.25)}50%{text-shadow:0 0 34px rgba(255,255,255,.55),0 0 80px rgba(140,160,255,.5)}}
+.reveal-task{font-size:clamp(18px,3.2vmin,30px);font-weight:700;background:var(--grad-warm);-webkit-background-clip:text;background-clip:text;color:transparent;letter-spacing:-.01em;min-height:1.25em}
+.reveal-task.pending{background:none;-webkit-text-fill-color:var(--muted);color:var(--muted);font-weight:500;font-size:15px}
+.reveal-minor{position:absolute;right:16px;bottom:10px;display:flex;align-items:center;gap:2px;color:rgba(232,237,247,.35);font-size:11px}
+.reveal-minor button{border:0;background:transparent;color:rgba(232,237,247,.5);font:600 11px var(--sans);padding:3px 5px;border-radius:6px;cursor:pointer}
+.reveal-minor button:hover{color:var(--fg);background:rgba(255,255,255,.07)}
+.reveal-actions{display:flex;gap:10px;margin-top:8px;flex-wrap:wrap;justify-content:center}
+
+/* Buttons */
+.pill{height:44px;padding:0 20px;border-radius:14px;border:1px solid var(--line);background:var(--glass-2);font-weight:600;font-size:15px;transition:background .2s,transform .15s}
+.pill:hover{background:var(--glass-3)}
+.pill:active{transform:scale(.97)}
+.pill.primary{background:var(--grad);color:var(--accent-ink);border-color:transparent;box-shadow:0 6px 20px rgba(140,120,255,.35)}
+.pill.primary:hover{filter:brightness(1.08)}
+.pill.small{height:36px;padding:0 14px;font-size:14px;border-radius:11px}
+.pill:disabled{opacity:.4;cursor:default}
+
+/* Dock */
+.dock{background:rgba(14,11,24,.6)!important;position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);z-index:30;display:flex;align-items:center;gap:4px;padding:7px;border-radius:22px;background:rgba(22,25,33,.55);border:1px solid var(--line);backdrop-filter:blur(28px) saturate(160%);-webkit-backdrop-filter:blur(28px) saturate(160%);box-shadow:0 20px 60px rgba(0,0,0,.45),inset 0 1px 0 rgba(255,255,255,.08);max-width:calc(100vw - 24px)}
+.dbtn{height:50px;padding:0 14px;display:flex;align-items:center;gap:8px;border-radius:15px;border:0;background:transparent;font-weight:600;font-size:14px;white-space:nowrap;transition:background .2s,transform .15s}
+.dbtn:hover{background:var(--glass-2)}
+.dbtn:active{transform:scale(.96)}
+.dbtn[aria-pressed="true"]{background:rgba(160,130,255,.18)}
+.dbtn.spin{background:var(--grad);box-shadow:0 8px 28px rgba(140,120,255,.45),inset 0 1px 0 rgba(255,255,255,.5);color:var(--accent-ink);padding:0 30px;font-size:17px;font-weight:700;margin-inline:4px;letter-spacing:-.01em}
+.dbtn.spin:hover{filter:brightness(1.08);background:var(--grad)}
+.dbtn:disabled{opacity:.45;cursor:default}
+.seg{display:flex;padding:3px;border-radius:14px;background:rgba(0,0,0,.25);border:1px solid var(--line)}
+.seg button{white-space:nowrap;height:42px;padding:0 12px;display:flex;align-items:center;gap:6px;border:0;border-radius:11px;background:transparent;font-weight:600;font-size:14px;color:var(--muted);transition:background .25s,color .25s}
+.seg button svg{width:18px;height:18px}
+.seg button{border:1.5px solid transparent!important}
+.seg button[aria-pressed="true"]{color:#fff;background:linear-gradient(#0b0a12,#0b0a12) padding-box,linear-gradient(135deg,#7a3cff,#e05bff) border-box}
+.sep{width:1px;height:28px;background:var(--line);margin-inline:4px}
+
+/* Colors view */
+#colorStage{display:flex;flex-direction:column;align-items:center;gap:clamp(18px,4.5vh,44px);width:100%}
+.orbs{--orb:140px;--gap:32px;position:relative;z-index:0;display:flex;justify-content:center;align-items:center;gap:var(--gap);padding-block:calc(var(--orb)*.14)}
+.orb{--c:#888;--ca:#aaa;--cc:#666;position:relative;flex:none;width:var(--orb);height:var(--orb);border-radius:50%;
+  display:grid;place-items:center;font-weight:700;font-size:calc(var(--orb)*.32);letter-spacing:-.02em;color:#fff;text-shadow:0 1px 10px rgba(0,0,0,.25);
+  box-shadow:0 14px 36px rgba(0,0,0,.45);
+  transition:transform .45s var(--ease),opacity .4s,filter .4s,box-shadow .4s}
+/* Aurora: swirling light in shades of each color */
+.orb .aur{position:absolute;inset:0;border-radius:50%;overflow:hidden;isolation:isolate;box-shadow:inset 0 0 0 1px rgba(255,255,255,.28);transition:box-shadow .4s}
+.orb .aur::before{content:"";position:absolute;inset:-40%;background:conic-gradient(from 0deg,var(--ca),var(--c),var(--cc),var(--c),var(--ca));filter:blur(calc(var(--orb)*.14));animation:aurora 7s linear infinite;animation-delay:var(--d,0s);z-index:-1}
+.orb .aur::after{content:"";position:absolute;inset:0;border-radius:50%;background:radial-gradient(110% 70% at 30% 10%,rgba(255,255,255,.5),rgba(255,255,255,0) 45%)}
+@keyframes aurora{to{transform:rotate(1turn)}}
+.orb .ltr{position:relative}
+.orbs.chasing .orb{transition-duration:.09s}
+.orbs.chasing .orb:not(.lit){opacity:.34;filter:saturate(.5)}
+.orb::before{content:"";position:absolute;inset:-45%;border-radius:50%;background:radial-gradient(circle,var(--c) 0,transparent 62%);opacity:0;z-index:-1;transition:opacity .35s;pointer-events:none}
+.orbs.chasing .orb::before{transition-duration:.09s}
+.orb.lit{transform:scale(1.1)}
+.orb.lit::before{opacity:.45}
+.orb.used{opacity:.3;filter:saturate(.3)}
+.orb.used::after{content:"✓";position:absolute;right:2%;top:2%;width:28px;height:28px;border-radius:50%;background:var(--sheet);border:1px solid var(--line);display:grid;place-items:center;font-size:14px;font-weight:700;color:var(--fg);text-shadow:none}
+.orbs.has-win .orb:not(.win){opacity:.28;filter:saturate(.45)}
+.orb.win{transform:scale(1.26);z-index:2}
+.orb.win .aur{box-shadow:inset 0 0 0 2px rgba(255,255,255,.85)}
+.orb.win .aur::before{animation-duration:2.4s}
+.orb.win::before{opacity:.85}
+.color-result{display:grid;justify-items:center;gap:6px;text-align:center}
+.color-result>.reveal-eyebrow{min-height:1.2em}
+#colorName,#colorHint{grid-area:2/1;align-self:center}
+#colorName{--c:var(--fg);font-size:clamp(44px,9vmin,120px);font-weight:800;letter-spacing:-.035em;line-height:1.05;color:var(--c);text-shadow:0 0 40px var(--c);opacity:0;transform:translateY(10px) scale(.96);transition:opacity .4s,transform .55s cubic-bezier(.2,.9,.25,1.15)}
+#colorName.show{opacity:1;transform:none}
+#colorHint{font-size:15px;color:var(--muted);font-weight:500}
+.count-pick{display:flex;align-items:center;gap:12px;flex-wrap:wrap;justify-content:center;font-size:13px;font-weight:600;color:var(--muted)}
+.count-pick .seg button{min-width:42px;justify-content:center;font-variant-numeric:tabular-nums}
+/* Numbers view */
+#numberStage{display:flex;flex-direction:column;align-items:center;gap:clamp(14px,3vh,28px);width:100%}
+.num-wrap{position:relative}
+.num-wrap::before{content:"";position:absolute;inset:-28%;background:radial-gradient(closest-side,rgba(190,80,255,.5) 0,rgba(122,60,255,.22) 50%,transparent 100%);opacity:0;z-index:-1;transition:opacity .5s;pointer-events:none}
+.num-wrap.win::before{opacity:1}
+.num-card{--n:380px;position:relative;width:var(--n);height:calc(var(--n)*.74);border-radius:calc(var(--n)*.11);display:grid;place-items:center;overflow:hidden;
+  background:linear-gradient(160deg,rgba(255,255,255,.11),rgba(255,255,255,.03) 55%,rgba(255,255,255,.06));border:1px solid rgba(255,255,255,.16);
+  backdrop-filter:blur(26px) saturate(150%);-webkit-backdrop-filter:blur(26px) saturate(150%);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.2),0 30px 80px rgba(0,0,0,.5);transition:transform .5s var(--ease),border-color .5s}
+.num-wrap.win .num-card{transform:scale(1.04);border-color:rgba(255,255,255,.55)}
+.num-value{font-size:calc(var(--n)*.52);font-weight:800;letter-spacing:-.05em;line-height:1;font-variant-numeric:tabular-nums;
+  background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent;padding-inline:.06em}
+.num-value.long{font-size:calc(var(--n)*.36)}
+.num-value.idle{opacity:.45}
+.num-value.tick{animation:numtick .13s ease-out}
+@keyframes numtick{from{transform:translateY(16%);opacity:.3;filter:blur(4px)}to{transform:none;opacity:1;filter:none}}
+.num-wrap.win .num-value{background:linear-gradient(180deg,#ffffff 0%,#ffffff 55%,#f3e2ff 100%);-webkit-background-clip:text;background-clip:text;filter:drop-shadow(0 3px 2px rgba(10,4,24,.55)) drop-shadow(0 8px 22px rgba(10,4,24,.6)) drop-shadow(0 0 30px rgba(200,100,255,.45));animation:numpop .6s cubic-bezier(.2,.9,.25,1.3)}
+@keyframes numpop{from{transform:scale(.82)}to{transform:none}}
+.num-card.wide{width:var(--w,820px);height:auto;min-height:calc(var(--w,820px)*.36);padding:clamp(24px,4vw,52px);box-sizing:border-box;border-radius:clamp(24px,3vw,40px)}
+.num-value.phrase{font-size:var(--fs,52px);letter-spacing:-.025em;line-height:1.12;text-align:center;text-wrap:balance;font-variant-numeric:normal;max-width:100%}
+.alt-task{text-align:center}
+.num-result{display:grid;justify-items:center;gap:4px;text-align:center;min-height:2.6em}
+#numHint{font-size:15px;color:var(--muted);font-weight:500}
+.num-board{display:flex;align-items:center;justify-content:center;gap:12px;flex-wrap:wrap;max-width:min(92vw,820px)}
+.num-tokens{display:flex;flex-wrap:wrap;justify-content:center;gap:7px;max-width:min(88vw,760px)}
+.board-toggle{flex:none;height:30px;min-width:30px;padding:0 9px;border-radius:999px;border:1px solid var(--line);background:transparent;color:var(--muted);font:600 12px var(--sans);display:inline-flex;align-items:center;justify-content:center;gap:6px;cursor:pointer;transition:background .2s,color .2s}
+.board-toggle:hover{background:rgba(255,255,255,.08);color:var(--fg)}
+.board-toggle svg{width:15px;height:15px;flex:none}
+.num-tok{width:32px;height:32px;box-sizing:border-box;border-radius:50%;display:grid;place-items:center;font-weight:600;font-size:13px;font-variant-numeric:tabular-nums;background:rgba(255,255,255,.07);color:rgba(243,245,249,.85);transition:opacity .3s,background .3s}
+.num-tok.used{opacity:.25;text-decoration:line-through}
+.num-tok.cur{background:linear-gradient(135deg,#7a3cff,#e05bff);color:#fff;box-shadow:0 0 14px rgba(190,90,255,.6)}
+.num-pick{display:flex;align-items:center;gap:12px;flex-wrap:wrap;justify-content:center;font-size:13px;font-weight:600;color:var(--muted)}
+.num-pick .seg button{min-width:42px;justify-content:center;font-variant-numeric:tabular-nums}
+.num-custom{display:flex;align-items:center;gap:8px}
+.letter-step{display:flex;align-items:center;height:40px;box-sizing:border-box;border-radius:12px;border:1.5px solid var(--line);background:rgba(0,0,0,.25);overflow:hidden;transition:background .2s,border-color .2s}
+.letter-step:hover{border-color:transparent;background:linear-gradient(#0b0a12,#0b0a12) padding-box,linear-gradient(135deg,#7a3cff,#e05bff) border-box}
+.letter-step button{height:100%;min-width:38px;padding:0 10px;border:0;background:transparent;color:var(--muted);font:700 15px var(--sans);cursor:pointer;transition:background .2s,color .2s}
+.letter-step button:hover:not(:disabled){background:rgba(255,255,255,.08);color:var(--fg)}
+.letter-step button:disabled{opacity:.25;cursor:default}
+.letter-step output{min-width:44px;text-align:center;color:#fff;font-weight:700;font-size:15px;font-variant-numeric:tabular-nums;border-inline:1px solid transparent;padding:0 10px;line-height:37px;transition:border-color .2s}
+.letter-step:hover output{border-inline-color:var(--line)}
+.num-custom input{width:96px;height:40px;box-sizing:border-box;text-align:center;font-size:16px;font-weight:700;font-variant-numeric:tabular-nums;background:rgba(0,0,0,.3);border:1px solid var(--line);border-radius:12px;color:var(--fg);outline:none}
+.num-custom input:focus{border-color:transparent;background:linear-gradient(#0d0b16,#0d0b16) padding-box,var(--grad) border-box}
+/* While the custom box is in use, Set lights up with the Spin gradient; it returns to plain once the range is set */
+.num-custom:focus-within .pill.outline-purple{color:var(--accent-ink);background:var(--grad);border-color:transparent;box-shadow:0 6px 20px rgba(140,120,255,.35)}
+.pill.outline-purple{color:var(--muted);background:rgba(0,0,0,.3);border:1px solid var(--line);border-radius:12px}
+.pill.outline-purple:hover{color:var(--fg);background:rgba(255,255,255,.08)}
+@media (max-width:1240px){.seg button[aria-pressed="false"] .lbl{display:none}}
+@media (max-width:1060px){#btnHistory .lbl,#btnSettings .lbl,#btnRoster .lbl{display:none}}
+@media (max-width:420px){#btnFS{display:none} .num-pick>span{display:none} .num-pick .seg button{min-width:0;padding:0 8px}}
+.hint{position:fixed;left:50%;bottom:calc(92px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);z-index:25;font-size:13px;font-weight:600;padding:8px 14px;border-radius:999px;background:var(--glass-2);border:1px solid var(--line);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);white-space:nowrap}
+.hint b{color:var(--accent)}
+.toast{position:fixed;left:50%;top:calc(80px + env(safe-area-inset-top,0px));transform:translate(-50%,-10px);opacity:0;transition:opacity .3s,transform .3s var(--ease);z-index:60;padding:10px 16px;border-radius:14px;background:var(--sheet);border:1px solid var(--line);backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);font-weight:600;font-size:14px;max-width:calc(100vw - 32px);text-align:center;pointer-events:none}
+.toast.show{opacity:1;transform:translate(-50%,0)}
+
+/* Sheets */
+.sheet{position:fixed;top:calc(12px + env(safe-area-inset-top,0px));right:12px;bottom:calc(12px + env(safe-area-inset-bottom,0px));width:min(410px,calc(100vw - 24px));z-index:40;display:flex;flex-direction:column;background:var(--sheet);border:1px solid var(--line);border-radius:24px;backdrop-filter:blur(34px) saturate(170%);-webkit-backdrop-filter:blur(34px) saturate(170%);box-shadow:0 30px 90px rgba(0,0,0,.55);transform:translateX(calc(100% + 24px));transition:transform .5s var(--ease);user-select:text;-webkit-user-select:text}
+.sheet.open{transform:none}
+.sheet header{display:flex;align-items:center;justify-content:space-between;padding:18px 18px 8px 22px}
+.sheet h2{margin:0;font-size:21px;font-weight:700;letter-spacing:-.02em}
+.sheet .body{flex:1;min-height:0;overflow:auto;padding:6px 22px 22px;display:flex;flex-direction:column;gap:20px}
+.sheet h3{margin:0 0 8px;font-size:11px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:var(--muted)}
+.sheet p.note{margin:0;font-size:13px;line-height:1.5;color:var(--muted)}
+.field{display:flex;flex-direction:column;gap:8px}
+.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+select.input,textarea.input,input.input{width:100%;box-sizing:border-box;background:rgba(0,0,0,.28);border:1px solid var(--line);border-radius:12px;padding:10px 12px;font-size:15px;outline:none}
+select.input{appearance:none;-webkit-appearance:none;padding-right:36px;background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='12' height='8'><path d='M1 1l5 5 5-5' fill='none' stroke='white' stroke-opacity='.7' stroke-width='1.6'/></svg>");background-repeat:no-repeat;background-position:right 14px center}
+select.input option{background:#151820}
+textarea.input{min-height:180px;resize:vertical;line-height:1.5;font-family:var(--sans)}
+textarea.input:focus,select.input:focus,input.input:focus{border-color:var(--accent)}
+#fileInput{display:none}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{padding:7px 12px;border-radius:999px;border:1px solid var(--line);background:var(--glass-2);font-size:14px;font-weight:500;transition:opacity .2s,background .2s}
+.chip:hover{background:var(--glass-3)}
+.chip.absent{opacity:.42;text-decoration:line-through;background:transparent}
+.chip.picked{color:var(--muted)}
+.chip.picked::after{content:" ✓";color:var(--accent)}
+.toggle-row{display:flex;align-items:flex-start;justify-content:space-between;gap:14px;padding:12px 0;border-bottom:1px solid var(--line)}
+.toggle-row:last-child{border-bottom:0}
+.toggle-row b{display:block;font-size:15px;font-weight:600}
+.toggle-row span{display:block;font-size:13px;color:var(--muted);margin-top:3px;line-height:1.45}
+.switch{position:relative;flex:none;width:48px;height:29px;margin-top:2px}
+.switch input{position:absolute;opacity:0;inset:0;margin:0;cursor:pointer;z-index:1}
+.switch i{position:absolute;inset:0;border-radius:999px;background:rgba(255,255,255,.18);transition:background .25s}
+.switch i::after{content:"";position:absolute;top:3px;left:3px;width:23px;height:23px;border-radius:50%;background:#fff;box-shadow:0 2px 6px rgba(0,0,0,.35);transition:transform .3s var(--ease)}
+.switch input:checked+i{background:var(--grad-hot)}
+.switch input:checked+i::after{transform:translateX(19px)}
+.switch input:focus-visible+i{outline:2px solid var(--accent);outline-offset:2px}
+.textsize{grid-template-columns:repeat(4,1fr)!important}
+.choice{display:grid;grid-template-columns:repeat(3,1fr);gap:4px;padding:3px;border-radius:14px;background:rgba(0,0,0,.28);border:1px solid var(--line)}
+.choice button{display:flex;flex-direction:column;align-items:center;gap:2px;padding:9px 6px;border:0;border-radius:11px;background:transparent;color:var(--muted);transition:background .25s,color .25s}
+.choice button b{font-size:14px;font-weight:600}
+.choice button span{font-size:11px;font-variant-numeric:tabular-nums}
+.choice button[aria-pressed="true"]{background:var(--glass-3);color:var(--fg)}
+.choice button[aria-pressed="true"] b{color:var(--accent)}
+.keys{display:grid;grid-template-columns:auto 1fr;gap:8px 14px;font-size:13px;color:var(--muted);align-items:center}
+kbd{font-family:var(--sans);font-size:12px;font-weight:600;color:var(--fg);padding:3px 7px;border-radius:7px;border:1px solid var(--line);background:var(--glass-2);white-space:nowrap}
+.hist-table{display:flex;flex-direction:column}
+.hrow{display:grid;grid-template-columns:1fr auto 92px;gap:10px;align-items:center;padding:8px 0;border-bottom:1px solid rgba(255,255,255,.07);font-size:14px}
+.hrow .n{font-weight:600;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.hrow .dots{display:flex;gap:3px}
+.hrow .dots i{width:7px;height:7px;border-radius:50%;background:rgba(255,255,255,.15)}
+.hrow .dots i.on{background:var(--accent)}
+.hrow .when{color:var(--muted);font-size:12px;text-align:right;font-variant-numeric:tabular-nums}
+.hrow .when.never{color:var(--accent);font-weight:600}
+.recent{display:flex;flex-direction:column;gap:2px;font-size:14px}
+.recent div{display:flex;justify-content:space-between;gap:10px;padding:6px 0}
+.recent span{color:var(--muted);font-size:12px;font-variant-numeric:tabular-nums;white-space:nowrap}
+.recent em{font-style:normal;color:var(--accent);font-weight:600}
+
+/* Groups overlay */
+.overlay{position:fixed;inset:0;z-index:50;display:flex;flex-direction:column;gap:18px;padding:calc(22px + env(safe-area-inset-top,0px)) 16px calc(22px + env(safe-area-inset-bottom,0px));background:
+  radial-gradient(45% 50% at 92% 8%,rgba(92,40,230,.28) 0,transparent 70%),
+  radial-gradient(45% 55% at 5% 80%,rgba(120,50,255,.24) 0,transparent 70%),
+  radial-gradient(35% 30% at 45% 105%,rgba(40,50,200,.2) 0,transparent 70%),
+  radial-gradient(30% 30% at 30% 0%,rgba(70,30,190,.16) 0,transparent 70%),
+  linear-gradient(#08060f,#050408);opacity:0;transition:opacity .3s}
+.overlay.show{opacity:1}
+.ov-close{position:absolute;top:calc(20px + env(safe-area-inset-top,0px));right:20px;z-index:2;width:44px;height:44px;border-radius:50%;border:0;display:grid;place-items:center;color:var(--accent-ink);background:var(--grad);box-shadow:0 8px 24px rgba(140,120,255,.4),inset 0 1px 0 rgba(255,255,255,.5);cursor:pointer;transition:transform .15s,filter .2s}
+.ov-close:hover{filter:brightness(1.08)}
+.ov-close:active{transform:scale(.94)}
+.ov-close svg{width:20px;height:20px}
+.ov-head{padding-right:56px;box-sizing:border-box;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;max-width:1200px;width:100%;margin-inline:auto}
+.ov-head h2{margin:0;font-size:clamp(24px,3.4vw,38px);font-weight:800;letter-spacing:-.03em}
+.ov-head p{margin:4px 0 0;color:var(--muted);font-size:14px;font-variant-numeric:tabular-nums}
+.stepper{display:flex;align-items:center;gap:4px;padding:3px;border-radius:14px;border:1px solid var(--line);background:rgba(0,0,0,.25)}
+.stepper button{width:38px;height:38px;border-radius:11px;border:0;background:transparent;font-size:20px;font-weight:600}
+.stepper button:hover{background:var(--glass-2)}
+.stepper button:disabled{opacity:.3;cursor:default;background:transparent}
+.stepper output{min-width:110px}
+.stepper output{min-width:86px;text-align:center;font-weight:600;font-variant-numeric:tabular-nums}
+.groups-grid{flex:1;min-height:0;overflow:auto;display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:14px;align-content:start;max-width:1200px;width:100%;margin-inline:auto}
+.gcard{background:var(--glass);border:1px solid var(--line);border-radius:20px;padding:16px 20px 18px;animation:rise .55s var(--ease) both}
+.gcard h3{margin:0 0 10px;font-size:12px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent;display:inline-block}
+.gcard ul{list-style:none;margin:0;padding:0}
+.gcard li{animation:fade .4s ease both}
+.gcard.still,.gcard.still li{animation:none}
+.gname{all:unset;box-sizing:border-box;display:flex;align-items:center;justify-content:space-between;gap:10px;width:calc(100% + 16px);margin-inline:-8px;padding:3px 8px;border-radius:10px;cursor:pointer;font-size:clamp(17px,1.85vw,25px);font-weight:600;letter-spacing:-.01em;color:var(--fg);transition:background .2s,color .2s}
+.gcard li{position:relative}
+.gtext{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.gacts{flex:none;display:flex;align-items:center;gap:14px}
+.gabs{width:18px;text-align:center;font-size:15px;font-weight:700;line-height:1;color:var(--muted);opacity:0;transition:opacity .2s,transform .15s;cursor:pointer}
+.gname:hover .gabs,.gname.active .gabs,.gname.partner .gabs,.gname.picked .gabs{opacity:1}
+.gname .sw{flex:none;width:18px;height:18px;opacity:0;color:var(--muted);transition:opacity .2s}
+.gname:hover{background:rgba(255,255,255,.07)}
+.gname:hover .sw,.gcard li:hover .gname .sw{opacity:1}
+.gname:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
+.gname.active{color:#fff;background:linear-gradient(#0b0a12,#0b0a12) padding-box,linear-gradient(135deg,#7a3cff,#e05bff) border-box;border:1.5px solid transparent;padding:1.5px 6.5px}
+.gname.active .sw{opacity:1;color:#e3b8ff}
+.gname.partner{color:#fff;border:1.5px solid transparent;padding:1.5px 6.5px;background:linear-gradient(rgba(122,60,255,.32),rgba(224,91,255,.32)) padding-box,linear-gradient(135deg,#7a3cff,#e05bff) border-box;animation:swapflash 1.1s ease}
+.gname.partner .sw{opacity:1;color:#e3b8ff}
+.gname.active .gabs,.gname.partner .gabs,.gname.picked .gabs{color:#e3b8ff}
+.gname .gabs:hover{background:linear-gradient(135deg,#a56bff,#f07bff);-webkit-background-clip:text;background-clip:text;color:transparent;outline:1.5px solid #c27bff;outline-offset:2px}
+.gabs{border-radius:50%;box-sizing:border-box;height:18px;display:inline-grid;place-items:center}
+.gname.active .gabs:hover,.gname.partner .gabs:hover{background:none;color:#e3b8ff;-webkit-background-clip:border-box;background-clip:border-box;outline:1.5px solid #fff;outline-offset:2px;transform:none}
+.gname.active{background:linear-gradient(rgba(122,60,255,.32),rgba(224,91,255,.32)) padding-box,linear-gradient(135deg,#7a3cff,#e05bff) border-box!important}
+@keyframes swapflash{0%{box-shadow:0 0 0 4px rgba(200,100,255,.55)}100%{box-shadow:0 0 0 0 rgba(200,100,255,0)}}
+.g-controls{margin-top:10px}
+.apart-count{display:inline-grid;place-items:center;min-width:20px;height:20px;padding:0 6px;box-sizing:border-box;margin-left:4px;border-radius:999px;background:var(--grad);color:var(--accent-ink);font-size:12px;font-weight:800}
+.apart-count:empty{display:none}
+#gApartBtn{display:inline-flex;align-items:center}
+#gApartBtn.round-btn{width:40px;height:40px;padding:0;border-radius:50%;justify-content:center}
+#gApartBtn.round-btn svg{flex:none;width:19px;height:19px}
+#gApartBtn[aria-expanded="true"]{border-color:transparent;background:linear-gradient(#0b0a12,#0b0a12) padding-box,linear-gradient(135deg,#7a3cff,#e05bff) border-box}
+.apart-panel{margin-top:12px;padding:14px;border-radius:16px;border:1px solid var(--line);background:rgba(0,0,0,.28);max-width:640px;display:flex;flex-direction:column;gap:10px}
+.apart-add{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.apart-add select.input{width:auto;min-width:160px;flex:1;height:40px;padding:0 34px 0 12px}
+.apart-x{font-size:13px;color:var(--muted);font-weight:600}
+.apart-list{display:flex;flex-wrap:wrap;gap:6px}
+.apart-chip{display:inline-flex;align-items:center;gap:8px;padding:5px 5px 5px 14px;line-height:1.2;border-radius:999px;font-size:14px;font-weight:600;border:1.5px solid transparent;background:linear-gradient(#0b0a12,#0b0a12) padding-box,linear-gradient(135deg,#7a3cff,#e05bff) border-box}
+.apart-names{display:inline-flex;align-items:center;gap:10px}
+.apart-sep{width:1px;height:14px;background:rgba(255,255,255,.25)}
+.apart-chip button{width:22px;height:22px;border-radius:50%;border:0;background:rgba(255,255,255,.08);color:var(--muted);cursor:pointer;display:grid;place-items:center;padding:0}
+.apart-chip button:hover{background:var(--grad);color:var(--accent-ink)}
+.apart-chip button svg{width:11px;height:11px}
+.apart-note{margin:0;font-size:12px;color:var(--muted)}
+.apart-empty{font-size:13px;color:var(--muted)}
+.gcard.clash{border-color:rgba(255,140,90,.7)}
+.gcard .clash-tag{float:right;font-size:11px;font-weight:700;letter-spacing:.06em;color:#ffb38a;text-transform:uppercase}
+.hover-outline{height:40px;padding:0 18px;box-sizing:border-box;border-radius:12px;border:1.5px solid var(--line);background:rgba(0,0,0,.25);color:var(--fg);font:600 15px var(--sans);cursor:pointer;transition:background .2s,border-color .2s}
+.hover-outline:hover{border-color:transparent;background:linear-gradient(#0b0a12,#0b0a12) padding-box,linear-gradient(135deg,#7a3cff,#e05bff) border-box}
+.hover-outline:active{transform:scale(.97)}
+.g-controls .letter-step output{min-width:110px;background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent;border-inline-color:var(--line)}
+/* Group size: hovering the stepper outlines it in purple and fills - and + with the lilac gradient, cueing where to click */
+.g-controls .letter-step:hover{border-color:transparent;background:linear-gradient(#0b0a12,#0b0a12) padding-box,linear-gradient(135deg,#7a3cff,#e05bff) border-box}
+.g-controls .letter-step button{border-radius:9px;margin:3px;height:calc(100% - 6px);min-width:32px;transition:background .2s,color .2s,filter .2s}
+.g-controls .letter-step:hover button:not(:disabled){background:var(--grad);color:var(--accent-ink)}
+.g-controls .letter-step:hover button:hover:not(:disabled){background:var(--grad);color:var(--accent-ink);filter:brightness(1.1)}
+.swap-row{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-top:10px}
+.swap-row .seg button{height:34px;font-size:13px}
+.swap-hint{margin:0;font-size:13px;color:var(--muted);font-weight:500}
+.gname.picked{color:#fff;border:1.5px dashed rgba(224,150,255,.9);padding:1.5px 6.5px;background:rgba(160,90,255,.14)}
+.gname.picked .sw{opacity:1;color:#e3b8ff}
+@keyframes rise{from{opacity:0;transform:translateY(18px) scale(.97)}to{opacity:1;transform:none}}
+@keyframes fade{from{opacity:0;transform:translateX(-6px)}to{opacity:1;transform:none}}
+
+@media (max-width:760px){
+  .lbl,.mark small,.status{display:none}
+  .dbtn{padding:0 10px;height:46px}
+  .dbtn.spin{padding:0 18px}
+  .seg button{padding:0 9px;height:38px}
+  .sep{display:none}
+  .class-chip{padding:8px 12px;font-size:13px}
+  .mark b{font-size:22px}
+  #stage{top:calc(64px + env(safe-area-inset-top,0px));bottom:calc(96px + env(safe-area-inset-bottom,0px))}
+}
+@media (max-width:420px){ .class-chip .count{display:none} .dock{gap:0;padding:5px} .dbtn{padding:0 7px} .dbtn.spin{padding:0 13px;margin-inline:2px} .seg button{padding:0 7px} }
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.15s!important}
+  .reveal{transform:translate(-50%,-50%)!important}
+}
+</style>
+
+<div class="backdrop" aria-hidden="true"></div>
+<div class="spin-aura" id="spinAura" aria-hidden="true"></div>
+
+<header class="topbar">
+  <a class="mark logo-slot" href="PageSelectors.html" aria-label="SELECTr home">
+    <img src="images/SELECTr%20plus%20logo%20WH.png" alt="SELECTr" class="logo-img">
+  </a>
+  <button class="class-chip" id="classChip" type="button" aria-label="Open roster">
+    <span id="chipClass">Class 1</span><span class="count" id="chipCount"></span><span class="sample" id="chipSample" hidden>Sample names</span>
+  </button>
+  <div class="top-right">
+    <span class="status" id="stNoRepeat" style="min-width:76px;box-sizing:border-box;text-align:center">No repeat</span>
+    <span class="status" id="stFair">Fair mode</span>
+    <button class="icon-btn" id="btnTask" type="button" aria-label="Turn on the Task Spinner" aria-pressed="false" title="Task Spinner"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"><path d="M10 2.5c.6 3.6 1.9 4.9 5.5 5.5-3.6.6-4.9 1.9-5.5 5.5-.6-3.6-1.9-4.9-5.5-5.5 3.6-.6 4.9-1.9 5.5-5.5z"/><path d="M15.5 13v4M13.5 15h4" stroke-linecap="round"/></svg></button>
+    <button class="icon-btn" id="btnTimer" type="button" aria-label="Show timer" aria-pressed="false" title="Timer (T)"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="10" cy="10" r="7.5"/><path d="M10 5.5V10l3 2"/></svg></button>
+    <button class="icon-btn" id="btnSound" type="button" aria-label="Mute sounds" title="Sound (M)"></button>
+  </div>
+</header>
+
+<section class="timer-panel" id="timerPanel" hidden aria-label="Timer">
+  <div class="tp-time" id="tpTime" aria-live="off">1:00</div>
+  <div class="tp-adjust">
+    <div class="tp-step" role="group" aria-label="Minutes">
+      <button type="button" data-d="-60" aria-label="Subtract one minute">−</button><span>min</span><button type="button" data-d="60" aria-label="Add one minute">+</button>
+    </div>
+    <div class="tp-step" role="group" aria-label="Seconds">
+      <button type="button" data-d="-15" aria-label="Subtract 15 seconds">−</button><span>15 s</span><button type="button" data-d="15" aria-label="Add 15 seconds">+</button>
+    </div>
+  </div>
+  <div class="tp-actions">
+    <button type="button" class="tp-play" id="tpPlay" aria-label="Start timer"></button>
+    <button type="button" class="tp-reset" id="tpReset" title="Reset. Tap twice for the 1:00 default.">Reset</button>
+  </div>
+</section>
+
+<main id="stage">
+  <div class="wrap" id="mainWrap">
+    <div class="glass-disc" aria-hidden="true"></div>
+    <canvas id="wheelCanvas" aria-label="Name wheel. Drag and flick to spin, or press Space."></canvas>
+    <canvas id="drumCanvas" hidden aria-label="Name drum. Drag and flick to spin, or press Space."></canvas>
+  </div>
+    <div class="reveal" id="reveal" hidden aria-live="polite">
+      <div class="reveal-eyebrow" id="revealEyebrow"></div>
+      <div class="reveal-name" id="revealName"></div>
+      <div class="reveal-task" id="revealTask"></div>
+      <div class="reveal-actions">
+        <button class="pill" id="revealSecondary" type="button">Done</button>
+        <button class="pill primary" id="revealPrimary" type="button">Next name</button>
+      </div>
+      <div class="reveal-minor" id="revealMinor">
+        <button type="button" id="revealPass" title="Can't answer or stepped out. They stay in for later this round.">Pass</button>
+        <span aria-hidden="true">·</span>
+        <button type="button" id="revealAbsent" title="Mark absent in the roster for today and spin again">Absent</button>
+      </div>
+    </div>
+  <div id="taskWrap" hidden>
+    <div class="cap-row"><div class="cap">Task Spinner</div><button class="task-x" id="taskClose" type="button" aria-label="Turn off the Task Spinner" title="Turn off the Task Spinner"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l8 8M14 6l-8 8"/></svg></button></div>
+    <div class="tw" id="taskInner">
+      <div class="glass-disc" aria-hidden="true"></div>
+      <canvas id="taskCanvas" aria-label="Task Spinner. Tap, flick, or press Space to spin."></canvas>
+    </div>
+  </div>
+  <section id="numberStage" hidden aria-label="Number selector">
+    <div class="num-board"><div class="num-tokens" id="numTokens"></div><button class="board-toggle" id="numBoardBtn" type="button"></button></div>
+    <div class="num-wrap" id="numWrap"><div class="num-card"><div class="num-value idle" id="numValue" aria-live="polite">?</div></div></div>
+    <div class="num-result">
+      <div class="reveal-eyebrow" id="numEyebrow"></div>
+      <div id="numHint">Press Space or Spin to pick a number</div>
+      <div class="reveal-task alt-task" id="numTask" hidden></div>
+    </div>
+    <div class="num-pick">
+      <span>Pick from</span>
+      <div class="seg" id="numSeg" role="group" aria-label="Number range"></div>
+      <div class="letter-step" id="letterStep" hidden role="group" aria-label="Letters">
+        <button type="button" id="letterMinus" aria-label="Remove a letter">−</button>
+        <output id="letterRange">A–B</output>
+        <button type="button" id="letterPlus" aria-label="Add a letter">+C</button>
+      </div>
+      <div class="num-custom" id="numCustom" hidden>
+        <input type="number" id="numInput" min="2" max="999" inputmode="numeric" aria-label="Highest number">
+        <button class="pill small outline-purple" id="numSet" type="button" style="height:40px">Set</button>
+      </div>
+    </div>
+  </section>
+  <section id="firstStage" hidden aria-label="Who's first" style="display:flex;flex-direction:column;align-items:center;gap:clamp(26px,5vh,48px);width:100%">
+    <div class="num-wrap" id="firstWrap"><div class="num-card wide" id="firstCard"><div class="num-value phrase idle" id="firstValue" aria-live="polite">Who goes first?</div></div></div>
+    <div class="num-result">
+      <div class="reveal-eyebrow" id="firstEyebrow"></div>
+      <div id="firstHint" style="font-size:15px;color:var(--muted);font-weight:500">Press Space or Spin to pick who goes first</div>
+      <div class="reveal-task alt-task" id="firstTask" hidden></div>
+    </div>
+  </section>
+  <section id="colorStage" hidden aria-label="Color selector">
+    <div class="orbs" id="orbs"></div>
+    <div class="color-result">
+      <div class="reveal-eyebrow" id="colorEyebrow"></div>
+      <div id="colorName" aria-live="polite"></div>
+      <div id="colorHint">Press Space or Spin to pick a color</div>
+      <div class="reveal-task alt-task" id="colorTask" hidden></div>
+    </div>
+    <div class="count-pick"><span>How many colors?</span><div class="seg" id="countSeg" role="group" aria-label="Number of colors"></div></div>
+  </section>
+</main>
+
+<div class="hint" id="hint" hidden>Big class? <b role="button" tabindex="0" id="hintDrum">Try Drum view</b> for larger names</div>
+
+<nav class="dock" aria-label="Controls">
+  <button class="dbtn" id="btnRoster" type="button" title="Roster and attendance (R)">
+    <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><circle cx="7.5" cy="6.5" r="3"/><path d="M2 17c0-3 2.5-5 5.5-5s5.5 2 5.5 5"/><circle cx="14.5" cy="6" r="2.2"/><path d="M14 11c2.4 0 4 1.6 4 4.4"/></svg>
+    <span class="lbl">Roster</span>
+  </button>
+  <div class="seg" role="group" aria-label="View">
+    <button id="modeWheel" type="button" aria-pressed="true" title="Wheel view">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="10" cy="10" r="7.5"/><path d="M10 2.5v15M3.5 6.25l13 7.5M3.5 13.75l13-7.5"/></svg><span class="lbl">Wheel</span>
+    </button>
+    <button id="modeDrum" type="button" aria-pressed="false" title="Drum view">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><rect x="3.5" y="2.5" width="13" height="15" rx="3"/><path d="M6.5 7h7M5.5 10h9M6.5 13h7"/></svg><span class="lbl">Drum</span>
+    </button>
+    <button id="modeNumbers" type="button" aria-pressed="false" title="Numbers view">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M7.5 3L6 17M14 3l-1.5 14M3.5 7.5h14M2.5 12.5h14"/></svg><span class="lbl">Numbers</span>
+    </button>
+    <button id="modeFirst" type="button" aria-pressed="false" title="Who's First view">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M7 7.2a3 3 0 115.6 1.5c-.6 1-1.6 1.4-2.2 2.1-.3.4-.4.9-.4 1.5"/><circle cx="10" cy="16" r=".4" fill="currentColor"/></svg><span class="lbl">Who's First</span>
+    </button>
+    <button id="modeColors" type="button" aria-pressed="false" title="Colors view">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="7" cy="7.5" r="4"/><circle cx="13" cy="7.5" r="4"/><circle cx="10" cy="12.5" r="4"/></svg><span class="lbl">Colors</span>
+    </button>
+  </div>
+  <button class="dbtn spin" id="btnSpin" type="button">Spin</button>
+  <button class="dbtn" id="btnGroups" type="button" title="Make random groups (G)">
+    <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="6" cy="6" r="2.6"/><circle cx="14" cy="6" r="2.6"/><circle cx="6" cy="14" r="2.6"/><circle cx="14" cy="14" r="2.6"/></svg>
+    <span class="lbl">Random Groups</span>
+  </button>
+  <button class="dbtn" id="btnHistory" type="button" title="Who has been called">
+    <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><circle cx="10" cy="10" r="7.5"/><path d="M10 5.5V10l3 2"/></svg>
+    <span class="lbl">History</span>
+  </button>
+  <button class="dbtn" id="btnSettings" type="button" title="Settings">
+    <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M3 6h8M15 6h2M3 14h2M9 14h8"/><circle cx="13" cy="6" r="2"/><circle cx="7" cy="14" r="2"/></svg>
+    <span class="lbl">Settings</span>
+  </button>
+  <span class="sep" aria-hidden="true"></span>
+  <button class="dbtn" id="btnFS" type="button" title="Full screen (F)" aria-label="Full screen">
+    <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M3 7.5V3h4.5M12.5 3H17v4.5M17 12.5V17h-4.5M7.5 17H3v-4.5"/></svg>
+  </button>
+</nav>
+
+<!-- Roster sheet -->
+<aside class="sheet" id="sheetRoster" aria-label="Roster" inert>
+  <header><h2>Roster</h2><button class="icon-btn" data-close type="button" aria-label="Close"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><path d="M5 5l10 10M15 5L5 15"/></svg></button></header>
+  <div class="body">
+    <div class="field">
+      <h3>Class</h3>
+      <div class="row" id="classRow" style="flex-wrap:nowrap">
+        <select class="input" id="classSelect" style="flex:1;min-width:0"></select>
+        <button class="pill small" id="btnRename" type="button">Rename</button>
+      </div>
+      <div id="renameRow" class="field" hidden>
+        <input class="input" id="renameInput" type="text" maxlength="40" autocomplete="off" placeholder="Class name, like 3rd Period Science" aria-label="Class name">
+        <div class="row">
+          <button class="pill small primary" id="btnRenameSave" type="button">Save name</button>
+          <button class="pill small" id="btnRenameCancel" type="button">Cancel</button>
+        </div>
+        <p class="note">Leave it blank to go back to the default name. Your names and history stay with the class.</p>
+      </div>
+    </div>
+    <div class="field">
+      <h3>Names, one per line</h3>
+      <textarea class="input" id="rosterText" spellcheck="false" placeholder="Enter names, one per line, or upload a TXT or CSV file."></textarea>
+      <div class="row">
+        <label for="fileInput" class="pill small" style="display:inline-flex;align-items:center;cursor:pointer">Upload file</label>
+        <input type="file" id="fileInput" accept=".txt,.csv">
+        <button class="pill small primary" id="btnSaveNames" type="button">Save names</button>
+      </div>
+      <p class="note">Names save to this browser and are shared with the Name Selector. Keep a backup file of your lists, since clearing browser data removes them.</p>
+    </div>
+    <div class="field">
+      <div class="row" style="justify-content:space-between">
+        <h3 style="margin:0">Here today</h3>
+        <button class="pill small" id="btnAllHere" type="button">Mark all here</button>
+      </div>
+      <p class="note">Tap a name to mark them absent for this session. Your saved list does not change.</p>
+      <div class="chips" id="chips"></div>
+    </div>
+  </div>
+</aside>
+
+<!-- History sheet -->
+<aside class="sheet" id="sheetHistory" aria-label="History" inert>
+  <header><h2>History</h2><button class="icon-btn" data-close type="button" aria-label="Close"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><path d="M5 5l10 10M15 5L5 15"/></svg></button></header>
+  <div class="body">
+    <div class="field">
+      <h3>Called in the last 7 days</h3>
+      <p class="note" id="histNote"></p>
+      <div class="hist-table" id="histTable"></div>
+    </div>
+    <div class="field">
+      <h3>Recent picks</h3>
+      <div class="recent" id="histRecent"></div>
+    </div>
+    <div class="row"><button class="pill small" id="btnClearHist" type="button">Clear history for this class</button></div>
+  </div>
+</aside>
+
+<!-- Settings sheet -->
+<aside class="sheet" id="sheetSettings" aria-label="Settings" inert>
+  <header><h2>Settings</h2><button class="icon-btn" data-close type="button" aria-label="Close"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><path d="M5 5l10 10M15 5L5 15"/></svg></button></header>
+  <div class="body">
+    <div>
+      <div class="toggle-row"><div><b>No repeat</b><span>Picked names leave the wheel until you start a new round.</span></div><label class="switch"><input type="checkbox" id="optNoRepeat" aria-label="No repeat"><i></i></label></div>
+      <div class="toggle-row"><div><b>Fair mode</b><span>Students called less this week get a bigger slice, so their chance is higher. You can see it on the wheel.</span></div><label class="switch"><input type="checkbox" id="optFair" aria-label="Fair mode"><i></i></label></div>
+      <div class="toggle-row"><div><b>Task Spinner</b><span>A small drum picks a role or prompt after each name.</span></div><label class="switch"><input type="checkbox" id="optTask" aria-label="Task Spinner"><i></i></label></div>
+      <div class="toggle-row"><div><b>Sounds</b><span>Peg clicks and the reveal chime.</span></div><label class="switch"><input type="checkbox" id="optSound" aria-label="Sounds"><i></i></label></div>
+    </div>
+    <div class="field">
+      <h3>Text size</h3>
+      <div class="choice textsize" role="group" aria-label="Text size" id="textSizeChoice">
+        <button type="button" data-z="1"><b style="font-size:13px">A</b><span>Standard</span></button>
+        <button type="button" data-z="1.15"><b style="font-size:16px">A</b><span>Large</span></button>
+        <button type="button" data-z="1.3"><b style="font-size:19px">A</b><span>Larger</span></button>
+        <button type="button" data-z="1.45"><b style="font-size:22px">A</b><span>Largest</span></button>
+      </div>
+      <p class="note">Makes menus, buttons and labels easier to read from the back of the room. Names and numbers on screen stay the same size.</p>
+    </div>
+    <div class="field">
+      <h3>Suspense</h3>
+      <div class="choice" role="group" aria-label="Suspense" id="suspenseChoice">
+        <button type="button" data-s="low"><b>Low</b><span>about 3 sec</span></button>
+        <button type="button" data-s="medium"><b>Medium</b><span>about 5 sec</span></button>
+        <button type="button" data-s="high"><b>High</b><span>about 8 sec</span></button>
+      </div>
+      <p class="note">How long the wheel and drum spin before landing. Hard flicks run a little longer.</p>
+    </div>
+    <div class="field">
+      <h3>Tasks, one per line</h3>
+      <textarea class="input" id="taskText" spellcheck="false" style="min-height:140px"></textarea>
+      <div class="row"><button class="pill small primary" id="btnSaveTasks" type="button">Save tasks</button><button class="pill small" id="btnNewRound" type="button">Start a new round</button></div>
+    </div>
+    <div class="field">
+      <h3>Who's First prompts, one per line</h3>
+      <textarea class="input" id="firstText" spellcheck="false" style="min-height:160px"></textarea>
+      <div class="row"><button class="pill small primary" id="btnSaveFirsts" type="button">Save prompts</button><button class="pill small" id="btnResetFirsts" type="button">Restore the original list</button></div>
+    </div>
+    <div class="field">
+      <h3>Backup</h3>
+      <p class="note">Save your classes, class names, tasks, prompts, keep-apart pairs, and pick history to a file. Load it on another computer or after clearing your browser.</p>
+      <div class="row">
+        <button class="pill small" id="btnBackup" type="button">Download backup</button>
+        <label for="restoreInput" class="pill small" style="display:inline-flex;align-items:center;cursor:pointer">Restore from file</label>
+        <input type="file" id="restoreInput" accept=".json,application/json" hidden>
+      </div>
+    </div>
+    <div class="field">
+      <h3>Keyboard and clickers</h3>
+      <div class="keys">
+        <span><kbd>Space</kbd></span><span>Spin, or spin the Task Spinner</span>
+        <span><kbd>←</kbd> <kbd>→</kbd></span><span>Close the result</span>
+        <span><kbd>↑</kbd> <kbd>↓</kbd></span><span>Switch between Wheel, Drum, Numbers, Who's First, and Colors</span>
+        <span><kbd>T</kbd></span><span>Show or hide the timer</span>
+        <span><kbd>R</kbd></span><span>Open or close the roster</span>
+        <span><kbd>G</kbd></span><span>Make random groups</span>
+        <span><kbd>F</kbd></span><span>Full screen</span>
+        <span><kbd>M</kbd></span><span>Mute</span>
+      </div>
+    </div>
+  </div>
+</aside>
+
+<!-- Groups overlay -->
+<section class="overlay" id="groups" hidden aria-label="Groups">
+  <button class="ov-close" id="gClose" type="button" aria-label="Close groups" title="Close (Esc)"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M5.5 5.5l9 9M14.5 5.5l-9 9"/></svg></button>
+  <div class="ov-head">
+    <div><h2 id="groupsTitle">Groups – 3 per group</h2><p id="groupsSub"></p><div class="swap-row"><div class="seg" id="swapSeg" role="group" aria-label="Swap mode"><button type="button" data-m="auto" aria-pressed="true">Auto swap</button><button type="button" data-m="manual" aria-pressed="false">Manual swap</button></div><p class="swap-hint" id="swapHint"></p></div>
+    <div class="row g-controls">
+      <button class="hover-outline" id="gShuffle" type="button">Shuffle</button>
+      <div class="letter-step" role="group" aria-label="Group size"><button type="button" id="gMinus" aria-label="Smaller groups">−</button><output id="gSize">3 per group</output><button type="button" id="gPlus" aria-label="Larger groups">+</button></div>
+      <button class="hover-outline round-btn" id="gApartBtn" type="button" aria-expanded="false" aria-label="Group notes" title="Group notes"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="4.5" y="3.5" width="11" height="14" rx="2"/><path d="M7.5 3.5V3a1 1 0 011-1h3a1 1 0 011 1v.5"/><path d="M7.5 8.5h5M7.5 11.5h5M7.5 14.5h3"/></svg></button>
+    </div>
+    <div class="apart-panel" id="apartPanel" hidden>
+      <div class="apart-add">
+        <select class="input" id="apartA" aria-label="First student"></select>
+        <span class="apart-x" aria-hidden="true">and</span>
+        <select class="input" id="apartB" aria-label="Second student"></select>
+        <button class="hover-outline" id="apartAdd" type="button">Add</button>
+      </div>
+      <div class="apart-list" id="apartList"></div>
+      <p class="apart-note">Each pair is placed in different groups when you shuffle or auto swap. Saved for each class.</p>
+    </div>
+    </div>
+  </div>
+  <div class="groups-grid" id="groupsGrid"></div>
+</section>
+
+<div class="toast" id="toast" role="status"></div>
+
+<script>
+(() => {
+'use strict';
+const TAU = Math.PI * 2;
+const ACCENT = [169, 155, 255];
+const FONT = "Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif";
+const mod = (a, m) => ((a % m) + m) % m;
+const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+const $ = s => document.querySelector(s);
+const rm = window.matchMedia('(prefers-reduced-motion: reduce)');
+const reduced = () => rm.matches;
+const acc = a => `rgba(${ACCENT[0]},${ACCENT[1]},${ACCENT[2]},${a})`;
+
+const store = {
+  get(k, d) { try { const v = localStorage.getItem(k); return v ? JSON.parse(v) : d; } catch (e) { return d; } },
+  set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} }
+};
+
+const CLASSES = Array.from({ length: 10 }, (_, i) => `Class ${i + 1}`);
+const SAMPLE = ['Ava Thompson','Liam Nguyen','Sofia Ramirez','Noah Patel','Maya Johnson','Ethan Brooks','Zoe Kim','Lucas Carter','Isabella Reed','Mateo Garcia','Harper Lewis','Elijah Scott','Amara Okafor','Jackson Hayes','Chloe Bennett','Aiden Murphy','Layla Hassan','Caleb Foster','Nora Sullivan','Owen Price','Priya Shah','Wyatt Collins','Ella Morgan','Gabriel Diaz'];
+const DEFAULT_TASKS = ['Summarize', 'Predict', 'Ask a question', 'Make a connection', 'Clarify', 'Visualize'];
+
+// Same storage key and shape as the Name Selector, so saved classes appear in both tools.
+const saved = store.get('names', null) || {};
+CLASSES.forEach(c => { if (!Array.isArray(saved[c])) saved[c] = []; });
+const settings = Object.assign({ noRepeat: true, fair: false, sound: true, task: false, mode: 'wheel', cls: 'Class 1', groupSize: 3, swapMode: 'auto', suspense: 'low', textSize: 1, colorCount: 4, numPreset: '4', numCustom: 30, numBoard: true, numLetters: 2 }, store.get('spinrSettings', {}));
+// Spin length multiplier for each suspense level
+const SUSPENSE = { low: 0.35, medium: 0.6, high: 1 };
+const suspense = () => SUSPENSE[settings.suspense] || 1;
+if (!CLASSES.includes(settings.cls)) settings.cls = 'Class 1';
+let tasks = store.get('spinrTasks', DEFAULT_TASKS);
+const history = store.get('spinrHistory', {});
+const absentBy = {};
+let entries = [];
+let taskEntries = [];
+let isSample = false;
+let hintDismissed = false;
+const app = { state: 'idle', current: null, task: null, token: 0 };
+const saveSettings = () => store.set('spinrSettings', settings);
+// Custom class names live under their own key, so the saved lists keep the keys the Name Selector uses.
+const classLabels = store.get('classNames', {}) || {};
+const clsName = k => (classLabels[k] || '').trim() || k;
+
+/* ---------- Sound (synthesized so clicks line up exactly with the pegs) ---------- */
+const Sound = {
+  ctx: null, noise: null, last: 0,
+  ensure() {
+    if (!this.ctx) {
+      const AC = window.AudioContext || window.webkitAudioContext;
+      if (!AC) return null;
+      this.ctx = new AC();
+      const len = Math.floor(this.ctx.sampleRate * 0.03);
+      const b = this.ctx.createBuffer(1, len, this.ctx.sampleRate);
+      const d = b.getChannelData(0);
+      for (let i = 0; i < len; i++) d[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / len, 5);
+      this.noise = b;
+    }
+    if (this.ctx.state === 'suspended') this.ctx.resume();
+    return this.ctx;
+  },
+  click(intensity = 0.7) {
+    if (!settings.sound) return;
+    const c = this.ensure(); if (!c) return;
+    const now = c.currentTime;
+    if (now - this.last < 0.018) return;
+    this.last = now;
+    const k = clamp(intensity, 0.3, 1);
+    const src = c.createBufferSource(); src.buffer = this.noise; src.playbackRate.value = 0.85 + Math.random() * 0.3;
+    const bp = c.createBiquadFilter(); bp.type = 'bandpass'; bp.frequency.value = 2400 + k * 1200; bp.Q.value = 1.3;
+    const g = c.createGain();
+    g.gain.setValueAtTime(0.0001, now); g.gain.exponentialRampToValueAtTime(0.32 * k, now + 0.002); g.gain.exponentialRampToValueAtTime(0.0001, now + 0.05);
+    src.connect(bp).connect(g).connect(c.destination); src.start(now); src.stop(now + 0.06);
+    const o = c.createOscillator(); o.type = 'sine';
+    o.frequency.setValueAtTime(380, now); o.frequency.exponentialRampToValueAtTime(170, now + 0.04);
+    const og = c.createGain();
+    og.gain.setValueAtTime(0.0001, now); og.gain.exponentialRampToValueAtTime(0.10 * k, now + 0.003); og.gain.exponentialRampToValueAtTime(0.0001, now + 0.06);
+    o.connect(og).connect(c.destination); o.start(now); o.stop(now + 0.07);
+  },
+  chime(soft) {
+    if (!settings.sound) return;
+    const c = this.ensure(); if (!c) return;
+    const now = c.currentTime;
+    const notes = soft ? [[988, 0, 0.07]] : [[784, 0, 0.10], [1175, 0.07, 0.08], [1568, 0.14, 0.05]];
+    notes.forEach(([f, t, v]) => {
+      const o = c.createOscillator(); o.type = 'sine'; o.frequency.value = f;
+      const g = c.createGain();
+      g.gain.setValueAtTime(0.0001, now + t); g.gain.exponentialRampToValueAtTime(v, now + t + 0.01); g.gain.exponentialRampToValueAtTime(0.0001, now + t + 1.4);
+      o.connect(g).connect(c.destination); o.start(now + t); o.stop(now + t + 1.5);
+    });
+  }
+};
+
+/* ---------- Shared drawing helper ---------- */
+function rr(c, x, y, w, h, r) {
+  c.beginPath(); c.moveTo(x + r, y); c.arcTo(x + w, y, x + w, y + h, r); c.arcTo(x + w, y + h, x, y + h, r);
+  c.arcTo(x, y + h, x, y, r); c.arcTo(x, y, x + w, y, r); c.closePath();
+}
+function fitText(c, text, maxW) {
+  if (c.measureText(text).width <= maxW) return text;
+  let t = text;
+  while (t.length > 1 && c.measureText(t + '…').width > maxW) t = t.slice(0, -1);
+  return t + '…';
+}
+
+/* ---------- Wheel ---------- */
+class Wheel {
+  constructor(canvas, opts) {
+    this.cv = canvas; this.ctx = canvas.getContext('2d'); this.opts = opts;
+    this.cache = document.createElement('canvas'); this.cctx = this.cache.getContext('2d');
+    this.rot = 0; this.omega = 0; this.anim = null; this.segs = [];
+    this.pa = 0; this.pv = 0; this.lastIdx = -1; this.lift = 0; this.winner = null;
+    this.size = 0; this.dpr = 1; this.drag = null; this.hubHover = false; this.spinT = 0;
+    this.needsLayout = true; this.dirty = true;
+    this.bind();
+  }
+  get R() { return this.size / 2 - this.size * 0.06; }
+  get hubR() { return this.R * 0.2; }
+  resize(css) {
+    if (css <= 0) return;
+    this.dpr = Math.min(2, window.devicePixelRatio || 1, 2800 / css);
+    this.size = css;
+    const px = Math.round(css * this.dpr);
+    this.cv.width = this.cv.height = px;
+    this.cache.width = this.cache.height = px;
+    this.needsLayout = true; this.dirty = true;
+  }
+  layout() {
+    const its = this.opts.items().filter(e => e.w > 0.0005);
+    const total = its.reduce((s, e) => s + e.w, 0);
+    let a = 0;
+    this.segs = its.map(e => { const span = total ? e.w / total * TAU : 0; const s = { item: e, s: a, e: a + span }; a += span; return s; });
+    this.renderCache();
+    this.needsLayout = false; this.dirty = true;
+  }
+  segIndexAt(theta) {
+    for (let i = 0; i < this.segs.length; i++) if (theta >= this.segs[i].s && theta < this.segs[i].e) return i;
+    return this.segs.length - 1;
+  }
+  labelSize(span) {
+    const R = this.R;
+    return Math.min(R * 0.078, span * R * 0.6 * 0.62);
+  }
+  drawLabel(c, text, mid, fs, color, weight) {
+    const R = this.R;
+    c.save(); c.rotate(mid - Math.PI / 2);
+    c.textAlign = 'right'; c.textBaseline = 'middle'; c.fillStyle = color;
+    const maxW = R * 0.86 - this.hubR * 1.35;
+    c.font = `${weight} ${fs}px ${FONT}`;
+    const w = c.measureText(text).width;
+    if (w > maxW) { fs = Math.max(fs * 0.74, fs * maxW / w); c.font = `${weight} ${fs}px ${FONT}`; }
+    c.fillText(fitText(c, text, maxW), R * 0.86, 0);
+    c.restore();
+  }
+  renderCache() {
+    const c = this.cctx, s = this.size, R = this.R, n = this.segs.length;
+    c.setTransform(this.dpr, 0, 0, this.dpr, 0, 0);
+    c.clearRect(0, 0, s, s);
+    c.translate(s / 2, s / 2);
+    const tones = ['rgba(150,120,255,0.08)', 'rgba(170,140,255,0.17)', 'rgba(160,130,255,0.12)'];
+    if (!n) {
+      c.beginPath(); c.arc(0, 0, R, 0, TAU); c.fillStyle = tones[0]; c.fill(); return;
+    }
+    this.segs.forEach((g, i) => {
+      let t = i % 2; if (n % 2 && n > 1 && i === n - 1) t = 2;
+      c.beginPath(); c.moveTo(0, 0); c.arc(0, 0, R, g.s - Math.PI / 2, g.e - Math.PI / 2); c.closePath();
+      c.fillStyle = tones[t]; c.fill();
+    });
+    if (n > 1) {
+      c.strokeStyle = 'rgba(255,255,255,0.22)'; c.lineWidth = 1;
+      this.segs.forEach(g => {
+        const a = g.s - Math.PI / 2;
+        c.beginPath(); c.moveTo(Math.cos(a) * this.hubR, Math.sin(a) * this.hubR); c.lineTo(Math.cos(a) * R, Math.sin(a) * R); c.stroke();
+      });
+    }
+    this.segs.forEach(g => {
+      const span = g.e - g.s; const fs = this.labelSize(span);
+      if (fs < 7) return;
+      const alpha = clamp((fs - 7) / 4, 0, 1) * 0.94;
+      this.drawLabel(c, g.item.label, (g.s + g.e) / 2, fs, `rgba(246,248,252,${alpha})`, 600);
+    });
+    // Pegs on every segment edge
+    const pr = Math.max(2, R * 0.013);
+    this.segs.forEach(g => {
+      const a = g.s - Math.PI / 2;
+      c.beginPath(); c.arc(Math.cos(a) * R * 0.955, Math.sin(a) * R * 0.955, pr, 0, TAU);
+      c.fillStyle = 'rgba(255,255,255,0.9)'; c.fill();
+    });
+  }
+  spin(v0, item) {
+    this.layout();
+    const seg = this.segs.find(g => g.item === item);
+    if (!seg) return;
+    const a = seg.s + (0.18 + Math.random() * 0.64) * (seg.e - seg.s);
+    const dir = Math.sign(v0) || 1, v = clamp(Math.abs(v0), 8, 42);
+    const target = mod(-a, TAU), cur = mod(this.rot, TAU);
+    const base = dir > 0 ? mod(target - cur, TAU) : mod(cur - target, TAU);
+    const f = suspense();
+    const T0 = clamp(4 + v / 6, 4.5, 8) * f;
+    const Dn = v * T0 / 3;
+    const minTurns = f < 0.5 ? 1 : 2;
+    let k = Math.round((Dn - base) / TAU); if (k < minTurns) k = minTurns;
+    const D = base + k * TAU;
+    if (reduced()) {
+      this.rot += dir * D; this.omega = 0; this.dirty = true;
+      setTimeout(() => this.opts.onStop(item), 60);
+      return;
+    }
+    this.anim = { r0: this.rot, D, dir, T: clamp(3 * D / v, 3 * f, 10 * f), t: 0, item };
+    this.lastIdx = this.segIndexAt(mod(-this.rot, TAU));
+  }
+  update(dt) {
+    if (this.needsLayout && !this.anim) this.layout();
+    if (this.anim) {
+      const A = this.anim; A.t += dt; this.spinT += dt;
+      const u = Math.min(1, A.t / A.T), k = 1 - u;
+      this.rot = A.r0 + A.dir * A.D * (1 - k * k * k);
+      this.omega = A.dir * 3 * A.D / A.T * k * k;
+      if (u >= 1) { this.anim = null; this.omega = 0; this.opts.onStop(A.item); }
+      this.dirty = true;
+    }
+    if ((this.anim || (this.drag && this.drag.moved)) && this.segs.length > 1) {
+      const idx = this.segIndexAt(mod(-this.rot, TAU));
+      if (idx !== this.lastIdx && this.lastIdx !== -1) {
+        const sp = Math.abs(this.omega) || 6;
+        const dir = this.anim ? this.anim.dir : (this.drag.dir || 1);
+        this.pv += -dir * (6 + Math.min(10, sp * 0.45));
+        Sound.click(this.anim ? 0.35 + sp / 30 : 0.6);
+      }
+      this.lastIdx = idx;
+    }
+    // Pointer spring
+    // Small fixed steps keep the spring stable even if the computer drops frames.
+    for (let left = dt; left > 0; left -= 1 / 240) {
+      const h = Math.min(1 / 240, left);
+      this.pv += (-420 * this.pa - 17 * this.pv) * h;
+      this.pa = clamp(this.pa + this.pv * h, -0.65, 0.65);
+    }
+    if (Math.abs(this.pa) > 0.0004 || Math.abs(this.pv) > 0.002) this.dirty = true;
+    const tgt = this.winner ? 1 : 0;
+    if (Math.abs(this.lift - tgt) > 0.002) { this.lift += (tgt - this.lift) * Math.min(1, dt * (reduced() ? 30 : 7)); this.dirty = true; }
+    else this.lift = tgt;
+  }
+  draw() {
+    if (!this.dirty || !this.size) return;
+    this.dirty = false;
+    const c = this.ctx, s = this.size, R = this.R, h = this.hubR;
+    c.setTransform(this.dpr, 0, 0, this.dpr, 0, 0);
+    c.clearRect(0, 0, s, s);
+    c.translate(s / 2, s / 2);
+    // Base and shadow
+    c.save(); c.beginPath(); c.arc(0, 0, R + 1, 0, TAU);
+    c.shadowColor = 'rgba(0,0,0,0.5)'; c.shadowBlur = s * 0.05; c.shadowOffsetY = s * 0.012;
+    c.fillStyle = 'rgba(12,14,20,0.42)'; c.fill(); c.restore();
+    // Rotating face, smeared by speed so names blur when fast and sharpen as it slows
+    const speed = Math.abs(this.omega);
+    const n = reduced() ? 1 : clamp(Math.round(speed / 4), 1, 6);
+    const spread = Math.min(0.32, speed * 0.016);
+    const dir = Math.sign(this.omega) || 1;
+    const dim = 1 - 0.62 * this.lift;
+    for (let k = 0; k < n; k++) {
+      c.save(); c.rotate(this.rot - dir * spread * k / n); c.globalAlpha = dim / n;
+      c.drawImage(this.cache, -s / 2, -s / 2, s, s); c.restore();
+    }
+    // Winner lifts out
+    if (this.winner && this.lift > 0.01) {
+      const g = this.segs.find(x => x.item === this.winner);
+      if (g) {
+        const mid = (g.s + g.e) / 2, off = this.lift * R * 0.045;
+        c.save(); c.rotate(this.rot);
+        c.translate(Math.cos(mid - Math.PI / 2) * off, Math.sin(mid - Math.PI / 2) * off);
+        c.beginPath(); c.moveTo(0, 0); c.arc(0, 0, R, g.s - Math.PI / 2, g.e - Math.PI / 2); c.closePath();
+        const gr = c.createRadialGradient(0, 0, h, 0, 0, R);
+        gr.addColorStop(0, `rgba(122,60,255,${0.55 * this.lift})`); gr.addColorStop(0.6, `rgba(179,71,255,${0.9 * this.lift})`); gr.addColorStop(1, `rgba(224,91,255,${0.95 * this.lift})`);
+        c.shadowColor = `rgba(190,90,255,${0.7 * this.lift})`; c.shadowBlur = 36 * this.lift;
+        c.fillStyle = gr; c.fill(); c.shadowBlur = 0;
+        c.strokeStyle = `rgba(255,255,255,${0.55 * this.lift})`; c.lineWidth = 1.5; c.stroke();
+        const fs = Math.max(12, this.labelSize(g.e - g.s) * 1.08);
+        this.drawLabel(c, g.item.label, mid, fs, `rgba(255,255,255,${this.lift})`, 700);
+        c.restore();
+      }
+    }
+    // Top reflection
+    c.save(); c.beginPath(); c.arc(0, 0, R, 0, TAU); c.clip();
+    const rg = c.createLinearGradient(0, -R, 0, R * 0.05);
+    rg.addColorStop(0, 'rgba(255,255,255,0.15)'); rg.addColorStop(1, 'rgba(255,255,255,0)');
+    c.fillStyle = rg; c.beginPath(); c.ellipse(0, -R * 0.45, R * 0.95, R * 0.62, 0, 0, TAU); c.fill();
+    const vg = c.createRadialGradient(0, 0, R * 0.6, 0, 0, R);
+    vg.addColorStop(0, 'rgba(0,0,0,0)'); vg.addColorStop(1, 'rgba(0,0,0,0.22)');
+    c.fillStyle = vg; c.fillRect(-R, -R, R * 2, R * 2);
+    c.restore();
+    // Rim
+    c.beginPath(); c.arc(0, 0, R, 0, TAU); c.strokeStyle = 'rgba(255,255,255,0.34)'; c.lineWidth = 1.5; c.stroke();
+    c.beginPath(); c.arc(0, 0, R + s * 0.012, 0, TAU); c.strokeStyle = 'rgba(255,255,255,0.06)'; c.lineWidth = s * 0.016; c.stroke();
+    // Spin flair: a ring of pop colors that brightens with speed
+    const flair = reduced() ? 0 : clamp(Math.abs(this.omega) / 14, 0, 1);
+    if (flair > 0.01 && c.createConicGradient) {
+      const cg = c.createConicGradient(this.rot * 0.6 + this.spinT * 1.4, 0, 0);
+      [['#e2c6ff', 0], ['#b29dff', 0.25], ['#8a9cff', 0.5], ['#5b9bff', 0.75], ['#e2c6ff', 1]].forEach(([col, st]) => cg.addColorStop(st, col));
+      c.save(); c.globalAlpha = flair; c.shadowColor = 'rgba(160,160,255,0.9)'; c.shadowBlur = s * 0.03 * flair;
+      c.beginPath(); c.arc(0, 0, R + s * 0.012, 0, TAU); c.strokeStyle = cg; c.lineWidth = s * 0.014; c.stroke(); c.restore();
+    }
+    // Hub
+    c.save(); c.beginPath(); c.arc(0, 0, h, 0, TAU);
+    const hg = c.createLinearGradient(0, -h, 0, h);
+    hg.addColorStop(0, this.hubHover ? 'rgba(52,58,72,0.97)' : 'rgba(40,45,57,0.96)'); hg.addColorStop(1, 'rgba(16,18,24,0.97)');
+    c.shadowColor = 'rgba(0,0,0,0.5)'; c.shadowBlur = h * 0.5; c.shadowOffsetY = h * 0.08;
+    c.fillStyle = hg; c.fill(); c.shadowBlur = 0; c.shadowOffsetY = 0;
+    c.strokeStyle = 'rgba(255,255,255,0.22)'; c.lineWidth = 1; c.stroke();
+    const label = this.opts.hubLabel();
+    if (label) {
+      c.fillStyle = 'rgba(246,248,252,0.92)'; c.textAlign = 'center'; c.textBaseline = 'middle';
+      c.font = `700 ${h * 0.3}px ${FONT}`;
+      if ('letterSpacing' in c) c.letterSpacing = `${h * 0.04}px`;
+      c.fillText(label, h * 0.02, h * 0.02);
+      if ('letterSpacing' in c) c.letterSpacing = '0px';
+    }
+    c.restore();
+    // Pointer (flexes when pegs pass)
+    const w = R * 0.05, L = R * 0.17 + s * 0.02;
+    c.save(); c.translate(0, -R - s * 0.022); c.rotate(this.pa);
+    c.beginPath(); c.moveTo(-w, 0);
+    c.quadraticCurveTo(-w, -w * 1.15, 0, -w * 1.15); c.quadraticCurveTo(w, -w * 1.15, w, 0);
+    c.lineTo(w * 0.2, L); c.quadraticCurveTo(0, L + w * 0.35, -w * 0.2, L); c.closePath();
+    c.shadowColor = 'rgba(0,0,0,0.5)'; c.shadowBlur = 10; c.shadowOffsetY = 3;
+    c.fillStyle = '#f5f7fb'; c.fill(); c.shadowBlur = 0; c.shadowOffsetY = 0;
+    c.beginPath(); c.arc(0, -w * 0.25, w * 0.34, 0, TAU); c.fillStyle = acc(1); c.fill();
+    c.restore();
+  }
+  local(e) { const r = this.cv.getBoundingClientRect(); return { x: e.clientX - r.left - r.width / 2, y: e.clientY - r.top - r.height / 2 }; }
+  bind() {
+    const cv = this.cv;
+    cv.addEventListener('pointerdown', e => {
+      if (!this.opts.canInteract()) return;
+      const p = this.local(e), d = Math.hypot(p.x, p.y);
+      if (d > this.R + 12) return;
+      Sound.ensure();
+      cv.setPointerCapture(e.pointerId);
+      this.drag = { id: e.pointerId, hub: d < this.hubR, moved: false, last: Math.atan2(p.y, p.x), sx: e.clientX, sy: e.clientY, samples: [{ t: performance.now(), r: this.rot }], dir: 0 };
+      this.lastIdx = this.segIndexAt(mod(-this.rot, TAU));
+    });
+    cv.addEventListener('pointermove', e => {
+      const p = this.local(e);
+      if (!this.drag) {
+        const hov = Math.hypot(p.x, p.y) < this.hubR;
+        if (hov !== this.hubHover) { this.hubHover = hov; this.dirty = true; }
+        cv.style.cursor = hov ? 'pointer' : (Math.hypot(p.x, p.y) < this.R ? 'grab' : 'default');
+        return;
+      }
+      const D = this.drag;
+      if (!D.moved && Math.hypot(e.clientX - D.sx, e.clientY - D.sy) > 6) D.moved = true;
+      const a = Math.atan2(p.y, p.x);
+      let da = a - D.last; if (da > Math.PI) da -= TAU; if (da < -Math.PI) da += TAU;
+      D.last = a;
+      if (!D.moved) return;
+      cv.style.cursor = 'grabbing';
+      this.rot += da; if (da) D.dir = Math.sign(da);
+      const now = performance.now();
+      D.samples.push({ t: now, r: this.rot });
+      while (D.samples.length > 2 && now - D.samples[0].t > 120) D.samples.shift();
+      this.dirty = true;
+    });
+    const end = e => {
+      const D = this.drag; if (!D) return;
+      this.drag = null; cv.style.cursor = 'grab';
+      if (!D.moved) { if (D.hub) this.opts.onHub(); return; }
+      const now = performance.now();
+      const s0 = D.samples.find(s => now - s.t <= 100) || D.samples[0];
+      const dt = (now - s0.t) / 1000;
+      const v = dt > 0.005 ? (this.rot - s0.r) / dt : 0;
+      if (Math.abs(v) > 3.5) this.opts.onFlick(Math.sign(v) * clamp(Math.abs(v), 10, 40));
+    };
+    cv.addEventListener('pointerup', end);
+    cv.addEventListener('pointercancel', end);
+    cv.addEventListener('pointerleave', () => { if (this.hubHover) { this.hubHover = false; this.dirty = true; } });
+  }
+}
+
+/* ---------- Drum (picker view for big classes) and slot reel (Task Spinner) ---------- */
+class Drum {
+  constructor(canvas, opts) {
+    this.cv = canvas; this.ctx = canvas.getContext('2d'); this.opts = opts;
+    this.slot = !!opts.slot; this.compact = !!opts.compact;
+    this.flapMode = !this.slot && !this.compact; // main Drum view uses the split-flap board
+    this.flapFrom = null; this.flapTo = null; this.flapF = 1;
+    this.p = 0; this.v = 0; this.anim = null; this.drag = null; this.settle = false;
+    this.lastRow = 0; this.flash = 0; this.lift = 0; this.winner = null;
+    this.jolt = 0; this.joltT = -1; this.joltDir = 1;
+    this.leverHold = 0; this.leverKick = 0; this.kickT = -1;
+    this.size = 0; this.dpr = 1; this.dirty = true; this.needsLayout = false;
+    this.bind();
+  }
+  get items() { return this.opts.items(); }
+  get geo() {
+    const s = this.size;
+    if (this.slot) {
+      const bx = s * 0.03, by = s * 0.1, bw = s * 0.76, bh = s * 0.8;
+      return { bx, by, bw, bh, br: Math.min(18, s * 0.07), cx: bx + bw / 2, cy: s / 2, R: bh * 0.46, rowA: 0.55 };
+    }
+    return { bx: s * 0.06, by: s * 0.04, bw: s * 0.88, bh: s * 0.92, br: clamp(s * 0.05, 14, 28), cx: s / 2, cy: s / 2, R: s * 0.40, rowA: 0.27 };
+  }
+  get R() { return this.geo.R; }
+  get rowA() { return this.geo.rowA; }
+  get rowPx() { return this.R * this.rowA; }
+  resize(css) {
+    if (css <= 0) return;
+    this.dpr = Math.min(2, window.devicePixelRatio || 1, 2800 / css); this.size = css;
+    this.cv.width = this.cv.height = Math.round(css * this.dpr); this.dirty = true;
+  }
+  layout() {}
+  spin(v0, item) {
+    const items = this.items, n = items.length, j = items.indexOf(item);
+    if (j < 0) return;
+    const dir = Math.sign(v0) || 1, v = clamp(Math.abs(v0), 8, 40);
+    const base = dir > 0 ? mod(j - this.p, n) : mod(this.p - j, n);
+    const f = suspense();
+    const T0 = clamp(4 + v / 10, 4.5, 8) * f, Dn = v * T0 / 3, minD = Math.max(14 * f, n * Math.min(1, f * 1.5));
+    let k = Math.round((Dn - base) / n); if (k < 0) k = 0;
+    while (base + k * n < minD) k++;
+    const D = base + k * n;
+    this.settle = false;
+    if (this.slot && this.kickT < 0) this.kickT = 0;
+    if (reduced()) { this.p += dir * D; this.dirty = true; setTimeout(() => this.opts.onStop(item), 60); return; }
+    this.anim = { p0: this.p, D, dir, T: clamp(3 * D / v, 3 * f, 10 * f), t: 0, item };
+  }
+  update(dt) {
+    if (this.anim) {
+      const A = this.anim; A.t += dt;
+      const u = Math.min(1, A.t / A.T), k = 1 - u;
+      this.p = A.p0 + A.dir * A.D * (1 - k * k * k);
+      this.v = A.dir * 3 * A.D / A.T * k * k;
+      if (u >= 1) {
+        this.anim = null; this.v = 0; this.p = Math.round(this.p);
+        if (this.slot && !reduced()) { this.joltT = 0; this.joltDir = A.dir; Sound.click(1); }
+        this.opts.onStop(A.item);
+      }
+      this.dirty = true;
+    } else if (this.settle && !this.drag) {
+      const t = Math.round(this.p), d = t - this.p;
+      if (Math.abs(d) < 0.002) { this.p = t; this.settle = false; } else this.p += d * Math.min(1, dt * 12);
+      this.dirty = true;
+    }
+    const r = Math.round(this.p);
+    if (r !== this.lastRow) {
+      if (this.anim || (this.drag && this.drag.moved) || this.settle) { Sound.click(this.anim ? 0.35 + Math.abs(this.v) / 28 : 0.6); this.flash = 1; }
+      this.lastRow = r;
+    }
+    if (this.joltT >= 0) {
+      this.joltT += dt; const t = this.joltT;
+      this.jolt = this.joltDir * 0.16 * Math.sin(t * 26) * Math.exp(-t * 9);
+      if (t > 0.5) { this.jolt = 0; this.joltT = -1; }
+      this.dirty = true;
+    }
+    if (this.kickT >= 0) {
+      this.kickT += dt; const t = this.kickT;
+      this.leverKick = t < 0.15 ? t / 0.15 : Math.max(0, 1 - (t - 0.15) / 0.45);
+      if (t > 0.6) { this.kickT = -1; this.leverKick = 0; }
+      this.dirty = true;
+    }
+    if (this.flash > 0.01) { this.flash *= Math.pow(0.0001, dt); this.dirty = true; } else this.flash = 0;
+    if (this.flapMode) {
+      const items = this.items, n = items.length;
+      const label = n ? items[mod(Math.round(this.p), n)].label : '';
+      if (this.flapTo === null) { this.flapTo = label; this.flapFrom = label; this.flapF = 1; }
+      if (label !== this.flapTo) { this.flapFrom = this.flapTo; this.flapTo = label; this.flapF = reduced() ? 1 : 0; }
+      if (this.flapF < 1) {
+        const dur = clamp(0.9 / Math.max(1, Math.abs(this.v)), 0.05, 0.22);
+        this.flapF = Math.min(1, this.flapF + dt / dur); this.dirty = true;
+      }
+    }
+    const tgt = this.winner ? 1 : 0;
+    if (Math.abs(this.lift - tgt) > 0.002) { this.lift += (tgt - this.lift) * Math.min(1, dt * (reduced() ? 30 : 7)); this.dirty = true; }
+    else this.lift = tgt;
+  }
+  drawRow(c, label, cx, cy, phi, isWin, alphaMul, maxW) {
+    const R = this.R, y = cy + R * Math.sin(phi), sc = Math.cos(phi);
+    if (sc <= 0.05) return;
+    c.save(); c.translate(cx, y); c.scale(1, sc);
+    let fs = this.rowPx * (this.slot ? 0.40 : 0.58) * (isWin ? 1 + 0.08 * this.lift : 1);
+    c.font = `${isWin ? 700 : 600} ${fs}px ${FONT}`;
+    const w = c.measureText(label).width;
+    if (w > maxW) { fs = Math.max(fs * (this.slot || this.compact ? 0.55 : 0.7), fs * maxW / w); c.font = `${isWin ? 700 : 600} ${fs}px ${FONT}`; }
+    c.textAlign = 'center'; c.textBaseline = 'middle';
+    const dim = this.winner ? (isWin ? 1 : 1 - 0.55 * this.lift) : 1;
+    c.fillStyle = isWin && this.slot ? `rgba(255,255,255,${alphaMul})` : `rgba(244,246,250,${Math.pow(sc, 2.4) * alphaMul * dim})`;
+    c.fillText(fitText(c, label, maxW), 0, 0);
+    c.restore();
+  }
+  flapPanel(c, x, y, w, h, label, alpha, win) {
+    const r = Math.min(18, h * 0.16);
+    c.save(); c.globalAlpha = alpha;
+    rr(c, x, y, w, h, r);
+    const g = c.createLinearGradient(0, y, 0, y + h);
+    g.addColorStop(0, '#231c3e'); g.addColorStop(0.5, '#151127'); g.addColorStop(0.5, '#0f0c1d'); g.addColorStop(1, '#1b1631');
+    c.fillStyle = g; c.fill();
+    if (win > 0.01) {
+      const wg = c.createLinearGradient(x, 0, x + w, 0);
+      wg.addColorStop(0, `rgba(122,60,255,${0.62 * win})`); wg.addColorStop(1, `rgba(224,91,255,${0.62 * win})`);
+      c.fillStyle = wg; c.fill();
+    }
+    let fs = h * 0.36;
+    c.font = `700 ${fs}px ${FONT}`;
+    const maxW = w - h * 0.5, tw = c.measureText(label).width;
+    if (tw > maxW) { fs = Math.max(fs * 0.6, fs * maxW / tw); c.font = `700 ${fs}px ${FONT}`; }
+    c.fillStyle = '#fff'; c.textAlign = 'center'; c.textBaseline = 'middle';
+    if (win > 0.01) { c.shadowColor = `rgba(10,4,24,${0.55 * win})`; c.shadowBlur = 10; c.shadowOffsetY = 3; }
+    c.fillText(fitText(c, label, maxW), x + w / 2, y + h / 2 + 1);
+    c.shadowColor = 'transparent';
+    // Hinge line and side pins (stay visible on the winner, like a real split-flap board)
+    const hinge = 1;
+    if (hinge > 0.01) {
+      c.fillStyle = `rgba(0,0,0,${0.65 * hinge})`; c.fillRect(x, y + h / 2 - 1, w, 2);
+      c.fillStyle = `rgba(255,255,255,${0.07 * hinge})`; c.fillRect(x, y + h / 2 + 1, w, 1);
+      c.fillStyle = `rgba(200,190,255,${0.5 * hinge})`;
+      const pw = Math.max(3, h * 0.035), ph = Math.max(8, h * 0.09);
+      [x + h * 0.06, x + w - h * 0.06 - pw].forEach(px => { rr(c, px, y + h / 2 - ph / 2, pw, ph, pw / 2); c.fill(); });
+    }
+    c.restore();
+  }
+  drawFlap() {
+    const c = this.ctx, s = this.size, items = this.items, n = items.length;
+    c.setTransform(this.dpr, 0, 0, this.dpr, 0, 0); c.clearRect(0, 0, s, s);
+    const pw = s * 0.88, ph = s * 0.25, px = (s - pw) / 2, py = s / 2 - ph / 2;
+    if (!n) {
+      this.flapPanel(c, px, py, pw, ph, 'No names to pick from', 0.6, 0);
+      return;
+    }
+    const cur = mod(Math.round(this.p), n);
+    const win = this.winner && items[cur] === this.winner ? this.lift : 0;
+    const dimOthers = this.winner ? 1 - 0.5 * this.lift : 1;
+    // Neighbor panels above and below
+    const nh = ph * 0.6, nw = pw * 0.86, nx = (s - nw) / 2, gap = ph * 0.14;
+    const n2h = nh * 0.72, n2w = nw * 0.88, n2x = (s - n2w) / 2;
+    this.flapPanel(c, n2x, py - nh - gap - n2h - gap * 0.8, n2w, n2h, items[mod(cur - 2, n)].label, 0.14 * dimOthers, 0);
+    this.flapPanel(c, n2x, py + ph + gap + nh + gap * 0.8, n2w, n2h, items[mod(cur + 2, n)].label, 0.14 * dimOthers, 0);
+    this.flapPanel(c, nx, py - nh - gap, nw, nh, items[mod(cur - 1, n)].label, 0.38 * dimOthers, 0);
+    this.flapPanel(c, nx, py + ph + gap, nw, nh, items[mod(cur + 1, n)].label, 0.38 * dimOthers, 0);
+    // Winner glow
+    if (win > 0.01) { c.save(); rr(c, px, py, pw, ph, Math.min(18, ph * 0.16)); c.shadowColor = `rgba(200,90,255,${0.8 * win})`; c.shadowBlur = 50 * win; c.fillStyle = '#000'; c.fill(); c.restore(); }
+    const to = this.flapTo ?? items[cur].label, from = this.flapFrom ?? to, f = this.flapF;
+    const half = (label, top) => {
+      c.save(); c.beginPath(); c.rect(px - 2, top ? py - 2 : py + ph / 2, pw + 4, ph / 2 + 2); c.clip();
+      this.flapPanel(c, px, py, pw, ph, label, 1, win); c.restore();
+    };
+    if (f < 1) {
+      half(to, true); half(from, false);
+      const hinge = py + ph / 2;
+      c.save(); c.translate(0, hinge);
+      if (f < 0.5) {
+        const k = 1 - f * 2; c.scale(1, Math.max(0.001, k)); c.translate(0, -hinge);
+        half(from, true); c.fillStyle = `rgba(0,0,0,${0.5 * (1 - k)})`; c.fillRect(px, py, pw, ph / 2);
+      } else {
+        const k = f * 2 - 1; c.scale(1, Math.max(0.001, k)); c.translate(0, -hinge);
+        half(to, false); c.fillStyle = `rgba(0,0,0,${0.5 * (1 - k)})`; c.fillRect(px, hinge, pw, ph / 2);
+      }
+      c.restore();
+    } else this.flapPanel(c, px, py, pw, ph, to, 1, win);
+    rr(c, px, py, pw, ph, Math.min(18, ph * 0.16));
+    c.strokeStyle = win > 0.01 ? `rgba(255,255,255,${0.2 + 0.5 * win})` : `rgba(255,255,255,${0.18 + 0.12 * this.flash})`;
+    c.lineWidth = 1.5; c.stroke();
+  }
+  draw() {
+    if (!this.dirty || !this.size) return;
+    this.dirty = false;
+    if (this.flapMode) { this.drawFlap(); return; }
+    const c = this.ctx, s = this.size, G = this.geo, { bx, by, bw, bh, br, cx, cy } = G;
+    c.setTransform(this.dpr, 0, 0, this.dpr, 0, 0); c.clearRect(0, 0, s, s);
+    c.save(); rr(c, bx, by, bw, bh, br);
+    c.shadowColor = 'rgba(0,0,0,0.5)'; c.shadowBlur = s * 0.05; c.shadowOffsetY = s * 0.012;
+    c.fillStyle = this.slot ? 'rgba(8,10,14,0.7)' : 'rgba(12,14,20,0.42)'; c.fill(); c.restore();
+    rr(c, bx, by, bw, bh, br); c.fillStyle = 'rgba(255,255,255,0.05)'; c.fill();
+    // Selection band / payline
+    const bandH = this.rowPx * (this.slot ? 1.0 : 1.1), L = this.lift, ins = this.slot ? 8 : 14;
+    rr(c, bx + ins, cy - bandH / 2, bw - ins * 2, bandH, Math.min(this.slot ? 10 : 16, bandH * 0.3));
+    c.fillStyle = `rgba(255,255,255,${0.09 + 0.07 * this.flash})`; c.fill();
+    if (L > 0.01) { c.save(); c.shadowColor = `rgba(190,90,255,${0.7 * L})`; c.shadowBlur = 30 * L;
+      const bgz = c.createLinearGradient(bx, 0, bx + bw, 0); bgz.addColorStop(0, `rgba(122,60,255,${0.75 * L})`); bgz.addColorStop(1, `rgba(224,91,255,${0.75 * L})`);
+      c.fillStyle = bgz; c.fill(); c.restore(); }
+    c.strokeStyle = L > 0.01 ? `rgba(255,255,255,${0.22 + 0.4 * L})` : 'rgba(255,255,255,0.22)'; c.lineWidth = 1; c.stroke();
+    // Rows
+    c.save(); rr(c, bx, by, bw, bh, br); c.clip();
+    const items = this.items, n = items.length, maxW = bw - (this.slot ? 28 : this.compact ? s * 0.1 : 60);
+    const p = this.p + this.jolt;
+    if (!n) {
+      c.fillStyle = 'rgba(232,237,247,0.6)'; c.font = `500 ${s * 0.04}px ${FONT}`; c.textAlign = 'center'; c.textBaseline = 'middle';
+      c.fillText(this.slot || this.compact ? 'No tasks' : 'No names to pick from', cx, cy);
+    } else {
+      const base = Math.round(p), sp = Math.abs(this.v);
+      const ghosts = reduced() ? 0 : Math.min(3, Math.floor(sp / 6));
+      for (let k = -7; k <= 7; k++) {
+        const i = base + k, d = i - p, phi = d * this.rowA;
+        if (Math.abs(phi) > 1.5) continue;
+        const it = items[mod(i, n)];
+        const isWin = !!this.winner && it === this.winner && Math.abs(d) < 0.5;
+        this.drawRow(c, it.label, cx, cy, phi, isWin, ghosts ? 0.55 : 1, maxW);
+        for (let g = 1; g <= ghosts; g++) {
+          const phi2 = (d + Math.sign(this.v) * sp * 0.011 * g) * this.rowA;
+          if (Math.abs(phi2) < 1.5) this.drawRow(c, it.label, cx, cy, phi2, false, 0.32 / g, maxW);
+        }
+      }
+    }
+    // Cylinder shading
+    const sh = this.slot ? 0.92 : 0.82;
+    const tg = c.createLinearGradient(0, by, 0, cy - bandH / 2);
+    tg.addColorStop(0, `rgba(10,12,17,${sh})`); tg.addColorStop(1, 'rgba(10,12,17,0)');
+    c.fillStyle = tg; c.fillRect(bx, by, bw, cy - bandH / 2 - by);
+    const bg = c.createLinearGradient(0, cy + bandH / 2, 0, by + bh);
+    bg.addColorStop(0, 'rgba(10,12,17,0)'); bg.addColorStop(1, `rgba(10,12,17,${sh})`);
+    c.fillStyle = bg; c.fillRect(bx, cy + bandH / 2, bw, by + bh - cy - bandH / 2);
+    const gl = c.createLinearGradient(0, by, 0, by + bh * 0.3);
+    gl.addColorStop(0, 'rgba(255,255,255,0.10)'); gl.addColorStop(1, 'rgba(255,255,255,0)');
+    c.fillStyle = gl; c.fillRect(bx, by, bw, bh * 0.3);
+    c.restore();
+    // Frame
+    rr(c, bx, by, bw, bh, br);
+    if (this.slot) {
+      const fg = c.createLinearGradient(0, by, 0, by + bh);
+      fg.addColorStop(0, 'rgba(255,255,255,0.75)'); fg.addColorStop(0.45, 'rgba(255,255,255,0.18)');
+      fg.addColorStop(0.55, 'rgba(255,255,255,0.12)'); fg.addColorStop(1, 'rgba(255,255,255,0.5)');
+      c.strokeStyle = fg; c.lineWidth = Math.max(2.5, s * 0.012);
+    } else { c.strokeStyle = 'rgba(255,255,255,0.3)'; c.lineWidth = 1.5; }
+    c.stroke();
+    // Payline markers
+    const m = s * (this.slot ? 0.03 : 0.018);
+    c.fillStyle = this.slot ? acc(1) : '#f5f7fb';
+    c.beginPath(); c.moveTo(bx - 2, cy - m); c.lineTo(bx + m * 1.3, cy); c.lineTo(bx - 2, cy + m); c.closePath(); c.fill();
+    if (!this.slot) {
+      c.beginPath(); c.moveTo(bx + bw + 2, cy - m); c.lineTo(bx + bw - m * 1.3, cy); c.lineTo(bx + bw + 2, cy + m); c.closePath(); c.fill();
+    } else this.drawLever(c);
+  }
+  leverGeo() {
+    const s = this.size, G = this.geo;
+    return { px: G.bx + G.bw + s * 0.105, cy: G.cy, L: G.bh * 0.36, s };
+  }
+  drawLever(c) {
+    const { px, cy, L, s } = this.leverGeo();
+    const pull = Math.max(this.leverHold, this.leverKick);
+    // Housing on the cabinet side
+    rr(c, px - s * 0.035, cy - s * 0.075, s * 0.07, s * 0.15, s * 0.025);
+    const hg = c.createLinearGradient(px - s * 0.035, 0, px + s * 0.035, 0);
+    hg.addColorStop(0, 'rgba(255,255,255,0.08)'); hg.addColorStop(0.5, 'rgba(255,255,255,0.22)'); hg.addColorStop(1, 'rgba(255,255,255,0.06)');
+    c.fillStyle = hg; c.fill(); c.strokeStyle = 'rgba(255,255,255,0.28)'; c.lineWidth = 1; c.stroke();
+    const ky = cy - L + L * 1.6 * pull;
+    // Rod
+    c.save(); c.lineCap = 'round'; c.lineWidth = Math.max(4, s * 0.02);
+    const rg = c.createLinearGradient(px - 4, 0, px + 4, 0);
+    rg.addColorStop(0, 'rgba(180,186,198,1)'); rg.addColorStop(0.5, 'rgba(250,251,253,1)'); rg.addColorStop(1, 'rgba(150,156,168,1)');
+    c.strokeStyle = rg; c.beginPath(); c.moveTo(px, cy); c.lineTo(px, ky); c.stroke(); c.restore();
+    // Knob
+    const kr = Math.max(9, s * 0.048);
+    c.save(); c.shadowColor = 'rgba(0,0,0,0.45)'; c.shadowBlur = 10; c.shadowOffsetY = 3;
+    const kg = c.createRadialGradient(px - kr * 0.35, ky - kr * 0.4, kr * 0.1, px, ky, kr);
+    kg.addColorStop(0, 'rgba(220,236,255,1)'); kg.addColorStop(0.35, acc(1)); kg.addColorStop(1, 'rgba(30,80,150,1)');
+    c.fillStyle = kg; c.beginPath(); c.arc(px, ky, kr, 0, TAU); c.fill(); c.restore();
+  }
+  bind() {
+    const cv = this.cv;
+    const localX = e => e.clientX - cv.getBoundingClientRect().left;
+    cv.addEventListener('pointerdown', e => {
+      const onLever = this.slot && localX(e) > this.geo.bx + this.geo.bw;
+      if (onLever) {
+        if (this.anim) return;
+        Sound.ensure(); cv.setPointerCapture(e.pointerId);
+        this.drag = { lever: true, sy: e.clientY, moved: false }; return;
+      }
+      if (!this.opts.canInteract()) return;
+      Sound.ensure(); cv.setPointerCapture(e.pointerId);
+      this.settle = false;
+      this.drag = { sy: e.clientY, ly: e.clientY, moved: false, samples: [{ t: performance.now(), p: this.p }] };
+    });
+    cv.addEventListener('pointermove', e => {
+      const D = this.drag;
+      if (!D) {
+        if (this.slot) cv.style.cursor = localX(e) > this.geo.bx + this.geo.bw ? 'pointer' : 'grab';
+        return;
+      }
+      if (D.lever) {
+        const dy = e.clientY - D.sy;
+        if (Math.abs(dy) > 4) D.moved = true;
+        this.leverHold = clamp(dy / (this.leverGeo().L * 1.6), 0, 1); this.dirty = true;
+        return;
+      }
+      if (!D.moved && Math.abs(e.clientY - D.sy) > 6) D.moved = true;
+      const dy = e.clientY - D.ly; D.ly = e.clientY;
+      if (!D.moved) return;
+      this.p -= dy / this.rowPx;
+      const now = performance.now();
+      D.samples.push({ t: now, p: this.p });
+      while (D.samples.length > 2 && now - D.samples[0].t > 120) D.samples.shift();
+      this.dirty = true;
+    });
+    const end = () => {
+      const D = this.drag; if (!D) return; this.drag = null;
+      if (D.lever) {
+        const hold = this.leverHold; this.leverHold = 0;
+        if (!D.moved || hold > 0.5) { this.kickT = !D.moved ? 0 : 0.15; this.opts.onTap(); }
+        else { this.kickT = 0.15 + (1 - hold) * 0.45; }
+        this.dirty = true; return;
+      }
+      if (!D.moved) { this.opts.onTap(); return; }
+      const now = performance.now();
+      const s0 = D.samples.find(s => now - s.t <= 100) || D.samples[0];
+      const dt = (now - s0.t) / 1000;
+      const v = dt > 0.005 ? (this.p - s0.p) / dt : 0;
+      if (Math.abs(v) > 2.5) this.opts.onFlick(Math.sign(v) * clamp(Math.abs(v), 10, 34));
+      else this.settle = true;
+    };
+    cv.addEventListener('pointerup', end);
+    cv.addEventListener('pointercancel', end);
+    cv.style.cursor = 'grab';
+  }
+}
+
+/* ---------- Data ---------- */
+const inItems = () => entries.filter(e => e.state === 'in');
+function weekCounts(cls) {
+  const wk = Date.now() - 7 * 864e5, m = new Map();
+  (history[cls] || []).forEach(h => { if (h.t >= wk) m.set(h.n, (m.get(h.n) || 0) + 1); });
+  return m;
+}
+function computeTargets(snap) {
+  const counts = settings.fair ? weekCounts(settings.cls) : null;
+  entries.forEach(e => {
+    e.tw = e.state === 'in' ? (counts ? 1 / (1 + 0.75 * (counts.get(e.label) || 0)) : 1) : 0;
+    if (snap) e.w = e.tw;
+  });
+  wheel.needsLayout = true; drum.dirty = true;
+}
+function weightedPick(list) {
+  const total = list.reduce((s, e) => s + e.tw, 0);
+  let r = Math.random() * total;
+  for (const e of list) { r -= e.tw; if (r <= 0) return e; }
+  return list[list.length - 1];
+}
+function loadClass() {
+  let names = saved[settings.cls] || [];
+  isSample = !names.length;
+  if (isSample) names = SAMPLE;
+  const absent = absentBy[settings.cls] || (absentBy[settings.cls] = new Set());
+  entries = names.map(n => ({ label: n, state: absent.has(n) ? 'absent' : 'in', w: 0, tw: 0 }));
+  computeTargets(true);
+  $('#rosterText').value = names.join('\n');
+  drum.p = 0; drum.lastRow = 0;
+  updateUI();
+}
+function loadTasks() {
+  taskEntries = tasks.map(t => ({ label: t, state: 'in', w: 1, tw: 1 }));
+  taskWheel.dirty = true;
+}
+function unrecordLast(name) {
+  const list = history[settings.cls];
+  if (list && list.length && list[list.length - 1].n === name) { list.pop(); store.set('spinrHistory', history); }
+}
+// Picked someone who isn't here: mark them absent for today, take the pick back, and spin again
+function notHere() {
+  if (app.state !== 'revealed' || !app.current) return;
+  const e = app.current;
+  unrecordLast(e.label);
+  e.state = 'absent';
+  (absentBy[settings.cls] || (absentBy[settings.cls] = new Set())).add(e.label);
+  app.current = null;
+  dismiss(true);
+  toast(`${e.label} marked absent for today`);
+  if (inItems().length) setTimeout(() => { if (app.state === 'idle') spin(); }, reduced() ? 0 : 420);
+}
+// Student passes: they go back into this round's pool, and the pick doesn't count toward history
+function passForNow() {
+  if (app.state !== 'revealed' || !app.current) return;
+  const e = app.current;
+  unrecordLast(e.label);
+  app.current = null;
+  dismiss(true);
+  toast(`${e.label} is back in for later`);
+}
+function pushHistory(name) {
+  const list = history[settings.cls] || (history[settings.cls] = []);
+  list.push({ n: name, t: Date.now() });
+  if (list.length > 600) list.splice(0, list.length - 600);
+  store.set('spinrHistory', history);
+}
+
+/* ---------- Components ---------- */
+const busy = () => app.state === 'spinning' || app.state === 'taskSpinning';
+const wheel = new Wheel($('#wheelCanvas'), {
+  items: () => entries,
+  hubLabel: () => app.state === 'spinning' ? '' : 'SPIN',
+  canInteract: () => !busy(),
+  onHub: () => spin(),
+  onFlick: v => spin(v),
+  onStop: item => onMainStop(item)
+});
+const drum = new Drum($('#drumCanvas'), {
+  items: inItems,
+  canInteract: () => !busy(),
+  onTap: () => spin(),
+  onFlick: v => spin(v),
+  onStop: item => onMainStop(item)
+});
+const taskWheel = new Drum($('#taskCanvas'), {
+  compact: true,
+  items: () => taskEntries,
+  canInteract: () => app.state === 'revealed' && settings.task && !app.task,
+  onTap: () => spinTask(),
+  onFlick: v => spinTask(v),
+  onStop: item => onTaskStop(item)
+});
+const active = () => settings.mode === 'drum' ? drum : wheel;
+
+/* ---------- Flow ---------- */
+function spin(v0) {
+  if (busy()) return;
+  if (settings.mode === 'colors') { colorSpin(); return; }
+  if (settings.mode === 'numbers') { numSpin(); return; }
+  if (settings.mode === 'first') { firstSpin(); return; }
+  if (app.state === 'revealed' || app.state === 'done') dismiss(true);
+  const pool = inItems();
+  if (!pool.length) {
+    if (entries.some(e => e.state === 'picked')) showDone();
+    else { toast('Everyone is marked absent. Change attendance in Roster.'); openSheet('Roster'); }
+    return;
+  }
+  Sound.ensure();
+  entries.forEach(e => { e.w = e.tw; });
+  const item = weightedPick(pool);
+  app.state = 'spinning';
+  closeSheets();
+  updateUI();
+  active().spin(v0 != null ? v0 : 19 + Math.random() * 8, item);
+}
+function onMainStop(item) {
+  app.state = 'revealed'; app.current = item; app.task = null;
+  active().winner = item; active().dirty = true;
+  Sound.chime();
+  pushHistory(item.label);
+  const tok = ++app.token;
+  setTimeout(() => { if (tok === app.token && app.state === 'revealed') showReveal(); }, reduced() ? 0 : 520);
+  updateUI();
+}
+// A pick is still on screen while its task spins
+const showingPick = () => app.state === 'revealed' || app.state === 'taskSpinning';
+const ALT_TASK = { numbers: '#numTask', first: '#firstTask', colors: '#colorTask' };
+const taskEl = () => $(ALT_TASK[settings.mode] || '#revealTask');
+function setTaskLine(text, pending) {
+  const t = taskEl();
+  t.hidden = false;
+  t.className = 'reveal-task' + (pending ? ' pending' : '') + (ALT_TASK[settings.mode] ? ' alt-task' : '');
+  t.textContent = text;
+}
+function altTaskClear() {
+  Object.values(ALT_TASK).forEach(sel => { const e = $(sel); e.textContent = ''; e.hidden = true; });
+  app.task = null; taskWheel.winner = null; taskWheel.dirty = true;
+}
+function altTaskPrompt() { if (settings.task) setTaskLine('Press Space for a task', true); }
+function spinTask(v0) {
+  if (!settings.task || busy()) return;
+  if (app.state !== 'revealed') { toast('Spin for a name first, then spin for a task'); return; }
+  if (app.task) { toast('Task already picked. Spin the next name.'); return; }
+  app.state = 'taskSpinning';
+  taskEntries.forEach(e => { e.w = e.tw; });
+  const it = weightedPick(taskEntries);
+  setTaskLine('Spinning for a task…', true);
+  taskWheel.spin(v0 != null ? v0 : 16 + Math.random() * 6, it);
+  updateUI();
+}
+function onTaskStop(it) {
+  app.state = 'revealed'; app.task = it.label;
+  taskWheel.winner = it; taskWheel.dirty = true;
+  setTaskLine(it.label, false);
+  if (!altMode()) { const list = history[settings.cls]; if (list && list.length) { list[list.length - 1].task = it.label; store.set('spinrHistory', history); } }
+  Sound.chime(true);
+  setRevealButtons();
+  updateUI();
+}
+function setRevealButtons() {
+  const p = $('#revealPrimary'), s = $('#revealSecondary');
+  $('#revealMinor').hidden = app.state === 'done';
+  if (app.state === 'done') {
+    p.textContent = 'Start new round'; p.onclick = resetRound;
+    s.textContent = 'Close'; s.onclick = () => dismiss();
+    return;
+  }
+  const needTask = settings.task && !app.task;
+  p.textContent = needTask ? 'Spin task' : 'Next name';
+  p.onclick = () => needTask ? spinTask() : spin();
+  s.textContent = 'Done'; s.onclick = () => dismiss();
+}
+function showReveal() {
+  const card = $('#reveal'), name = $('#revealName'), task = $('#revealTask');
+  const present = entries.filter(e => e.state !== 'absent').length;
+  const picked = entries.filter(e => e.state === 'picked').length;
+  $('#revealEyebrow').textContent = settings.noRepeat ? `Pick ${picked + 1} of ${present}` : clsName(settings.cls);
+  name.className = 'reveal-name'; name.textContent = app.current.label;
+  if (settings.task) { task.className = 'reveal-task pending'; task.textContent = 'Press Space or tap the Task Spinner for a task'; task.hidden = false; }
+  else { task.textContent = ''; task.hidden = true; }
+  setRevealButtons();
+  openCard();
+  fitName();
+}
+function showDone() {
+  app.state = 'done'; app.token++;
+  $('#revealEyebrow').textContent = 'Round complete';
+  const name = $('#revealName'); name.className = 'reveal-name done'; name.textContent = "Everyone's had a turn";
+  const task = $('#revealTask'); task.hidden = true;
+  setRevealButtons(); openCard(); updateUI();
+}
+function openCard() {
+  const card = $('#reveal');
+  card.hidden = false;
+  requestAnimationFrame(() => requestAnimationFrame(() => card.classList.add('show')));
+}
+function fitName() {
+  const el = $('#revealName');
+  el.style.fontSize = '';
+  el.style.whiteSpace = '';
+  let fs = parseFloat(getComputedStyle(el).fontSize);
+  while (el.scrollWidth > el.clientWidth + 1 && fs > 30) { fs -= 3; el.style.fontSize = fs + 'px'; }
+  if (el.scrollWidth > el.clientWidth + 1) el.style.whiteSpace = 'normal';
+}
+function hideCard() {
+  const card = $('#reveal');
+  card.classList.remove('show');
+  setTimeout(() => { if (!card.classList.contains('show')) card.hidden = true; }, 380);
+}
+function dismiss(quiet) {
+  if (settings.mode === 'colors') { colorDismiss(); return; }
+  if (settings.mode === 'numbers') { numDismiss(); return; }
+  if (settings.mode === 'first') { firstDismiss(); return; }
+  app.token++;
+  const wasDone = app.state === 'done';
+  hideCard();
+  [wheel, drum, taskWheel].forEach(w => { w.winner = null; w.dirty = true; });
+  if (app.current && settings.noRepeat && !wasDone) app.current.state = 'picked';
+  app.current = null; app.task = null; app.state = 'idle';
+  computeTargets(false);
+  updateUI();
+  if (!quiet && !wasDone && settings.noRepeat && !inItems().length && entries.some(e => e.state === 'picked')) {
+    setTimeout(() => { if (app.state === 'idle' && !inItems().length) showDone(); }, reduced() ? 0 : 900);
+  }
+}
+function resetRound() {
+  if (busy()) return;
+  if (settings.mode === 'colors') {
+    colorState.used.clear(); colorState.current = null; colorState.lit = -1; app.state = 'idle';
+    hideColorName(); refreshOrbs(); updateUI(); toast('New round started'); return;
+  }
+  if (settings.mode === 'numbers') {
+    numState.used.clear(); numState.current = null; app.state = 'idle';
+    $('#numWrap').classList.remove('win'); numShow('?'); refreshNumbers(); updateUI(); toast('New round started'); return;
+  }
+  if (settings.mode === 'first') {
+    firstState.used.clear(); firstState.current = null; app.state = 'idle';
+    $('#firstWrap').classList.remove('win'); firstShow('Who goes first?', false, true); refreshFirst(); updateUI(); toast('New round started'); return;
+  }
+  hideCard(); app.token++;
+  [wheel, drum, taskWheel].forEach(w => { w.winner = null; w.dirty = true; });
+  app.current = null; app.task = null; app.state = 'idle';
+  entries.forEach(e => { if (e.state === 'picked') e.state = 'in'; });
+  computeTargets(false);
+  updateUI();
+  toast('New round started');
+}
+function advance() {
+  if (groupsOpen()) { makeGroups(); return; }
+  if (app.state === 'idle') spin();
+  else if (app.state === 'revealed') { if (settings.task && !app.task) spinTask(); else spin(); }
+  else if (app.state === 'done') resetRound();
+}
+
+/* ---------- Colors ---------- */
+const COLORS = [
+  { k: 'red', name: 'Red', hex: '#e03131', l: 'R', a: '#ff7a7a', c: '#ff3d7f' },
+  { k: 'green', name: 'Green', hex: '#2fb344', l: 'G', a: '#86eaa0', c: '#13b3a0' },
+  { k: 'yellow', name: 'Yellow', hex: '#e7da40', l: 'Y', a: '#fff59a', c: '#ffb020' },
+  { k: 'blue', name: 'Blue', hex: '#1e66f5', l: 'B', a: '#7ab2ff', c: '#6b4dff' },
+  { k: 'purple', name: 'Purple', hex: '#8b30e0', l: 'P', a: '#c48bff', c: '#e04fd0' },
+  { k: 'orange', name: 'Orange', hex: '#ffa715', l: 'O', a: '#ffd27a', c: '#ff6a3d' }
+];
+settings.colorCount = clamp(settings.colorCount | 0 || 4, 2, 6);
+const colorState = { used: new Set(), current: null, lit: -1, timer: null };
+function renderOrbs() {
+  const box = $('#orbs'); box.textContent = '';
+  COLORS.slice(0, settings.colorCount).forEach((c, i) => {
+    const d = document.createElement('div');
+    d.className = 'orb';
+    d.style.setProperty('--c', c.hex); d.style.setProperty('--ca', c.a); d.style.setProperty('--cc', c.c);
+    d.style.setProperty('--d', `${-i * 1.3}s`);
+    const sh = document.createElement('span'); sh.className = 'aur';
+    const lt = document.createElement('span'); lt.className = 'ltr'; lt.textContent = c.l;
+    d.append(sh, lt);
+    d.setAttribute('role', 'img'); d.setAttribute('aria-label', c.name);
+    box.appendChild(d);
+  });
+  const seg = $('#countSeg'); seg.textContent = '';
+  for (let n = 2; n <= 6; n++) {
+    const b = document.createElement('button'); b.type = 'button'; b.textContent = n;
+    b.setAttribute('aria-pressed', n === settings.colorCount);
+    b.addEventListener('click', () => setColorCount(n));
+    seg.appendChild(b);
+  }
+  refreshOrbs();
+}
+function refreshOrbs() {
+  const box = $('#orbs');
+  [...box.children].forEach((d, i) => {
+    const isCur = colorState.current === i;
+    d.classList.toggle('used', settings.noRepeat && colorState.used.has(COLORS[i].k) && !isCur);
+    d.classList.toggle('lit', colorState.lit === i);
+    d.classList.toggle('win', isCur && showingPick());
+  });
+  box.classList.toggle('chasing', app.state === 'spinning');
+  box.classList.toggle('has-win', showingPick() && colorState.current != null);
+  $('#colorHint').hidden = app.state !== 'idle';
+}
+function showColorName(i) {
+  const c = COLORS[i], el = $('#colorName');
+  el.textContent = c.name; el.style.setProperty('--c', c.hex); el.classList.add('show');
+  $('#colorEyebrow').textContent = settings.noRepeat ? `Color ${colorState.used.size + 1} of ${settings.colorCount}` : 'Selected';
+}
+function hideColorName() { $('#colorName').classList.remove('show'); $('#colorEyebrow').textContent = ''; }
+function colorSpin() {
+  if (app.state === 'revealed') colorDismiss();
+  altTaskClear();
+  const n = settings.colorCount;
+  let avail = [...Array(n).keys()].filter(i => !settings.noRepeat || !colorState.used.has(COLORS[i].k));
+  if (!avail.length) { colorState.used.clear(); avail = [...Array(n).keys()]; toast('All colors used. Starting a new round.'); }
+  const win = avail[Math.floor(Math.random() * avail.length)];
+  Sound.ensure(); closeSheets();
+  app.state = 'spinning'; hideColorName(); refreshOrbs(); updateUI();
+  if (reduced()) { finishColor(win); return; }
+  // A light chases across the colors, slowing down until it lands. Length follows the Suspense setting.
+  const f = suspense(), a = 0.045, b = 0.25 + 0.3 * f, T = 7.5 * f;
+  const m = avail.length;
+  let start = avail.indexOf(colorState.lit); if (start < 0) start = Math.floor(Math.random() * m) - 1;
+  let H = Math.max(m * 2, Math.round(T / (a + (b - a) / 3.2)));
+  H += mod(avail.indexOf(win) - (start + H), m);
+  let j = 0;
+  const step = () => {
+    j++;
+    colorState.lit = avail[mod(start + j, m)]; refreshOrbs();
+    Sound.click(0.35 + 0.6 * (1 - j / H));
+    if (j >= H) { colorState.timer = setTimeout(() => finishColor(win), 200); return; }
+    colorState.timer = setTimeout(step, (a + (b - a) * Math.pow(j / H, 2.2)) * 1000);
+  };
+  step();
+}
+function finishColor(i) {
+  colorState.current = i; colorState.lit = -1; app.state = 'revealed';
+  Sound.chime(); showColorName(i); refreshOrbs(); altTaskPrompt(); updateUI();
+}
+function colorDismiss() {
+  if (colorState.current != null && settings.noRepeat) colorState.used.add(COLORS[colorState.current].k);
+  colorState.current = null; app.state = 'idle'; altTaskClear();
+  hideColorName(); refreshOrbs(); updateUI();
+}
+function setColorCount(n) {
+  if (busy()) return;
+  settings.colorCount = n; saveSettings();
+  colorState.used.clear(); colorState.current = null; colorState.lit = -1; app.state = 'idle';
+  hideColorName(); renderOrbs(); layoutStage(); updateUI();
+}
+
+/* ---------- Numbers ---------- */
+const altMode = () => settings.mode === 'colors' || settings.mode === 'numbers' || settings.mode === 'first';
+const NUM_PRESETS = [['3', '3'], ['4', '4'], ['5', '5'], ['6', '6'], ['ab', 'A/B'], ['custom', 'Custom']];
+if (!NUM_PRESETS.some(p => p[0] === settings.numPreset)) settings.numPreset = '4';
+settings.numCustom = clamp(parseInt(settings.numCustom, 10) || 30, 2, 999);
+const LETTERS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+// A/B letter count: 2 is A–B, 3 is A–C, up to 26 for A–Z
+settings.numLetters = clamp(parseInt(settings.numLetters, 10) || (settings.numABC ? 3 : 2), 2, 26);
+const letterRange = () => `A–${LETTERS[settings.numLetters - 1]}`;
+const letterLabel = () => settings.numLetters === 2 ? 'A or B' : settings.numLetters === 3 ? 'A, B, or C' : `A to ${LETTERS[settings.numLetters - 1]}`;
+const numState = { used: new Set(), current: null, timer: null };
+function numPool() {
+  if (settings.numPreset === 'ab') return LETTERS.slice(0, settings.numLetters).split('');
+  const n = settings.numPreset === 'custom' ? settings.numCustom : +settings.numPreset;
+  return Array.from({ length: n }, (_, i) => String(i + 1));
+}
+function numShow(v, tick) {
+  const el = $('#numValue');
+  el.textContent = v;
+  el.classList.toggle('long', String(v).length >= 3);
+  el.classList.toggle('idle', v === '?');
+  if (tick) { el.classList.remove('tick'); void el.offsetWidth; el.classList.add('tick'); }
+}
+function renderNumbers() {
+  const seg = $('#numSeg'); seg.textContent = '';
+  NUM_PRESETS.forEach(([k, label]) => {
+    const b = document.createElement('button'); b.type = 'button'; b.textContent = label;
+    b.setAttribute('aria-pressed', settings.numPreset === k);
+    b.addEventListener('click', () => setNumPreset(k));
+    seg.appendChild(b);
+  });
+  $('#numCustom').hidden = settings.numPreset !== 'custom';
+  $('#letterStep').hidden = settings.numPreset !== 'ab';
+  $('#letterRange').textContent = letterRange();
+  const lp = $('#letterPlus'), lm = $('#letterMinus');
+  lp.textContent = settings.numLetters < 26 ? '+' + LETTERS[settings.numLetters] : '+';
+  lp.disabled = settings.numLetters >= 26; lm.disabled = settings.numLetters <= 2;
+  lp.title = settings.numLetters < 26 ? `Add ${LETTERS[settings.numLetters]}` : 'A to Z is the most';
+  lm.title = settings.numLetters > 2 ? `Remove ${LETTERS[settings.numLetters - 1]}` : 'A and B is the fewest';
+  $('#numInput').value = settings.numCustom;
+  refreshNumbers();
+}
+function refreshNumbers() {
+  const pool = numPool(), box = $('#numTokens'), btn = $('#numBoardBtn');
+  box.textContent = '';
+  const big = pool.length > 60;
+  box.hidden = big || !settings.numBoard;
+  btn.hidden = big;
+  const EYE = '<svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M1.5 10S4.5 4.5 10 4.5 18.5 10 18.5 10 15.5 15.5 10 15.5 1.5 10 1.5 10z"/><circle cx="10" cy="10" r="2.6"/></svg>';
+  const EYE_OFF = '<svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3l14 14"/><path d="M8.2 4.8A8.6 8.6 0 0110 4.5c5.5 0 8.5 5.5 8.5 5.5a14 14 0 01-2.6 3.2M5.4 6.4C3 8 1.5 10 1.5 10s3 5.5 8.5 5.5c1.2 0 2.3-.3 3.3-.7"/></svg>';
+  if (settings.numBoard) { btn.innerHTML = EYE_OFF; btn.title = 'Hide the number board'; btn.setAttribute('aria-label', 'Hide the number board'); }
+  else { btn.innerHTML = EYE + '<span>Show numbers</span>'; btn.title = 'Show the number board'; btn.setAttribute('aria-label', 'Show the number board'); }
+  if (!box.hidden) pool.forEach(v => {
+    const t = document.createElement('span');
+    const isCur = numState.current === v && showingPick();
+    t.className = 'num-tok' + (isCur ? ' cur' : settings.noRepeat && numState.used.has(v) ? ' used' : '');
+    t.textContent = v; box.appendChild(t);
+  });
+  $('#numHint').hidden = app.state !== 'idle';
+  if (app.state !== 'revealed' && app.state !== 'taskSpinning') $('#numEyebrow').textContent = '';
+}
+function numSpin() {
+  if (app.state === 'revealed') numDismiss();
+  altTaskClear();
+  const pool = numPool();
+  let avail = pool.filter(v => !settings.noRepeat || !numState.used.has(v));
+  if (!avail.length) { numState.used.clear(); avail = [...pool]; toast('All numbers used. Starting a new round.'); }
+  const win = avail[Math.floor(Math.random() * avail.length)];
+  Sound.ensure(); closeSheets();
+  app.state = 'spinning'; $('#numWrap').classList.remove('win'); refreshNumbers(); updateUI();
+  if (reduced()) { finishNum(win); return; }
+  // Numbers flick by quickly, then slow down before landing. Length follows the Suspense setting.
+  const f = suspense(), a = 0.05, b = 0.26 + 0.3 * f, T = 7.5 * f;
+  const H = Math.max(8, Math.round(T / (a + (b - a) / 3.2)));
+  let j = 0, last = $('#numValue').textContent;
+  const step = () => {
+    j++;
+    let v = win;
+    if (j < H) {
+      const src = (avail.length > 1 ? avail : pool).filter(x => x !== last);
+      v = src.length ? src[Math.floor(Math.random() * src.length)] : win;
+    }
+    last = v; numShow(v, true);
+    Sound.click(0.35 + 0.6 * (1 - j / H));
+    if (j >= H) { numState.timer = setTimeout(() => finishNum(win), 160); return; }
+    numState.timer = setTimeout(step, (a + (b - a) * Math.pow(j / H, 2.2)) * 1000);
+  };
+  step();
+}
+function finishNum(v) {
+  numState.current = v; app.state = 'revealed'; altTaskPrompt();
+  Sound.chime(); numShow(v, false);
+  $('#numWrap').classList.add('win');
+  const n = numPool().length;
+  $('#numEyebrow').textContent = settings.numPreset === 'ab' ? (settings.noRepeat && n > 3 ? `Letter ${numState.used.size + 1} of ${n}` : letterLabel()) : settings.noRepeat ? `Number ${numState.used.size + 1} of ${n}` : `1 to ${n}`;
+  refreshNumbers(); updateUI();
+}
+function numDismiss() {
+  if (numState.current != null && settings.noRepeat) numState.used.add(numState.current);
+  numState.current = null; app.state = 'idle'; altTaskClear();
+  $('#numWrap').classList.remove('win');
+  refreshNumbers(); updateUI();
+}
+function setNumPreset(k) {
+  if (busy()) return;
+  settings.numPreset = k; saveSettings();
+  numState.used.clear(); numState.current = null; app.state = 'idle';
+  $('#numWrap').classList.remove('win'); numShow('?');
+  renderNumbers(); layoutStage(); updateUI();
+  if (k === 'custom') { const inp = $('#numInput'); inp.focus(); inp.select(); }
+}
+function setNumCustom() {
+  const n = parseInt($('#numInput').value, 10);
+  if (!(n >= 2 && n <= 999)) { toast('Enter a number from 2 to 999'); return; }
+  settings.numCustom = n; setNumPreset('custom');
+  $('#numInput').blur(); $('#numSet').blur();
+  toast(`Picking from 1 to ${n}`);
+}
+$('#numSet').addEventListener('click', setNumCustom);
+function stepLetters(d) {
+  if (busy()) return;
+  settings.numLetters = clamp(settings.numLetters + d, 2, 26); saveSettings();
+  setNumPreset('ab');
+}
+$('#letterPlus').addEventListener('click', () => stepLetters(1));
+$('#letterMinus').addEventListener('click', () => stepLetters(-1));
+$('#numBoardBtn').addEventListener('click', () => { settings.numBoard = !settings.numBoard; saveSettings(); refreshNumbers(); layoutStage(); });
+$('#numInput').addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); setNumCustom(); } });
+
+/* ---------- Who's First ---------- */
+const FIRST_DEFAULT = [
+  'Whoever has the most letters in their last name.',
+  'Whoever’s birthday is coming up next.',
+  'Whoever has the largest hand.',
+  'Whoever has the shortest first name.',
+  'Whoever woke up earliest today.',
+  'Whoever is wearing the fewest accessories (necklace, watch, ring, etc.)',
+  'Whoever has the longest hair.',
+  'Whoever has the largest shoe size (the number)',
+  'Whoever has the shortest hair.',
+  'Whoever is wearing the most accessories (necklace, watch, ring, etc.)',
+  'Whoever’s name comes first alphabetically.',
+  'Whoever is the tallest.',
+  'Whoever is the shortest.',
+  'Whoever has the most siblings.',
+  'Whoever has the most pets.',
+  'Whoever has the fewest pets.',
+  'Whoever’s birthday is in the earliest month of the year.',
+  'Whoever’s birthday is the earliest in the month.',
+  'Whoever’s birthday is the latest in the month.',
+  'Whoever woke up the latest today.'
+];
+let firsts = store.get('spinrFirsts', null) || FIRST_DEFAULT.slice();
+const firstState = { used: new Set(), current: null, timer: null };
+function firstShow(text, tick, idle) {
+  const el = $('#firstValue');
+  el.textContent = text;
+  el.classList.toggle('idle', !!idle);
+  if (tick) { el.classList.remove('tick'); void el.offsetWidth; el.classList.add('tick'); }
+}
+function refreshFirst() {
+  $('#firstHint').hidden = app.state !== 'idle';
+  if (app.state !== 'revealed' && app.state !== 'taskSpinning') $('#firstEyebrow').textContent = '';
+}
+function firstSpin() {
+  if (app.state === 'revealed') firstDismiss();
+  altTaskClear();
+  if (!firsts.length) { toast('Add some prompts in Settings first'); openSheet('Settings'); return; }
+  let avail = firsts.filter(p => !settings.noRepeat || !firstState.used.has(p));
+  if (!avail.length) { firstState.used.clear(); avail = firsts.slice(); toast('All prompts used. Starting a new round.'); }
+  const win = avail[Math.floor(Math.random() * avail.length)];
+  Sound.ensure(); closeSheets();
+  app.state = 'spinning'; $('#firstWrap').classList.remove('win'); refreshFirst(); updateUI();
+  if (reduced()) { finishFirst(win); return; }
+  // Prompts shuffle past like cards, then slow down and land. Length follows the Suspense setting.
+  const f = suspense(), a = 0.07, b = 0.3 + 0.32 * f, T = 7 * f;
+  const H = Math.max(7, Math.round(T / (a + (b - a) / 3.2)));
+  let j = 0, last = $('#firstValue').textContent;
+  const step = () => {
+    j++;
+    let v = win;
+    if (j < H) { const src = firsts.filter(x => x !== last); v = src.length ? src[Math.floor(Math.random() * src.length)] : win; }
+    last = v; firstShow(v, true, false);
+    Sound.click(0.35 + 0.6 * (1 - j / H));
+    if (j >= H) { firstState.timer = setTimeout(() => finishFirst(win), 160); return; }
+    firstState.timer = setTimeout(step, (a + (b - a) * Math.pow(j / H, 2.2)) * 1000);
+  };
+  step();
+}
+function finishFirst(v) {
+  firstState.current = v; app.state = 'revealed'; altTaskPrompt();
+  Sound.chime(); firstShow(v, false, false);
+  $('#firstWrap').classList.add('win');
+  $('#firstEyebrow').textContent = settings.noRepeat ? `Goes first · Prompt ${firstState.used.size + 1} of ${firsts.length}` : 'Goes first';
+  refreshFirst(); updateUI();
+}
+function firstDismiss() {
+  if (firstState.current != null && settings.noRepeat) firstState.used.add(firstState.current);
+  firstState.current = null; app.state = 'idle'; altTaskClear();
+  $('#firstWrap').classList.remove('win');
+  refreshFirst(); updateUI();
+}
+$('#btnSaveFirsts').addEventListener('click', () => {
+  if (busy()) return;
+  const list = parseNames($('#firstText').value);
+  if (!list.length) { toast('Add at least one prompt'); return; }
+  firsts = list; store.set('spinrFirsts', firsts); firstState.used.clear(); toast('Prompts saved'); updateUI();
+});
+$('#btnResetFirsts').addEventListener('click', () => {
+  if (busy()) return;
+  firsts = FIRST_DEFAULT.slice(); store.set('spinrFirsts', null); firstState.used.clear();
+  $('#firstText').value = firsts.join('\n'); toast('Original prompts restored'); updateUI();
+});
+
+/* ---------- UI ---------- */
+const SOUND_ON = '<svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8v4h3l4 3.5v-11L6 8H3z"/><path d="M13.5 7.2a4 4 0 010 5.6M15.8 5a7 7 0 010 10"/></svg>';
+const SOUND_OFF = '<svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8v4h3l4 3.5v-11L6 8H3z"/><path d="M13.5 8l4 4M17.5 8l-4 4"/></svg>';
+function updateUI() {
+  const present = entries.filter(e => e.state !== 'absent').length;
+  const left = inItems().length;
+  if (settings.mode === 'colors') {
+    const n = settings.colorCount;
+    const cl = n - colorState.used.size - (app.state === 'revealed' && settings.noRepeat ? 1 : 0);
+    $('#chipClass').textContent = 'Colors';
+    $('#chipCount').textContent = settings.noRepeat ? `${cl} of ${n} left` : `${n} colors`;
+    $('#chipSample').hidden = true;
+    refreshOrbs();
+  } else if (settings.mode === 'numbers') {
+    const n = numPool().length;
+    const nl = n - numState.used.size - (app.state === 'revealed' && settings.noRepeat ? 1 : 0);
+    $('#chipClass').textContent = settings.numPreset === 'ab' ? (settings.numLetters > 3 ? 'Letters' : letterLabel()) : 'Numbers';
+    $('#chipCount').textContent = settings.noRepeat ? `${nl} of ${n} left` : settings.numPreset === 'ab' ? (settings.numLetters === 2 ? 'Pairs' : letterRange()) : `1 to ${n}`;
+    $('#chipSample').hidden = true;
+    refreshNumbers();
+  } else if (settings.mode === 'first') {
+    const n = firsts.length;
+    const fl = n - firstState.used.size - (app.state === 'revealed' && settings.noRepeat ? 1 : 0);
+    $('#chipClass').textContent = "Who's First";
+    $('#chipCount').textContent = settings.noRepeat ? `${fl} of ${n} left` : `${n} prompts`;
+    $('#chipSample').hidden = true;
+    refreshFirst();
+  } else {
+    $('#chipClass').textContent = clsName(settings.cls);
+    $('#chipCount').textContent = settings.noRepeat ? `${left} of ${present} left` : `${present} here`;
+    $('#chipSample').hidden = !isSample;
+  }
+  $('#stNoRepeat').textContent = settings.noRepeat ? 'No repeat' : 'Can repeat';
+  $('#stFair').hidden = !settings.fair;
+  const b = $('#btnSpin'); b.disabled = busy(); b.textContent = busy() ? 'Spinning' : 'Spin';
+  $('#btnGroups').disabled = busy();
+  $('#modeWheel').setAttribute('aria-pressed', settings.mode === 'wheel');
+  $('#modeDrum').setAttribute('aria-pressed', settings.mode === 'drum');
+  $('#modeColors').setAttribute('aria-pressed', settings.mode === 'colors');
+  $('#btnTask').setAttribute('aria-pressed', !!settings.task);
+  $('#btnTask').setAttribute('aria-label', settings.task ? 'Turn off the Task Spinner' : 'Turn on the Task Spinner');
+  if (typeof fitDock === 'function') fitDock();
+  $('#modeNumbers').setAttribute('aria-pressed', settings.mode === 'numbers');
+  $('#modeFirst').setAttribute('aria-pressed', settings.mode === 'first');
+  $('#btnSound').innerHTML = settings.sound ? SOUND_ON : SOUND_OFF;
+  $('#btnSound').setAttribute('aria-label', settings.sound ? 'Mute sounds' : 'Turn sounds on');
+  $('#hint').hidden = hintDismissed || settings.mode !== 'wheel' || inItems().length <= 32;
+  wheel.dirty = drum.dirty = taskWheel.dirty = true;
+  renderChips();
+}
+function renderChips() {
+  const box = $('#chips'); box.textContent = '';
+  entries.forEach((e, i) => {
+    const b = document.createElement('button');
+    b.type = 'button'; b.className = 'chip' + (e.state === 'absent' ? ' absent' : e.state === 'picked' ? ' picked' : '');
+    b.textContent = e.label; b.dataset.i = i;
+    b.setAttribute('aria-pressed', e.state === 'absent');
+    b.title = e.state === 'absent' ? 'Marked absent. Tap to mark here.' : 'Tap to mark absent';
+    box.appendChild(b);
+  });
+}
+$('#chips').addEventListener('click', ev => {
+  const b = ev.target.closest('.chip'); if (!b) return;
+  if (busy()) { toast('Wait for the spin to finish'); return; }
+  if (app.state === 'revealed' || app.state === 'done') dismiss(true);
+  const e = entries[+b.dataset.i]; if (!e) return;
+  const set = absentBy[settings.cls];
+  if (e.state === 'absent') { e.state = 'in'; set.delete(e.label); } else { e.state = 'absent'; set.add(e.label); }
+  computeTargets(false); updateUI();
+});
+$('#btnAllHere').addEventListener('click', () => {
+  if (busy()) return;
+  absentBy[settings.cls].clear();
+  entries.forEach(e => { if (e.state === 'absent') e.state = 'in'; });
+  computeTargets(false); updateUI();
+});
+
+// Task Spinner beside Numbers, Who's First and Colors. Returns the width to keep clear on each side.
+function placeAltTask(r, w, h) {
+  const tw = $('#taskWrap');
+  tw.hidden = !settings.task;
+  if (!settings.task) return 0;
+  const narrow = w < 760;
+  const task = Math.floor(narrow ? 110 : clamp(Math.min(h * 0.34, w * 0.18, 230), 130, 230));
+  const onLeft = !!settings.timerShown;
+  tw.style.transform = ''; tw.style.right = tw.style.bottom = 'auto';
+  tw.style.top = (narrow ? 0 : Math.round(r.height / 2 - (task + 22) / 2)) + 'px';
+  tw.style.left = (onLeft ? 24 : r.width - 24 - task) + 'px';
+  const ti = $('#taskInner'); ti.style.width = ti.style.height = task + 'px';
+  taskWheel.resize(task);
+  return narrow ? 0 : task + 40;
+}
+function layoutStage() {
+  const st = $('#stage'), r = st.getBoundingClientRect();
+  const w = r.width - 32, h = r.height;
+  const gap = Math.max(16, w * 0.025);
+  const isColors = settings.mode === 'colors';
+  const isNumbers = settings.mode === 'numbers';
+  const isFirst = settings.mode === 'first';
+  $('#mainWrap').hidden = isColors || isNumbers || isFirst;
+  $('#firstStage').hidden = !isFirst;
+  if (isFirst) {
+    $('#colorStage').hidden = true; $('#numberStage').hidden = true;
+    const wf = w - 2 * placeAltTask(r, w, h);
+    st.style.alignItems = 'center';
+    const cw = Math.floor(clamp(Math.min(wf * 0.9, 900), 260, 900));
+    const card = $('#firstCard');
+    card.style.setProperty('--w', cw + 'px');
+    card.style.setProperty('--fs', Math.round(clamp(cw * 0.062, 22, 60)) + 'px');
+    return;
+  }
+  $('#colorStage').hidden = !isColors;
+  $('#numberStage').hidden = !isNumbers;
+  if (isNumbers) {
+    const wn = w - 2 * placeAltTask(r, w, h);
+    st.style.alignItems = 'center';
+    const extra = numPool().length > 60 || !settings.numBoard ? 160 : 130 + Math.ceil(numPool().length / Math.max(1, Math.floor(Math.min(w, 760) / 40))) * 40;
+    const n = Math.floor(clamp(Math.min(wn * 0.82, (h - extra) / 0.74, 460), 200, 460));
+    $('.num-card').style.setProperty('--n', n + 'px');
+    return;
+  }
+  if (isColors) {
+    const wc = w - 2 * placeAltTask(r, w, h);
+    st.style.alignItems = 'center';
+    const n = settings.colorCount;
+    const orb = Math.floor(Math.min(200, h * 0.34, (wc / (n + (n - 1) * 0.3)) / 1.15));
+    const ob = $('#orbs');
+    ob.style.setProperty('--orb', orb + 'px');
+    ob.style.setProperty('--gap', Math.round(orb * 0.3) + 'px');
+    return;
+  }
+  const isWheel = settings.mode === 'wheel';
+  // Wheel: large, centered left to right, top half in view with the rest tucked below the dock.
+  // Drum: fully in view, 90% of the space, centered.
+  let main = isWheel
+    ? Math.floor(Math.max(240, Math.min(w, h * 1.8)))
+    : Math.floor(Math.max(180, Math.min(w, h) * 0.9));
+  let task = 0;
+  const tw = $('#taskWrap');
+  tw.hidden = !settings.task;
+  st.style.alignItems = isWheel ? 'flex-start' : 'center';
+  if (settings.task && isWheel) {
+    // Sit the task wheel in the open top-right corner beside the big wheel's curve.
+    const cx = r.width / 2, cy = main / 2, R = main / 2 - main * 0.06;
+    task = Math.floor(Math.min(h * 0.38, 280));
+    const onLeft = !!settings.timerShown;   // the timer panel owns the top-right corner when it's open
+    while (task > 110) {
+      const xIn = onLeft ? 24 + task : r.width - 24 - task, y1 = task + 22;
+      if (Math.hypot(xIn - cx, y1 - cy) > R + 12 || (onLeft ? xIn < cx - R : xIn > cx + R)) break;
+      task -= 10;
+    }
+    tw.style.left = (onLeft ? 24 : r.width - 24 - task) + 'px'; tw.style.top = '0px';
+    tw.style.right = tw.style.bottom = 'auto'; tw.style.transform = '';
+  } else if (settings.task) {
+    const side = (r.width - main) / 2 - gap - 16;   // room to the right of the centered wheel
+    task = Math.floor(Math.min(main * 0.46, side, h - 22));
+    if (task >= 120) {
+      tw.style.left = (settings.timerShown ? r.width / 2 - main / 2 - gap - task : r.width / 2 + main / 2 + gap) + 'px';
+      tw.style.top = (r.height / 2 - (task + 22) / 2) + 'px';
+      tw.style.right = tw.style.bottom = 'auto'; tw.style.transform = '';
+    } else {
+      // Not enough room beside it: shrink the main wheel and tuck the task wheel underneath, still centered.
+      task = Math.floor(Math.max(110, Math.min(w * 0.4, h * 0.3)));
+      main = Math.floor(Math.max(180, Math.min(w, h - task - 22 - gap) * 0.9));
+      tw.style.left = '50%'; tw.style.transform = 'translateX(-50%)';
+      tw.style.top = 'auto'; tw.style.bottom = '0px'; tw.style.right = 'auto';
+    }
+  }
+  st.style.flexDirection = 'row';
+  st.style.gap = '0px';
+  const mw = $('#mainWrap'); mw.style.width = mw.style.height = main + 'px';
+  mw.classList.toggle('drum-mode', settings.mode === 'drum');
+  const ti = $('#taskInner'); ti.style.width = ti.style.height = task + 'px';
+  wheel.resize(main); drum.resize(main);
+  if (settings.task) taskWheel.resize(task);
+  if (!$('#reveal').hidden) fitName();
+}
+function setMode(m) {
+  if (busy() || settings.mode === m) return;
+  if (app.state === 'revealed' || app.state === 'done') dismiss(true);
+  if (m === 'colors') { clearTimeout(colorState.timer); }
+  settings.mode = m; saveSettings();
+  $('#wheelCanvas').hidden = m !== 'wheel';
+  $('#drumCanvas').hidden = m !== 'drum';
+  $('#mainWrap').classList.toggle('drum-mode', m === 'drum');
+  drum.settle = true;
+  layoutStage();
+  updateUI();
+}
+
+/* ---------- Sheets ---------- */
+const SHEETS = ['Roster', 'History', 'Settings'];
+function openSheet(name) {
+  SHEETS.forEach(n => {
+    const el = $('#sheet' + n), on = n === name && !el.classList.contains('open');
+    el.classList.toggle('open', on); el.inert = !on;
+    $('#btn' + n).setAttribute('aria-pressed', on);
+  });
+  if (name === 'History') renderHistory();
+  if (name === 'Settings') syncSettings();
+}
+function closeSheets() {
+  SHEETS.forEach(n => { const el = $('#sheet' + n); el.classList.remove('open'); el.inert = true; $('#btn' + n).setAttribute('aria-pressed', false); });
+}
+document.querySelectorAll('[data-close]').forEach(b => b.addEventListener('click', closeSheets));
+$('#btnRoster').addEventListener('click', () => openSheet('Roster'));
+$('#classChip').addEventListener('click', () => openSheet('Roster'));
+$('#btnHistory').addEventListener('click', () => openSheet('History'));
+$('#btnSettings').addEventListener('click', () => openSheet('Settings'));
+
+// Roster
+const sel = $('#classSelect');
+function renderClassOptions() {
+  sel.textContent = '';
+  CLASSES.forEach(c => { const o = document.createElement('option'); o.value = c; o.textContent = clsName(c); sel.appendChild(o); });
+  sel.value = settings.cls;
+}
+renderClassOptions();
+function openRename() {
+  if (busy()) return;
+  $('#renameRow').hidden = false; $('#classRow').hidden = true;
+  const inp = $('#renameInput'); inp.value = classLabels[settings.cls] || ''; inp.placeholder = `Name for ${settings.cls}, like 3rd Period Science`;
+  inp.focus(); inp.select();
+}
+function closeRename() { $('#renameRow').hidden = true; $('#classRow').hidden = false; }
+function saveRename() {
+  const v = $('#renameInput').value.trim().slice(0, 40);
+  if (v) classLabels[settings.cls] = v; else delete classLabels[settings.cls];
+  store.set('classNames', classLabels);
+  renderClassOptions(); closeRename(); updateUI();
+  toast(v ? `Renamed to ${v}` : `Back to ${settings.cls}`);
+}
+$('#btnRename').addEventListener('click', openRename);
+$('#btnRenameSave').addEventListener('click', saveRename);
+$('#btnRenameCancel').addEventListener('click', closeRename);
+$('#renameInput').addEventListener('keydown', e => {
+  if (e.key === 'Enter') { e.preventDefault(); saveRename(); }
+  else if (e.key === 'Escape') { e.preventDefault(); closeRename(); }
+});
+sel.addEventListener('change', () => {
+  if (busy()) { sel.value = settings.cls; return; }
+  if (app.state !== 'idle') dismiss(true);
+  settings.cls = sel.value; saveSettings(); closeRename(); loadClass();
+});
+function parseNames(text) {
+  return text.split(/\r?\n/).map(n => n.trim().replace(/^"(.*)"$/, '$1').trim()).filter(Boolean);
+}
+function saveNames(fromUpload) {
+  if (busy()) { toast('Wait for the spin to finish'); return; }
+  const list = parseNames($('#rosterText').value);
+  if (!list.length) { toast('Enter at least one name'); return; }
+  if (app.state !== 'idle') dismiss(true);
+  saved[settings.cls] = list;
+  store.set('names', saved);
+  loadClass();
+  toast(`${list.length} names ${fromUpload ? 'uploaded' : 'saved'} to ${clsName(settings.cls)}`);
+}
+$('#btnSaveNames').addEventListener('click', () => saveNames(false));
+$('#fileInput').addEventListener('change', ev => {
+  const f = ev.target.files[0]; if (!f) return;
+  const r = new FileReader();
+  r.onload = e => { $('#rosterText').value = parseNames(String(e.target.result)).join('\n'); saveNames(true); ev.target.value = ''; };
+  r.readAsText(f);
+});
+
+// History
+function fmtWhen(t) {
+  const d = new Date(t), now = new Date();
+  const time = d.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
+  if (d.toDateString() === now.toDateString()) return `Today ${time}`;
+  if (now - d < 6 * 864e5) return `${d.toLocaleDateString([], { weekday: 'short' })} ${time}`;
+  return d.toLocaleDateString([], { month: 'short', day: 'numeric' });
+}
+function renderHistory() {
+  const list = history[settings.cls] || [];
+  const counts = weekCounts(settings.cls);
+  const last = new Map(); list.forEach(h => last.set(h.n, h.t));
+  const names = [...new Set(entries.map(e => e.label))];
+  names.sort((a, b) => (counts.get(a) || 0) - (counts.get(b) || 0) || a.localeCompare(b));
+  const never = names.filter(n => !counts.get(n)).length;
+  $('#histNote').textContent = `${never} of ${names.length} not called this week. ` + (settings.fair ? 'Fair mode is on, so they have bigger slices.' : 'Turn on Fair mode in Settings to give them bigger slices.');
+  const tbl = $('#histTable'); tbl.textContent = '';
+  names.forEach(n => {
+    const c = counts.get(n) || 0;
+    const row = document.createElement('div'); row.className = 'hrow';
+    const nm = document.createElement('span'); nm.className = 'n'; nm.textContent = n;
+    const dots = document.createElement('span'); dots.className = 'dots'; dots.title = `${c} this week`;
+    for (let i = 0; i < 5; i++) { const d = document.createElement('i'); if (i < c) d.className = 'on'; dots.appendChild(d); }
+    const w = document.createElement('span'); w.className = 'when' + (c ? '' : ' never');
+    w.textContent = c ? fmtWhen(last.get(n)) : 'Not yet';
+    row.append(nm, dots, w); tbl.appendChild(row);
+  });
+  const rec = $('#histRecent'); rec.textContent = '';
+  const recent = list.slice(-20).reverse();
+  if (!recent.length) { const p = document.createElement('p'); p.className = 'note'; p.textContent = 'No picks yet for this class.'; rec.appendChild(p); }
+  recent.forEach(h => {
+    const d = document.createElement('div');
+    const left = document.createElement('b'); left.style.fontWeight = '600'; left.textContent = h.n;
+    if (h.task) { const em = document.createElement('em'); em.textContent = '  ' + h.task; left.appendChild(em); }
+    const s = document.createElement('span'); s.textContent = fmtWhen(h.t);
+    d.append(left, s); rec.appendChild(d);
+  });
+}
+let clearArmed = 0;
+$('#btnClearHist').addEventListener('click', ev => {
+  const b = ev.currentTarget;
+  if (Date.now() - clearArmed > 3000) { clearArmed = Date.now(); b.textContent = 'Tap again to clear'; setTimeout(() => { b.textContent = 'Clear history for this class'; }, 3000); return; }
+  history[settings.cls] = []; store.set('spinrHistory', history);
+  clearArmed = 0; b.textContent = 'Clear history for this class';
+  computeTargets(false); renderHistory(); toast('History cleared');
+});
+
+// Settings
+function syncSettings() {
+  $('#optNoRepeat').checked = settings.noRepeat;
+  $('#optFair').checked = settings.fair;
+  $('#optTask').checked = settings.task;
+  $('#optSound').checked = settings.sound;
+  $('#taskText').value = tasks.join('\n');
+  $('#firstText').value = firsts.join('\n');
+  document.querySelectorAll('#suspenseChoice button').forEach(b => b.setAttribute('aria-pressed', b.dataset.s === settings.suspense));
+}
+const TEXT_SIZES = [1, 1.15, 1.3, 1.45];
+function applyTextSize() {
+  let z = TEXT_SIZES.includes(+settings.textSize) ? +settings.textSize : 1;
+  if (window.innerWidth < 760) z = Math.min(z, 1.15);   // keep the dock on screen on phones
+  document.documentElement.style.setProperty('--uiz', z);
+  document.querySelectorAll('#textSizeChoice button').forEach(b => b.setAttribute('aria-pressed', +b.dataset.z === +settings.textSize));
+  fitDock();
+}
+function fitDock() {
+  const root = document.documentElement, dock = document.querySelector('.dock');
+  root.classList.remove('dk1', 'dk2', 'dk3');
+  for (const c of ['dk1', 'dk2', 'dk3']) {
+    if (dock.getBoundingClientRect().width <= window.innerWidth - 24) break;
+    root.classList.add(c);
+  }
+}
+$('#textSizeChoice').addEventListener('click', e => {
+  const b = e.target.closest('button'); if (!b) return;
+  settings.textSize = +b.dataset.z; saveSettings(); applyTextSize(); layoutStage();
+});
+applyTextSize();
+window.addEventListener('resize', applyTextSize);
+$('#suspenseChoice').addEventListener('click', e => {
+  const b = e.target.closest('button'); if (!b) return;
+  settings.suspense = b.dataset.s; saveSettings(); syncSettings();
+});
+$('#optNoRepeat').addEventListener('change', e => {
+  settings.noRepeat = e.target.checked; saveSettings();
+  if (!settings.noRepeat) entries.forEach(x => { if (x.state === 'picked') x.state = 'in'; });
+  computeTargets(false); updateUI();
+});
+$('#optFair').addEventListener('change', e => { settings.fair = e.target.checked; saveSettings(); computeTargets(false); updateUI(); });
+function setTaskOn(on) {
+  if (busy()) { $('#optTask').checked = settings.task; return false; }
+  settings.task = on; saveSettings();
+  $('#optTask').checked = on;
+  layoutStage(); updateUI();
+  if (app.state === 'revealed') {
+    setRevealButtons();
+    if (altMode()) { if (on && !app.task) altTaskPrompt(); else if (!on) altTaskClear(); }
+    else $('#revealTask').hidden = !on;
+  }
+  return true;
+}
+$('#optTask').addEventListener('change', e => setTaskOn(e.target.checked));
+$('#btnTask').addEventListener('click', () => { if (setTaskOn(!settings.task)) toast(settings.task ? 'Task Spinner on' : 'Task Spinner off'); });
+$('#taskClose').addEventListener('click', () => {
+  if (setTaskOn(false)) toast('Task Spinner off. Turn it back on with the sparkle button.');
+});
+$('#optSound').addEventListener('change', e => { settings.sound = e.target.checked; saveSettings(); updateUI(); });
+$('#btnSaveTasks').addEventListener('click', () => {
+  if (busy()) return;
+  const list = parseNames($('#taskText').value);
+  if (!list.length) { toast('Add at least one task'); return; }
+  tasks = list; store.set('spinrTasks', tasks); loadTasks(); toast('Tasks saved');
+});
+$('#btnNewRound').addEventListener('click', resetRound);
+
+// Groups
+const groupsOpen = () => !$('#groups').hidden;
+// Largest choice is half the class (rounded up), which always makes two teams.
+const presentNames = () => entries.filter(e => e.state !== 'absent').map(e => e.label);
+const maxGroupSize = () => Math.max(2, Math.ceil(presentNames().length / 2));
+// Only sizes that change the result: one choice per possible number of groups, labeled by the largest group it makes.
+function groupOptions() {
+  const n = presentNames().length, max = maxGroupSize(), opts = [];
+  let lastNg = null;
+  for (let size = 2; size <= max; size++) {
+    const ng = Math.max(1, Math.ceil(n / size));
+    if (ng !== lastNg) { const real = Math.ceil(n / ng); if (!opts.includes(real)) opts.push(real); lastNg = ng; }
+  }
+  return opts.length ? opts : [2];
+}
+function snapGroupSize() {
+  const opts = groupOptions();
+  if (!opts.includes(settings.groupSize)) settings.groupSize = opts.find(o => o >= settings.groupSize) || opts[opts.length - 1];
+  return opts;
+}
+const groupState = { groups: [], swap: null, pick: null };
+// "Keep apart" pairs, saved per class
+const apartAll = store.get('spinrApart', {}) || {};
+const apartPairs = () => (apartAll[settings.cls] || []).filter(([a, b]) => a && b);
+function clashCount(group) {
+  let c = 0;
+  for (const [a, b] of apartPairs()) if (group.includes(a) && group.includes(b)) c++;
+  return c;
+}
+const totalClashes = groups => groups.reduce((t, g) => t + clashCount(g), 0);
+// Fix clashes by trading one clashing student with someone in another group, as long as it lowers the total
+function repairGroups(groups) {
+  for (let pass = 0; pass < 60 && totalClashes(groups) > 0; pass++) {
+    let improved = false;
+    outer: for (let gi = 0; gi < groups.length; gi++) {
+      if (!clashCount(groups[gi])) continue;
+      for (let ni = 0; ni < groups[gi].length; ni++) {
+        const before = totalClashes(groups);
+        const order = [...Array(groups.length).keys()].sort(() => Math.random() - 0.5);
+        for (const gj of order) {
+          if (gj === gi) continue;
+          for (let nj = 0; nj < groups[gj].length; nj++) {
+            [groups[gi][ni], groups[gj][nj]] = [groups[gj][nj], groups[gi][ni]];
+            if (totalClashes(groups) < before) { improved = true; continue outer; }
+            [groups[gi][ni], groups[gj][nj]] = [groups[gj][nj], groups[gi][ni]];
+          }
+        }
+      }
+    }
+    if (!improved) break;
+  }
+  return groups;
+}
+function makeGroups() {
+  const names = presentNames();
+  for (let i = names.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [names[i], names[j]] = [names[j], names[i]]; }
+  snapGroupSize();
+  const size = settings.groupSize;
+  // No group is bigger than the chosen size; sizes differ by at most one.
+  const ng = Math.max(1, Math.ceil(names.length / size));
+  const groups = Array.from({ length: ng }, () => []);
+  names.forEach((n, i) => groups[i % ng].push(n));
+  repairGroups(groups);
+  groupState.groups = groups; groupState.swap = null; groupState.pick = null;
+  renderGroups(true);
+}
+const SWAP_ICON = '<svg class="sw" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h11l-3-3M16 13H5l3 3"/></svg>';
+function renderGroups(animate, partner) {
+  const groups = groupState.groups, opts = snapGroupSize();
+  const max = opts[opts.length - 1], size = settings.groupSize, ng = groups.length;
+  const total = groups.reduce((t, g) => t + g.length, 0);
+  // Splitting into halves, thirds, or quarters reads better as teams.
+  const teams = ng >= 2 && ng <= 4 && size > 2;
+  const WORD = { 2: 'Two', 3: 'Three', 4: 'Four' };
+  const unit = size === 2 && !teams ? 'pairs' : teams ? 'teams' : 'groups';
+  const lens = groups.map(g => g.length), lo = Math.min(...lens), hi = Math.max(...lens);
+  $('#groupsTitle').textContent = 'Groups – ' + (teams ? `${ng} teams` : size === 2 ? 'Pairs' : `${size} per group`);
+  $('#groupsSub').textContent = `${total} students here · ${ng} ${unit} of ${lo === hi ? lo : lo + '–' + hi}`;
+  $('#gSize').textContent = teams ? `${ng} teams` : size === 2 ? 'Pairs' : `${size} per group`;
+  $('#gMinus').disabled = size <= opts[0];
+  $('#gPlus').disabled = size >= max;
+  $('.swap-row').hidden = ng < 2;
+  const manual = settings.swapMode === 'manual';
+  document.querySelectorAll('#swapSeg button').forEach(b => b.setAttribute('aria-pressed', b.dataset.m === settings.swapMode));
+  $('#swapHint').textContent = manual
+    ? (groupState.pick ? `Now tap someone in another group to trade with ${groupState.pick}.` : 'Tap one name, then tap a name in another group to trade them.')
+    : 'Tap a name to swap them into another group. Tap the same name again for a different swap.';
+  const grid = $('#groupsGrid'); grid.textContent = '';
+  const step = animate && !reduced() ? 55 : 0;
+  const active = groupState.swap && groupState.swap.partner ? groupState.swap.name : null;
+  if (partner === undefined && active) partner = groupState.swap.partner;
+  groups.forEach((g, gi) => {
+    const card = document.createElement('div'); card.className = 'gcard' + (animate ? '' : ' still'); card.style.animationDelay = (gi * step) + 'ms';
+    const h = document.createElement('h3'); h.textContent = teams ? `Team ${gi + 1}` : size === 2 ? `Pair ${gi + 1}` : `Group ${gi + 1}`;
+    const ul = document.createElement('ul');
+    g.forEach((n, ni) => {
+      const li = document.createElement('li'); li.style.animationDelay = (gi * step + 120 + ni * 60) + 'ms';
+      const b = document.createElement('button'); b.type = 'button'; b.className = 'gname' + (n === active ? ' active' : '') + (n === partner ? ' partner' : '') + (n === groupState.pick ? ' picked' : '');
+      b.title = ng < 2 ? n : settings.swapMode === 'manual' ? (groupState.pick ? (n === groupState.pick ? 'Cancel' : `Trade with ${groupState.pick}`) : `Pick ${n} to trade`) : n === active ? `Swap ${n} with someone else` : `Swap ${n} into another group`;
+      b.dataset.name = n;
+      const t = document.createElement('span'); t.className = 'gtext'; t.textContent = n;
+      const acts = document.createElement('span'); acts.className = 'gacts';
+      const ab = document.createElement('span'); ab.className = 'gabs'; ab.textContent = 'A';
+      ab.dataset.name = n; ab.title = `Mark ${n} absent`;
+      acts.appendChild(ab); acts.insertAdjacentHTML('beforeend', SWAP_ICON);
+      b.append(t, acts);
+      li.appendChild(b); ul.appendChild(li);
+    });
+    card.append(h, ul); grid.appendChild(card);
+    if (animate && !reduced()) setTimeout(() => Sound.click(0.5), gi * step);
+  });
+}
+const findName = n => { for (let gi = 0; gi < groupState.groups.length; gi++) { const ni = groupState.groups[gi].indexOf(n); if (ni >= 0) return [gi, ni]; } return null; };
+function swapPair(a, b) {
+  const pa = findName(a), pb = findName(b); if (!pa || !pb) return;
+  groupState.groups[pa[0]][pa[1]] = b; groupState.groups[pb[0]][pb[1]] = a;
+}
+// Tap a name: it trades places with someone from another group. Tap it again: undo that and try the next person.
+function swapName(name) {
+  const groups = groupState.groups;
+  if (groups.length < 2) return;
+  let sw = groupState.swap;
+  if (!sw || sw.name !== name) {
+    const pos = findName(name); if (!pos) return;
+    const pool = [];
+    groups.forEach((g, gi) => { if (gi !== pos[0]) g.forEach(n => pool.push(n)); });
+    for (let i = pool.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [pool[i], pool[j]] = [pool[j], pool[i]]; }
+    // Try partners that keep keep-apart pairs separated first
+    const before = totalClashes(groups);
+    const ok = pool.filter(p => { swapPair(name, p); const t = totalClashes(groups); swapPair(name, p); return t <= before; });
+    if (ok.length) pool.splice(0, pool.length, ...ok, ...pool.filter(p => !ok.includes(p)));
+    sw = groupState.swap = { name, pool, k: -1, partner: null };
+  } else if (sw.partner) swapPair(name, sw.partner);
+  if (!sw.pool.length) return;
+  sw.k = (sw.k + 1) % sw.pool.length;
+  sw.partner = sw.pool[sw.k];
+  swapPair(name, sw.partner);
+  Sound.click(0.7);
+  renderGroups(false, sw.partner);
+  const btn = [...document.querySelectorAll('.gname')].find(x => x.dataset.name === name);
+  if (btn) btn.focus({ preventScroll: true });
+}
+// Manual swap: tap one name, then a name in another group
+function manualPick(name) {
+  const pick = groupState.pick;
+  if (!pick) { groupState.pick = name; groupState.swap = null; Sound.click(0.5); renderGroups(false); return; }
+  if (pick === name) { groupState.pick = null; renderGroups(false); return; }
+  const a = findName(pick), b = findName(name);
+  if (a && b && a[0] === b[0]) { groupState.pick = name; Sound.click(0.5); renderGroups(false); return; }
+  const before = totalClashes(groupState.groups);
+  swapPair(pick, name);
+  groupState.pick = null;
+  groupState.swap = { name: pick, pool: [], k: 0, partner: name };
+  Sound.click(0.7);
+  renderGroups(false, name);
+}
+// Mark a student absent right from their group: they leave the group and are marked absent for today
+function groupAbsent(name) {
+  const pos = findName(name); if (!pos) return;
+  groupState.groups[pos[0]].splice(pos[1], 1);
+  groupState.groups = groupState.groups.filter(g => g.length);
+  if (groupState.swap && (groupState.swap.name === name || groupState.swap.partner === name)) groupState.swap = null;
+  if (groupState.pick === name) groupState.pick = null;
+  const e = entries.find(x => x.label === name);
+  if (e) e.state = 'absent';
+  (absentBy[settings.cls] || (absentBy[settings.cls] = new Set())).add(name);
+  computeTargets(false); updateUI();
+  Sound.click(0.5);
+  renderGroups(false);
+  toast(`${name} marked absent for today`);
+}
+$('#groupsGrid').addEventListener('click', e => {
+  const ab = e.target.closest('.gabs'); if (ab) { groupAbsent(ab.dataset.name); return; }
+  const b = e.target.closest('.gname'); if (!b) return;
+  if (settings.swapMode === 'manual') manualPick(b.dataset.name); else swapName(b.dataset.name);
+});
+function renderApart() {
+  const pairs = apartPairs(), list = $('#apartList');
+  list.textContent = '';
+  if (!pairs.length) { const p = document.createElement('span'); p.className = 'apart-empty'; p.textContent = 'No pairs yet. Pick two students above.'; list.appendChild(p); }
+  pairs.forEach(([a, b], i) => {
+    const c = document.createElement('span'); c.className = 'apart-chip';
+    const t = document.createElement('span'); t.className = 'apart-names';
+    const na = document.createElement('span'), nb = document.createElement('span'), sep = document.createElement('span');
+    na.textContent = a; nb.textContent = b; sep.className = 'apart-sep'; sep.setAttribute('aria-hidden', 'true');
+    t.append(na, sep, nb);
+    const x = document.createElement('button'); x.type = 'button'; x.setAttribute('aria-label', `Remove ${a} and ${b}`);
+    x.innerHTML = '<svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M5 5l10 10M15 5L5 15"/></svg>';
+    x.addEventListener('click', () => { apartAll[settings.cls].splice(i, 1); store.set('spinrApart', apartAll); renderApart(); renderGroups(false); });
+    c.append(t, x); list.appendChild(c);
+  });
+  const names = [...new Set(entries.map(e => e.label))].sort((x, y) => x.localeCompare(y));
+  ['#apartA', '#apartB'].forEach(sel => {
+    const el = $(sel), keep = el.value; el.textContent = '';
+    const o0 = document.createElement('option'); o0.value = ''; o0.textContent = 'Choose a student'; el.appendChild(o0);
+    names.forEach(n => { const o = document.createElement('option'); o.value = o.textContent = n; el.appendChild(o); });
+    if (names.includes(keep)) el.value = keep;
+  });
+}
+$('#gApartBtn').addEventListener('click', () => {
+  const p = $('#apartPanel'); p.hidden = !p.hidden;
+  $('#gApartBtn').setAttribute('aria-expanded', !p.hidden);
+  if (!p.hidden) renderApart();
+});
+$('#apartAdd').addEventListener('click', () => {
+  const a = $('#apartA').value, b = $('#apartB').value;
+  if (!a || !b) { toast('Choose two students'); return; }
+  if (a === b) { toast('Choose two different students'); return; }
+  const list = apartAll[settings.cls] || (apartAll[settings.cls] = []);
+  if (list.some(([x, y]) => (x === a && y === b) || (x === b && y === a))) { toast('That pair is already on the list'); return; }
+  list.push([a, b]); store.set('spinrApart', apartAll);
+  $('#apartA').value = ''; $('#apartB').value = '';
+  repairGroups(groupState.groups); groupState.swap = null; groupState.pick = null;
+  renderApart(); renderGroups(false);
+  toast('Saved');
+});
+// Click anywhere off the names (and not on a control) to clear the swap highlights
+$('#groups').addEventListener('click', e => {
+  if (e.target.closest('.gname, button, input, select, .seg, .letter-step, .apart-panel')) return;
+  if (!groupState.swap && !groupState.pick) return;
+  groupState.swap = null; groupState.pick = null;
+  renderGroups(false);
+});
+$('#swapSeg').addEventListener('click', e => {
+  const b = e.target.closest('button'); if (!b) return;
+  settings.swapMode = b.dataset.m; saveSettings();
+  groupState.pick = null; groupState.swap = null;
+  renderGroups(false);
+});
+function openGroups() {
+  if (busy()) return;
+  if (entries.filter(e => e.state !== 'absent').length < 2) { toast('Need at least two students here to make groups'); return; }
+  closeSheets(); Sound.ensure();
+  const ov = $('#groups'); ov.hidden = false;
+  requestAnimationFrame(() => ov.classList.add('show'));
+  makeGroups(); renderApart();
+}
+function closeGroups() { const ov = $('#groups'); ov.classList.remove('show'); setTimeout(() => { ov.hidden = true; }, 300); }
+$('#btnGroups').addEventListener('click', openGroups);
+$('#gClose').addEventListener('click', closeGroups);
+$('#gShuffle').addEventListener('click', makeGroups);
+$('#gMinus').addEventListener('click', () => { const o = snapGroupSize(), i = o.indexOf(settings.groupSize); settings.groupSize = o[Math.max(0, i - 1)]; saveSettings(); makeGroups(); });
+$('#gPlus').addEventListener('click', () => { const o = snapGroupSize(), i = o.indexOf(settings.groupSize); settings.groupSize = o[Math.min(o.length - 1, i + 1)]; saveSettings(); makeGroups(); });
+
+// Misc controls
+$('#btnSpin').addEventListener('click', () => spin());
+$('#revealAbsent').addEventListener('click', notHere);
+$('#revealPass').addEventListener('click', passForNow);
+$('#modeWheel').addEventListener('click', () => setMode('wheel'));
+$('#modeDrum').addEventListener('click', () => setMode('drum'));
+$('#modeColors').addEventListener('click', () => setMode('colors'));
+$('#modeNumbers').addEventListener('click', () => setMode('numbers'));
+$('#modeFirst').addEventListener('click', () => setMode('first'));
+$('#btnSound').addEventListener('click', () => { settings.sound = !settings.sound; saveSettings(); updateUI(); });
+$('#hintDrum').addEventListener('click', () => setMode('drum'));
+$('#hintDrum').addEventListener('keydown', e => { if (e.key === 'Enter') setMode('drum'); });
+function toggleFS() {
+  if (!document.fullscreenElement) {
+    const p = document.documentElement.requestFullscreen && document.documentElement.requestFullscreen();
+    if (p && p.catch) p.catch(() => toast('Full screen is not available in this view'));
+    else if (!p) toast('Full screen is not available in this view');
+  } else document.exitFullscreen && document.exitFullscreen();
+}
+$('#btnFS').addEventListener('click', toggleFS);
+document.addEventListener('fullscreenchange', () => setTimeout(layoutStage, 60));
+
+let toastT;
+function toast(msg) {
+  const t = $('#toast'); t.textContent = msg; t.classList.add('show');
+  clearTimeout(toastT); toastT = setTimeout(() => t.classList.remove('show'), 2400);
+}
+
+// Keyboard and presentation clickers
+window.addEventListener('keydown', e => {
+  if (e.target.closest && e.target.closest('input, textarea, select')) return;
+  if (e.metaKey || e.ctrlKey || e.altKey) return;
+  const k = e.key;
+  if ((k === ' ' || k === 'Enter') && e.target.closest && e.target.closest('button, [role=button]')) return;
+  if ([' ', 'Enter', 'PageDown'].includes(k)) { e.preventDefault(); advance(); }
+  else if (['ArrowLeft', 'ArrowRight', 'PageUp'].includes(k)) { e.preventDefault(); if (app.state === 'revealed' || app.state === 'done') dismiss(); }
+  else if (k === 'ArrowDown' || k === 'ArrowUp') {
+    // Up and down step through the views in dock order
+    e.preventDefault();
+    if (busy() || groupsOpen()) return;
+    const order = ['wheel', 'drum', 'numbers', 'first', 'colors'];
+    const i = Math.max(0, order.indexOf(settings.mode));
+    setMode(order[mod(i + (k === 'ArrowDown' ? 1 : -1), order.length)]);
+  }
+  else if (k === 'Escape') { if (groupsOpen()) closeGroups(); else if (document.querySelector('.sheet.open')) closeSheets(); else if (app.state === 'revealed' || app.state === 'done') dismiss(); }
+  else if (k === 'f' || k === 'F') toggleFS();
+  else if (k === 'm' || k === 'M') { settings.sound = !settings.sound; saveSettings(); updateUI(); toast(settings.sound ? 'Sound on' : 'Muted'); }
+  else if (k === 't' || k === 'T') timerToggle();
+  else if (k === 'r' || k === 'R') { if (groupsOpen()) closeGroups(); openSheet('Roster'); }
+  else if (k === 'g' || k === 'G') { if (groupsOpen()) closeGroups(); else openGroups(); }
+});
+
+/* ---------- Backup ---------- */
+const BACKUP_KEYS = ['names', 'classNames', 'spinrTasks', 'spinrFirsts', 'spinrHistory', 'spinrApart', 'spinrSettings', 'spinrTimerSet'];
+$('#btnBackup').addEventListener('click', () => {
+  const data = { app: 'SPINr', version: 2, saved: new Date().toISOString() };
+  BACKUP_KEYS.forEach(k => { const v = store.get(k, null); if (v !== null) data[k] = v; });
+  try {
+    const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = `SPINr-backup-${new Date().toISOString().slice(0, 10)}.json`;
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(() => URL.revokeObjectURL(a.href), 2000);
+    toast('Backup downloaded');
+  } catch (e) { toast('This browser blocked the download'); }
+});
+let pendingRestore = null;
+$('#restoreInput').addEventListener('change', ev => {
+  const f = ev.target.files[0]; ev.target.value = '';
+  if (!f) return;
+  const r = new FileReader();
+  r.onload = e => {
+    let data;
+    try { data = JSON.parse(String(e.target.result)); } catch (err) { toast("That file isn't a SPINr backup"); return; }
+    if (!data || data.app !== 'SPINr') { toast("That file isn't a SPINr backup"); return; }
+    pendingRestore = data;
+    const lbl = document.querySelector('label[for="restoreInput"]');
+    lbl.textContent = 'Tap again to replace current data';
+    lbl.onclick = ev2 => {
+      ev2.preventDefault();
+      BACKUP_KEYS.forEach(k => { if (k in pendingRestore) store.set(k, pendingRestore[k]); });
+      toast('Backup restored. Reloading…');
+      setTimeout(() => location.reload(), 700);
+    };
+    setTimeout(() => { if (pendingRestore === data) { pendingRestore = null; lbl.textContent = 'Restore from file'; lbl.onclick = null; } }, 6000);
+  };
+  r.readAsText(f);
+});
+
+/* ---------- Timer ---------- */
+const Timer = {
+  set: clamp(parseInt(store.get('spinrTimerSet', 60), 10) || 60, 0, 5999),
+  left: 0, end: 0, running: false, done: false, iv: null, lastWhole: null
+};
+Timer.left = Timer.set;
+const PLAY_ICON = '<svg viewBox="0 0 20 20" fill="currentColor"><path d="M6 4.2v11.6a.8.8 0 001.2.7l9.4-5.8a.8.8 0 000-1.4L7.2 3.5A.8.8 0 006 4.2z"/></svg>';
+const PAUSE_ICON = '<svg viewBox="0 0 20 20" fill="currentColor"><rect x="5" y="4" width="3.6" height="12" rx="1"/><rect x="11.4" y="4" width="3.6" height="12" rx="1"/></svg>';
+const fmtTime = t => `${Math.floor(t / 60)}:${String(t % 60).padStart(2, '0')}`;
+function timerRender() {
+  const p = $('#timerPanel'), whole = Math.max(0, Math.ceil(Timer.left));
+  $('#tpTime').textContent = fmtTime(whole);
+  p.classList.toggle('running', Timer.running && whole > 10);
+  p.classList.toggle('warn', Timer.running && whole <= 10 && whole > 0);
+  p.classList.toggle('done', Timer.done);
+  const pl = $('#tpPlay');
+  pl.innerHTML = Timer.running ? PAUSE_ICON + 'Pause' : PLAY_ICON + (Timer.left < Timer.set && Timer.left > 0 ? 'Resume' : 'Start');
+  pl.setAttribute('aria-label', Timer.running ? 'Pause timer' : 'Start timer');
+  $('#btnTimer').classList.toggle('ticking', Timer.running);
+}
+function timerTick() {
+  if (!Timer.running) return;
+  Timer.left = (Timer.end - Date.now()) / 1000;
+  const whole = Math.ceil(Timer.left);
+  if (whole !== Timer.lastWhole) {
+    if (whole <= 10 && whole > 0) Sound.click(0.45);   // soft tick for the last 10 seconds
+    Timer.lastWhole = whole;
+  }
+  if (Timer.left <= 0) {
+    Timer.left = 0; Timer.running = false; Timer.done = true;
+    clearInterval(Timer.iv); Timer.iv = null;
+    [0, 700, 1400].forEach(ms => setTimeout(() => Sound.chime(), ms));
+    if ($('#timerPanel').hidden) { toast("Time's up"); }
+  }
+  timerRender();
+}
+function timerStartPause() {
+  Sound.ensure();
+  if (Timer.running) {
+    Timer.left = Math.max(0, (Timer.end - Date.now()) / 1000);
+    Timer.running = false; clearInterval(Timer.iv); Timer.iv = null;
+  } else {
+    if (Timer.left <= 0) { Timer.left = Timer.set; Timer.done = false; }
+    if (Timer.left <= 0) { toast('Add some time first'); return; }
+    Timer.done = false; Timer.running = true; Timer.lastWhole = Math.ceil(Timer.left);
+    Timer.end = Date.now() + Timer.left * 1000;
+    Timer.iv = setInterval(timerTick, 200);
+  }
+  timerRender();
+}
+// Reset goes back to the set time. A second tap within a moment goes back to the 1:00 default.
+let lastReset = 0;
+function timerReset() {
+  const now = Date.now(), dbl = now - lastReset < 600;
+  lastReset = dbl ? 0 : now;
+  Timer.running = false; Timer.done = false; clearInterval(Timer.iv); Timer.iv = null;
+  if (dbl && Timer.set !== 60) { Timer.set = 60; store.set('spinrTimerSet', 60); toast('Back to the 1:00 default'); }
+  Timer.left = Timer.set; timerRender();
+}
+function timerAdjust(d) {
+  Timer.done = false;
+  if (Timer.running) {
+    const left = Math.max(0, (Timer.end - Date.now()) / 1000);
+    const next = clamp(left + d, 1, 5999);
+    Timer.end = Date.now() + next * 1000; Timer.left = next;
+  } else {
+    // Adjusting while stopped changes the starting time too, so Reset comes back to it
+    const base = Math.round(Timer.left);
+    Timer.left = clamp(base + d, 0, 5999);
+    Timer.set = Timer.left; store.set('spinrTimerSet', Timer.set);
+  }
+  timerRender();
+}
+function timerToggle() {
+  const p = $('#timerPanel'), show = p.hidden;
+  p.hidden = !show; $('#btnTimer').setAttribute('aria-pressed', show);
+  $('#btnTimer').setAttribute('aria-label', show ? 'Hide timer' : 'Show timer');
+  settings.timerShown = show; saveSettings(); layoutStage();
+  if (show && Timer.done) { Timer.done = false; Timer.left = Timer.set; }
+  timerRender();
+}
+document.querySelectorAll('.tp-step button').forEach(b => b.addEventListener('click', () => timerAdjust(+b.dataset.d)));
+$('#tpPlay').addEventListener('click', timerStartPause);
+$('#tpReset').addEventListener('click', timerReset);
+$('#btnTimer').addEventListener('click', timerToggle);
+if (settings.timerShown) timerToggle(); else timerRender();
+
+/* ---------- Loop ---------- */
+let lastT = performance.now();
+const auraEl = $('#spinAura'); let auraLevel = 0, auraAng = 0;
+function frame(t) {
+  const dt = Math.min(0.1, (t - lastT) / 1000); lastT = t;
+  let moving = false;
+  const rate = reduced() ? 60 : 6.5;
+  for (const e of entries) {
+    const d = e.tw - e.w;
+    if (Math.abs(d) > 0.0006) { e.w += d * Math.min(1, dt * rate); moving = true; }
+    else if (e.w !== e.tw) { e.w = e.tw; moving = true; }
+  }
+  if (moving && !wheel.anim) wheel.needsLayout = true;
+  if (!altMode()) { const a = active(); a.update(dt); a.draw(); }
+  // Spin flair background: follows how fast things are moving
+  let target = 0;
+  if (!reduced()) {
+    if (settings.mode === 'wheel') target = Math.abs(wheel.omega) / 16;
+    else if (settings.mode === 'drum') target = Math.abs(drum.v) / 18;
+    else if (app.state === 'spinning') target = 0.55;
+    if (app.state === 'taskSpinning') target = Math.max(target, Math.abs(taskWheel.v) / 22);
+  }
+  auraLevel += (clamp(target, 0, 0.85) - auraLevel) * Math.min(1, dt * 4);
+  auraAng = (auraAng + dt * (40 + 260 * auraLevel)) % 360;
+  if (auraLevel > 0.005 || auraEl.style.opacity !== '0') {
+    auraEl.style.opacity = auraLevel < 0.005 ? '0' : auraLevel.toFixed(3);
+    auraEl.style.setProperty('--ang', auraAng.toFixed(1) + 'deg');
+  }
+  if (settings.task) { taskWheel.update(dt); taskWheel.draw(); }
+  requestAnimationFrame(frame);
+}
+
+/* ---------- Start ---------- */
+$('#wheelCanvas').hidden = settings.mode !== 'wheel';
+$('#drumCanvas').hidden = settings.mode !== 'drum';
+loadTasks();
+loadClass();
+renderOrbs();
+renderNumbers();
+layoutStage();
+window.addEventListener('resize', layoutStage);
+if (document.fonts && document.fonts.ready) document.fonts.ready.then(() => { wheel.needsLayout = true; taskWheel.dirty = true; drum.dirty = true; });
+requestAnimationFrame(frame);
+})();
+</script>
