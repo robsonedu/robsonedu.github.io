@@ -234,7 +234,8 @@ kbd{font-family:var(--sans);font-size:12px;font-weight:700;color:var(--fg);paddi
       <p class="desc" id="desc"></p>
     </div>
   </section>
-  <div class="hint">Hover to preview <i></i> Click to open</div>
+  <div class="hint">Hover to 
+    <i></i> Click to open</div>
 </div>
 <div class="toast" id="toast" aria-live="polite"><div><b id="toastName"></b><span>In SELECTr, this opens the tool. This preview just shows the transition.</span></div></div>
 
@@ -542,23 +543,17 @@ kbd{font-family:var(--sans);font-size:12px;font-weight:700;color:var(--fg);paddi
     else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') { e.preventDefault(); tiles[document.activeElement.classList.contains('tile') ? mod(at - 1, 5) : Math.max(0, current)].b.focus(); }
   });
 
-  /* ---------- Open (preview) ---------- */
+    /* ---------- Open the tool ---------- */
   let opening = false;
   async function open(i) {
     if (opening) return;
     opening = true;
     if (current !== i) { current = i; setLabels(i, false); }
     tiles.forEach((t, k) => t.b.classList.toggle('opening-tile', k === i));
-    $('#toastName').textContent = TOOLS[i].name;
     document.body.classList.add('opening');
     await wait(reduced() ? 50 : 480);
-    $('#toast').classList.add('show');
-    await wait(1700);
-    $('#toast').classList.remove('show');
-    document.body.classList.remove('opening');
-    tiles.forEach(t => t.b.classList.remove('opening-tile'));
-    await wait(350);
-    opening = false;
+    const tool = TOOLS[i].k === 'num' ? 'numbers' : TOOLS[i].k;
+    location.href = 'SelectorsPlus.html?tool=' + tool;
   }
 
   setLabels(-1, false);

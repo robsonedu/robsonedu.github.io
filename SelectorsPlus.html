@@ -2811,6 +2811,11 @@ function frame(t) {
 }
 
 /* ---------- Start ---------- */
+  const startTool = new URLSearchParams(location.search).get('tool');
+if (['wheel', 'drum', 'numbers', 'first', 'colors'].includes(startTool)) {
+  settings.mode = startTool;
+  saveSettings();
+}
 $('#wheelCanvas').hidden = settings.mode !== 'wheel';
 $('#drumCanvas').hidden = settings.mode !== 'drum';
 loadTasks();
