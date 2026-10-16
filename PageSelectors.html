@@ -30,45 +30,39 @@
     text-decoration: none; /* removes link underline */
     border-bottom: none;   /* removes theme’s default underline line */
   }
-.thumb-grid img {
-  width: 100%;
-  aspect-ratio: 16/9;   /* or 4/3 if you prefer squarer thumbs */
-  object-fit: fill;     /* forces squish/stretch instead of crop */
-  border-radius: 6px;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.25);
-  transition: transform 0.2s ease;
-}
+  .thumb-grid img {
+    width: 100%;
+    aspect-ratio: 16/9;   /* or 4/3 if you prefer squarer thumbs */
+    object-fit: fill;     /* forces squish/stretch instead of crop */
+    border-radius: 6px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.25);
+    transition: transform 0.2s ease;
+  }
+  .thumb-grid img:hover {
+    transform: scale(1.05);
+  }
 
+  .tool-card h2 {
+    margin-bottom: 0.75em;
+    font-size: 10px;
+  }
 
-.thumb-grid img:hover {
-  transform: scale(1.05);
-}
+  #original-selectors {
+    padding-top: 1.5em;
+    margin-bottom: 0.25em;
+  }
 
-.tool-card h2 {
-  margin-bottom: 0.75em;
-  font-size: 10px;
+  #selector-plus > h2 {
+    margin-bottom: 0.25em;
+  }
+    /* Bigger cards for the Selector PLUS grid only */
+#selector-plus .thumb-grid {
+  grid-template-columns: repeat(auto-fill, minmax(min(400px, 100%), 1fr));
 }
-
-/* Big Selector PLUS preview */
-.plus-preview a {
-  display: block;
-  border-bottom: none;
+#selector-plus .tool-card h2 {
+  font-size: 20px;
 }
-.plus-preview img {
-  width: 100%;
-  border-radius: 6px;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.25);
-}
-#original-selectors {
-  padding-top: 1.5em;
-  margin-bottom: 0.25em;
-}
-
-#selector-plus h2 {
-  margin-bottom: 0.25em;
-}
-
-</style>
+  </style>
 
 </head>
 <body class="is-preload">
@@ -110,7 +104,7 @@
         <p><strong>Quick Jump:</strong>
           <a href="#selector-plus">Selector PLUS</a> |
           <a href="#number">Number</a> |
-          <a href="#name">Name</a> |
+          <a href="#name-selector">Name</a> |
           <a href="#color">Color</a> |
           <a href="#color6">6-Color</a> |
           <a href="#who-goes-first">Who Goes First?</a>
@@ -121,10 +115,31 @@
         <p><strong>Selectors</strong> can randomly pick students for whole class, table teams, small groups, or even pairs—just press GO! Using randomized selectors keeps everyone on their toes and can boost participation and engagement. It's like digital popsicle sticks!</p>
 
         <!-- Selector PLUS -->
-        <section class="plus-preview" id="selector-plus">
+        <section id="selector-plus">
           <h2>NEW Selector PLUS - All in One Tool</h2>
-          <p>All your selectors in one place! Selector PLUS brings together five tools to call on students by name, number, letter, or land on a color. Save your class lists, build random groups, and use the built-in timer, all without leaving the page.</p>
-          <a href="SelectorsPlusLANDING.html"><img src="images/THUMBSelectrPlus.png" alt="Selector PLUS"></a>
+          <p>All your selectors in one place! Selector PLUS brings together five tools to call on students by name, number, letter, or seat color. Save your class lists, build random groups, and use the built-in timer, all without leaving the page.</p>
+
+          <div class="thumb-grid">
+            <section class="tool-card">
+              <h2>Purple Dark</h2>
+              <a href="SelectorsPlusPurpleLANDING.html"><img src="images/THUMBSelectrPlus.png" alt="Selector PLUS Purple"></a>
+            </section>
+
+            <section class="tool-card">
+              <h2>Neon Dark</h2>
+              <a href="SelectorsPlusNeonLANDING.html"><img src="images/THUMBSelectrPlusNEON.png" alt="Page 2 Title"></a>
+            </section>
+
+            <section class="tool-card">
+              <h2>Blue Light</h2>
+              <a href="SelectorsPlusBlueLANDING.html"><img src="images/THUMBSelectrPlusBlue.png" alt="Page 3 Title"></a>
+            </section>
+
+            <section class="tool-card">
+              <h2>Sketchbook</h2>
+              <a href="SelectorsPlusSketchLANDING.html"><img src="images/THUMBSelectrPlusSKETCH.png" alt="Page 4 Title"></a>
+            </section>
+          </div>
         </section>
 
         <!-- Original Selectors -->
@@ -135,7 +150,7 @@
             <a href="SelectorNumber.html"><img src="images/THUMBNumberSelector.jpg" alt="Number Selector"></a>
           </section>
 
-          <section class="tool-card" id="name">
+          <section class="tool-card" id="name-selector">
             <h2>Name Selector</h2>
             <a href="SelectorName.html"><img src="images/THUMBNameSelector.jpg" alt="Name Selector"></a>
           </section>

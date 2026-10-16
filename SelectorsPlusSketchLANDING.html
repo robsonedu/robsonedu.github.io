@@ -1,0 +1,414 @@
+<title>SELECTr Home Sketchbook</title>
+<!-- Favicons -->
+<link rel="icon" type="image/png" href="images/FaviconCircleR.png">
+<link rel="icon" type="image/svg+xml" href="images/FaviconCircleR.svg">
+<link rel="shortcut icon" href="images/FaviconCircleR.ico" type="image/x-icon">
+<meta name="claude:viewport-fit-sides" content="cover">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Gaegu:wght@400;700&family=Patrick+Hand&display=swap">
+<style>
+/* Layout: header, then five hand-drawn tool tiles, then a hero row with the hovered tool's name over a watercolor swash (left) and its verb and description (right).
+   Sketchbook look: cream paper, wobbly pencil lines, see-through watercolor washes. */
+:root{
+  --paper:#fbf5e6; --ink:#3b3550; --ink-soft:rgba(59,53,80,.64); --ink-faint:rgba(59,53,80,.28);
+  --sky:#86bde6; --blue:#4f86c9; --sun:#f6c652; --orange:#f39a5b; --coral:#ea7363; --leaf:#8cc47c; --teal:#62b7ab; --lilac:#ad97da; --pink:#f3a9bb;
+  --hand:'Patrick Hand','Comic Sans MS',system-ui,sans-serif;
+  --display:'Gaegu','Patrick Hand','Comic Sans MS',system-ui,sans-serif;
+  --r:20px 26px 22px 28px / 26px 20px 28px 22px;
+  --ease:cubic-bezier(.2,.8,.2,1); --pop:cubic-bezier(.2,.9,.3,1.3);
+  color-scheme:light;
+}
+html,body{height:100%}
+body{margin:0;background:var(--paper);color:var(--ink);font-family:var(--hand);font-size:18px;-webkit-font-smoothing:antialiased;user-select:none;-webkit-user-select:none}
+body::after{content:"";position:fixed;inset:0;pointer-events:none;z-index:1000;mix-blend-mode:multiply;opacity:.9;
+  background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='512' height='512'><filter id='a' x='0' y='0' width='100%' height='100%'><feTurbulence type='fractalNoise' baseFrequency='.8' numOctaves='3' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 .42 0 0 0 0 .36 0 0 0 0 .26 .55 0 0 0 -.18'/></filter><filter id='b' x='0' y='0' width='100%' height='100%'><feTurbulence type='fractalNoise' baseFrequency='.0078125' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 .7 0 0 0 0 .6 0 0 0 0 .4 .35 0 0 0 -.12'/></filter><rect width='100%' height='100%' filter='url(%23b)'/><rect width='100%' height='100%' filter='url(%23a)'/></svg>")}
+button{font:inherit;color:inherit;background:none;border:0;cursor:pointer;padding:0}
+:focus-visible{outline:3px dashed var(--blue);outline-offset:4px}
+.defs{position:absolute;width:0;height:0;overflow:hidden}
+
+/* Sketch helper: the script adds a watercolor wash and two pencil outlines to every .sk */
+.sk{position:relative;isolation:isolate;border-radius:var(--r);--w:transparent;--wo:0}
+.sk>.wash{position:absolute;inset:-2px;border-radius:inherit;background:var(--w,transparent);z-index:-1;opacity:var(--wo,0);mix-blend-mode:multiply;pointer-events:none;transition:opacity .3s,background-color .4s}
+.sk>.ln{position:absolute;inset:0;border:2.4px solid var(--ink);border-radius:inherit;pointer-events:none;opacity:.9}
+.sk>.ln2{inset:2px -2px -1px 1px;border-width:1.6px;opacity:.36;transform:rotate(-.5deg)}
+
+.page{position:relative;min-height:100%;box-sizing:border-box;display:flex;flex-direction:column;gap:clamp(18px,3vh,32px);padding:calc(16px + env(safe-area-inset-top,0px)) 32px calc(22px + env(safe-area-inset-bottom,0px))}
+.top{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-left:-12px}
+.logo-slot{display:flex;align-items:center;height:44px;text-decoration:none;color:var(--ink)}
+.logo{font-family:var(--display);font-weight:700;font-size:40px;line-height:1;letter-spacing:.01em;white-space:nowrap}
+.logo sup,.big sup{font-size:.56em;line-height:0;vertical-align:super;margin-left:.04em;color:var(--blue)}
+
+/* Tiles */
+.tiles{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:20px;padding:6px 4px}
+.tile{display:flex;flex-direction:column;height:clamp(220px,38vh,340px);box-sizing:border-box;padding:14px 16px 12px;text-align:left;background:var(--paper);--wo:.22;
+  box-shadow:5px 8px 0 rgba(59,53,80,.07);transition:transform .45s var(--pop),opacity .3s}
+.tile:nth-child(odd){transform:rotate(-.7deg)}
+.tile:nth-child(even){transform:rotate(.6deg)}
+.tile:hover,.tile:focus-visible,.tile.live{transform:rotate(-1.6deg) translateY(-8px);--wo:.55}
+.tiles.has-live .tile:not(.live){opacity:.75}
+.tile svg{flex:1;min-height:0;width:100%;display:block;overflow:visible}
+.cap{display:flex;justify-content:space-between;align-items:center;margin-top:8px}
+.cap b{font-family:var(--display);font-weight:700;font-size:26px}
+.num{width:32px;height:32px;display:grid;place-items:center;border-radius:50% 45% 52% 48%;font-size:17px;--w:var(--sun)}
+.tile.live .num,.tile:hover .num{--wo:.85}
+
+/* Little animations in the drawings while a tile is live */
+.ic-wheel .spinme{transform-origin:80px 55px;transform-box:view-box}
+.tile.live .ic-wheel .spinme{animation:spinIcon 2.6s cubic-bezier(.25,.7,.25,1) infinite}
+@keyframes spinIcon{0%{transform:rotate(0)}70%,100%{transform:rotate(720deg)}}
+.ic-drum .mid{transform-origin:80px 55px;transform-box:view-box}
+.ic-drum .mid.flip{animation:flapIcon .22s ease-in-out}
+@keyframes flapIcon{50%{transform:scaleY(.1)}}
+.ic-num .big3.tick{animation:tickIcon .2s ease-out}
+@keyframes tickIcon{from{opacity:.3;transform:translateY(6px) rotate(-8deg)}}
+.ic-num .big3{transform-origin:80px 67px;transform-box:view-box}
+.ic-first .q{transform-origin:80px 46px;transform-box:view-box}
+.tile.live .ic-first .q{animation:wiggle 1.1s ease-in-out infinite}
+@keyframes wiggle{0%,100%{transform:rotate(0)}25%{transform:rotate(-14deg)}75%{transform:rotate(12deg)}}
+.ic-colors .blob{transform-box:fill-box;transform-origin:center}
+.tile.live .ic-colors .blob{animation:blobPop 1.6s var(--pop) infinite}
+.tile.live .ic-colors .blob:nth-child(2){animation-delay:.4s}.tile.live .ic-colors .blob:nth-child(3){animation-delay:.8s}.tile.live .ic-colors .blob:nth-child(4){animation-delay:1.2s}
+@keyframes blobPop{0%,40%,100%{transform:none}20%{transform:scale(1.14)}}
+
+/* Hero */
+.hero{flex:1;display:flex;align-items:flex-start;justify-content:space-between;gap:32px;min-height:0;padding-top:clamp(4px,1.5vh,18px)}
+.hero .left{min-width:0;flex:1}
+.idx{font-size:15px;letter-spacing:.16em;text-transform:uppercase;color:var(--ink-soft);font-variant-numeric:tabular-nums;margin-bottom:6px}
+.big{position:relative;isolation:isolate;display:inline-block;margin:0;font-family:var(--display);font-weight:700;font-size:clamp(70px,11vw,180px);line-height:.92;padding:0 .06em}
+.big::before{content:"";position:absolute;left:0;right:0;bottom:.06em;height:.42em;background:var(--tc,var(--sun));opacity:.72;mix-blend-mode:multiply;filter:url(#wc1);border-radius:40% 30% 45% 35%;z-index:-1;transition:background-color .5s}
+.hero .right{flex:none;width:min(34ch,34vw);text-align:right;padding-top:24px}
+.verb{font-family:var(--display);font-weight:700;font-size:clamp(40px,4.6vw,78px);line-height:1;color:var(--blue)}
+.desc{margin:10px 0 0 auto;max-width:30ch;font-size:20px;line-height:1.35;color:var(--ink-soft)}
+.swap-out{animation:labelOut .18s ease forwards}
+.swap-in{animation:labelIn .5s var(--pop) both}
+@keyframes labelOut{to{opacity:0;transform:translateY(-12px) rotate(-2deg)}}
+@keyframes labelIn{from{opacity:0;transform:translateY(14px) rotate(2deg)}to{opacity:1;transform:none}}
+.hint{font-size:16px;color:var(--ink-soft);display:flex;gap:14px;align-items:center}
+.hint i{width:6px;height:6px;border-radius:50%;background:var(--sun);border:1.5px solid var(--ink-faint)}
+
+/* Opening a tool */
+.opening .tile.opening-tile{transform:scale(1.08) rotate(-2deg);opacity:0;transition:transform .5s cubic-bezier(.6,0,.2,1),opacity .5s}
+.opening .tile:not(.opening-tile),.opening .hero,.opening .top,.opening .hint{opacity:0;transition:opacity .3s}
+
+@media (max-width:980px){.tiles{grid-template-columns:repeat(3,minmax(0,1fr))}.tile{height:230px}}
+@media (max-width:640px){
+  .page{padding-inline:16px}
+  .hint{display:none}
+  .hero{flex-direction:column;align-items:flex-start;gap:10px}
+  .hero .right{width:auto;text-align:left;padding:0}
+  .desc{margin-left:0}
+  .big{font-size:clamp(56px,17vw,96px)}
+  .verb{font-size:36px}
+  .tiles{grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+  .tile{height:200px}
+  .tile:last-child{grid-column:span 2}
+  .tile{padding:10px 12px}
+  .cap b{font-size:21px;line-height:1}
+  .num{width:28px;height:28px;font-size:15px;flex:none}
+}
+@media (prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}}
+</style>
+
+<!-- Filters: watercolor (wobbly edge, pigment speckle, darker pooled rim) and pencil (slight wobble, grainy broken stroke). Used by the page and by the wheel's canvas. -->
+<svg class="defs" aria-hidden="true">
+  <filter id="wc1" x="-15%" y="-15%" width="130%" height="130%" color-interpolation-filters="sRGB">
+    <feTurbulence type="fractalNoise" baseFrequency="0.022" numOctaves="3" seed="4" result="n"/>
+    <feDisplacementMap in="SourceGraphic" in2="n" scale="14" xChannelSelector="R" yChannelSelector="G" result="d"/>
+    <feGaussianBlur in="d" stdDeviation="1.3" result="b"/>
+    <feTurbulence type="fractalNoise" baseFrequency="0.6" numOctaves="2" seed="9" result="g"/>
+    <feColorMatrix in="g" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1.2 0 0 0 .25" result="ga"/>
+    <feComposite in="b" in2="ga" operator="in" result="gr"/>
+    <feMorphology in="b" operator="erode" radius="3" result="er"/>
+    <feComposite in="b" in2="er" operator="out" result="edge"/>
+    <feGaussianBlur in="edge" stdDeviation=".8" result="eb"/>
+    <feMerge><feMergeNode in="gr"/><feMergeNode in="eb"/></feMerge>
+  </filter>
+  <filter id="wc2" x="-15%" y="-15%" width="130%" height="130%" color-interpolation-filters="sRGB">
+    <feTurbulence type="fractalNoise" baseFrequency="0.03" numOctaves="3" seed="17" result="n"/>
+    <feDisplacementMap in="SourceGraphic" in2="n" scale="10" xChannelSelector="R" yChannelSelector="G" result="d"/>
+    <feGaussianBlur in="d" stdDeviation="1" result="b"/>
+    <feTurbulence type="fractalNoise" baseFrequency="0.7" numOctaves="2" seed="3" result="g"/>
+    <feColorMatrix in="g" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1.2 0 0 0 .25" result="ga"/>
+    <feComposite in="b" in2="ga" operator="in" result="gr"/>
+    <feMorphology in="b" operator="erode" radius="2.5" result="er"/>
+    <feComposite in="b" in2="er" operator="out" result="edge"/>
+    <feGaussianBlur in="edge" stdDeviation=".7" result="eb"/>
+    <feMerge><feMergeNode in="gr"/><feMergeNode in="eb"/></feMerge>
+  </filter>
+  <filter id="wc3" x="-15%" y="-15%" width="130%" height="130%" color-interpolation-filters="sRGB">
+    <feTurbulence type="fractalNoise" baseFrequency="0.018" numOctaves="3" seed="31" result="n"/>
+    <feDisplacementMap in="SourceGraphic" in2="n" scale="12" xChannelSelector="R" yChannelSelector="G" result="d"/>
+    <feGaussianBlur in="d" stdDeviation="1.2" result="b"/>
+    <feTurbulence type="fractalNoise" baseFrequency="0.65" numOctaves="2" seed="12" result="g"/>
+    <feColorMatrix in="g" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1.2 0 0 0 .25" result="ga"/>
+    <feComposite in="b" in2="ga" operator="in" result="gr"/>
+    <feMorphology in="b" operator="erode" radius="3" result="er"/>
+    <feComposite in="b" in2="er" operator="out" result="edge"/>
+    <feGaussianBlur in="edge" stdDeviation=".8" result="eb"/>
+    <feMerge><feMergeNode in="gr"/><feMergeNode in="eb"/></feMerge>
+  </filter>
+  <filter id="pn1" x="-20%" y="-20%" width="140%" height="140%">
+    <feTurbulence type="fractalNoise" baseFrequency="0.04" numOctaves="2" seed="1" result="n"/>
+    <feDisplacementMap in="SourceGraphic" in2="n" scale="4" xChannelSelector="R" yChannelSelector="G" result="d"/>
+    <feTurbulence type="fractalNoise" baseFrequency="1.1" numOctaves="1" seed="3" result="g"/>
+    <feColorMatrix in="g" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 3 0 0 0 -.55" result="ga"/>
+    <feComposite in="d" in2="ga" operator="in"/>
+  </filter>
+  <filter id="pn2" x="-20%" y="-20%" width="140%" height="140%">
+    <feTurbulence type="fractalNoise" baseFrequency="0.05" numOctaves="2" seed="7" result="n"/>
+    <feDisplacementMap in="SourceGraphic" in2="n" scale="5" xChannelSelector="R" yChannelSelector="G" result="d"/>
+    <feTurbulence type="fractalNoise" baseFrequency="1.3" numOctaves="1" seed="5" result="g"/>
+    <feColorMatrix in="g" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 3 0 0 0 -.6" result="ga"/>
+    <feComposite in="d" in2="ga" operator="in"/>
+  </filter>
+  <filter id="pnw" x="-20%" y="-20%" width="140%" height="140%">
+    <feTurbulence type="fractalNoise" baseFrequency="0.06" numOctaves="2" seed="5" result="n"/>
+    <feDisplacementMap in="SourceGraphic" in2="n" scale="2.5" xChannelSelector="R" yChannelSelector="G"/>
+  </filter>
+</svg>
+
+
+<div class="page">
+  <header class="top">
+    <a class="logo-slot" href="PageSelectors.html" aria-label="SELECTr home"><span class="logo">SELECT<sup>r</sup></span></a>
+  </header>
+
+  <nav class="tiles" id="tiles" aria-label="Choose a tool">
+    <button class="tile sk" type="button">
+      <svg class="ic-wheel" viewBox="12 -2 136 114" preserveAspectRatio="xMidYMid meet" aria-hidden="true">
+        <g class="spinme">
+          <g filter="url(#wc2)" opacity=".85" style="mix-blend-mode:multiply">
+            <path d="M80 55L80 15A40 40 0 0 1 114.6 35Z" fill="#86bde6"/>
+            <path d="M80 55L114.6 35A40 40 0 0 1 114.6 75Z" fill="#f6c652"/>
+            <path d="M80 55L114.6 75A40 40 0 0 1 80 95Z" fill="#8cc47c"/>
+            <path d="M80 55L80 95A40 40 0 0 1 45.4 75Z" fill="#ea7363"/>
+            <path d="M80 55L45.4 75A40 40 0 0 1 45.4 35Z" fill="#ad97da"/>
+            <path d="M80 55L45.4 35A40 40 0 0 1 80 15Z" fill="#62b7ab"/>
+          </g>
+          <g filter="url(#pn1)" fill="none" stroke="#3b3550" stroke-width="2.6" stroke-linecap="round">
+            <circle cx="80" cy="55" r="40"/><path d="M80 15V95M45.4 35L114.6 75M45.4 75L114.6 35"/>
+          </g>
+        </g>
+        <g filter="url(#pn1)" stroke="#3b3550" stroke-width="2.6" stroke-linejoin="round">
+          <circle cx="80" cy="55" r="9" fill="#fbf5e6"/>
+          <path d="M73 5H87L80 19Z" fill="#ea7363"/>
+        </g>
+      </svg>
+      <span class="cap"><b>Wheel</b><span class="num sk">1</span></span>
+    </button>
+    <button class="tile sk" type="button">
+      <svg class="ic-drum" viewBox="12 -2 136 114" preserveAspectRatio="xMidYMid meet" aria-hidden="true">
+        <g filter="url(#wc2)" opacity=".85" style="mix-blend-mode:multiply">
+          <rect x="40" y="8" width="80" height="22" rx="6" fill="#eadcc0"/>
+          <rect x="40" y="80" width="80" height="22" rx="6" fill="#eadcc0"/>
+        </g>
+        <g filter="url(#pn1)" fill="none" stroke="#3b3550" stroke-width="2.6" stroke-linecap="round">
+          <rect x="40" y="8" width="80" height="22" rx="6" stroke-opacity=".55"/>
+          <rect x="40" y="80" width="80" height="22" rx="6" stroke-opacity=".55"/>
+        </g>
+        <g class="mid">
+          <rect x="24" y="37" width="112" height="36" rx="8" fill="#f6c652" opacity=".85" filter="url(#wc2)" style="mix-blend-mode:multiply"/>
+          <g filter="url(#pn1)" fill="none" stroke="#3b3550" stroke-linecap="round">
+            <rect x="24" y="37" width="112" height="36" rx="8" stroke-width="2.6"/>
+            <path d="M26 55H134" stroke-width="1.4" stroke-opacity=".5"/>
+          </g>
+          <text class="t0" x="80" y="63" font-size="25" font-family="Gaegu, 'Patrick Hand', sans-serif" font-weight="700" fill="#3b3550" text-anchor="middle">Maya</text>
+        </g>
+        <g font-family="Gaegu, 'Patrick Hand', sans-serif" font-weight="700" fill="#3b3550" text-anchor="middle" font-size="16" opacity=".5">
+          <text class="tm" x="80" y="24">Zoe</text>
+          <text class="tp" x="80" y="96">Owen</text>
+        </g>
+      </svg>
+      <span class="cap"><b>Drum</b><span class="num sk">2</span></span>
+    </button>
+    <button class="tile sk" type="button">
+      <svg class="ic-num" viewBox="12 -2 136 114" preserveAspectRatio="xMidYMid meet" aria-hidden="true">
+        <g filter="url(#wc2)" opacity=".85" style="mix-blend-mode:multiply">
+          <circle class="dot" cx="44" cy="16" r="9" fill="#e9e0cc"/><circle class="dot" cx="68" cy="16" r="9" fill="#e9e0cc"/>
+          <circle class="dot" cx="92" cy="16" r="9" fill="#8cc47c"/><circle class="dot" cx="116" cy="16" r="9" fill="#e9e0cc"/>
+          <rect x="44" y="34" width="72" height="66" rx="12" fill="#8cc47c"/>
+        </g>
+        <g filter="url(#pn1)" fill="none" stroke="#3b3550" stroke-width="2.4" stroke-linecap="round">
+          <circle cx="44" cy="16" r="9" stroke-opacity=".5"/><circle cx="68" cy="16" r="9" stroke-opacity=".5"/>
+          <circle cx="92" cy="16" r="9" stroke-opacity=".5"/><circle cx="116" cy="16" r="9" stroke-opacity=".5"/>
+          <rect x="44" y="34" width="72" height="66" rx="12"/>
+        </g>
+        <g font-family="Gaegu, 'Patrick Hand', sans-serif" font-weight="700" fill="#3b3550" text-anchor="middle">
+          <text x="44" y="21" font-size="14" opacity=".6">1</text><text x="68" y="21" font-size="14" opacity=".6">2</text>
+          <text x="92" y="21" font-size="14" opacity=".6">3</text><text x="116" y="21" font-size="14" opacity=".6">4</text>
+          <text class="big3" x="80" y="86" font-size="58">3</text>
+        </g>
+      </svg>
+      <span class="cap"><b>Numbers</b><span class="num sk">3</span></span>
+    </button>
+    <button class="tile sk" type="button">
+      <svg class="ic-first" viewBox="12 -2 136 114" preserveAspectRatio="xMidYMid meet" aria-hidden="true">
+        <g filter="url(#wc2)" opacity=".85" style="mix-blend-mode:multiply">
+          <path d="M30 22Q30 10 42 10H118Q130 10 130 22V66Q130 78 118 78H68L48 98L53 78H42Q30 78 30 66Z" fill="#ad97da"/>
+        </g>
+        <g filter="url(#pn1)" fill="none" stroke="#3b3550" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M30 22Q30 10 42 10H118Q130 10 130 22V66Q130 78 118 78H68L48 98L53 78H42Q30 78 30 66Z"/>
+          <path d="M140 12l7-7M142 26h9M20 14l-7-6M18 30h-8"/>
+        </g>
+        <text class="q" x="80" y="66" font-family="Gaegu, 'Patrick Hand', sans-serif" font-weight="700" font-size="58" fill="#3b3550" text-anchor="middle">?</text>
+      </svg>
+      <span class="cap"><b>Who's First</b><span class="num sk">4</span></span>
+    </button>
+    <button class="tile sk" type="button">
+      <svg class="ic-colors" viewBox="12 -2 136 114" preserveAspectRatio="xMidYMid meet" aria-hidden="true">
+        <g class="blob"><circle cx="64" cy="38" r="24" fill="#ea7363" opacity=".85" filter="url(#wc2)" style="mix-blend-mode:multiply"/><circle cx="64" cy="38" r="24" fill="none" stroke="#3b3550" stroke-width="2.4" filter="url(#pn1)"/></g>
+        <g class="blob"><circle cx="98" cy="38" r="24" fill="#f6c652" opacity=".85" filter="url(#wc2)" style="mix-blend-mode:multiply"/><circle cx="98" cy="38" r="24" fill="none" stroke="#3b3550" stroke-width="2.4" filter="url(#pn1)"/></g>
+        <g class="blob"><circle cx="98" cy="72" r="24" fill="#86bde6" opacity=".85" filter="url(#wc2)" style="mix-blend-mode:multiply"/><circle cx="98" cy="72" r="24" fill="none" stroke="#3b3550" stroke-width="2.4" filter="url(#pn1)"/></g>
+        <g class="blob"><circle cx="64" cy="72" r="24" fill="#8cc47c" opacity=".85" filter="url(#wc2)" style="mix-blend-mode:multiply"/><circle cx="64" cy="72" r="24" fill="none" stroke="#3b3550" stroke-width="2.4" filter="url(#pn1)"/></g>
+      </svg>
+      <span class="cap"><b>Colors</b><span class="num sk">5</span></span>
+    </button>
+  </nav>
+
+  <section class="hero" aria-live="polite">
+    <div class="left">
+      <div class="idx" id="idx">Five tools – Everyone answers</div>
+      <h1 class="big" id="big">SELECT<sup>r</sup></h1>
+    </div>
+    <div class="right">
+      <div class="verb" id="verb">Pick a tool</div>
+      <p class="desc" id="desc"></p>
+    </div>
+  </section>
+  <div class="hint">Hover to peek <i></i> Click to open</div>
+</div>
+
+<script>
+(() => {
+  'use strict';
+  const reduced = () => matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const wait = ms => new Promise(r => setTimeout(r, ms));
+  const mod = (a, m) => ((a % m) + m) % m;
+  const $ = s => document.querySelector(s);
+
+  // Add the wash and two pencil outlines to every sketch element
+  document.querySelectorAll('.sk').forEach((el, i) => {
+    const w = document.createElement('i'); w.className = 'wash'; w.setAttribute('aria-hidden', 'true'); w.style.filter = `url(#wc${i % 3 + 1})`;
+    const a = document.createElement('i'); a.className = 'ln'; a.setAttribute('aria-hidden', 'true'); a.style.filter = `url(#pn${i % 2 + 1})`;
+    const b = document.createElement('i'); b.className = 'ln ln2'; b.setAttribute('aria-hidden', 'true'); b.style.filter = `url(#pn${(i + 1) % 2 + 1})`;
+    el.prepend(w); el.append(a, b);
+  });
+
+  const TOOLS = [
+    { k: 'wheel', name: 'Wheel', verb: 'Spin it', desc: 'Spin to win.', c: 'var(--sky)' },
+    { k: 'drum', name: 'Drum', verb: 'Flip it', desc: 'A split-flap board that rolls through your options.', c: 'var(--sun)' },
+    { k: 'num', name: 'Numbers', verb: 'Locate it', desc: 'Select by team number, letter, or custom (desk number, question number, etc.)', c: 'var(--leaf)' },
+    { k: 'first', name: "Who's First", verb: 'Settle it', desc: 'Playful characteristics that decide who goes first.', c: 'var(--lilac)' },
+    { k: 'colors', name: 'Colors', verb: 'Color it', desc: 'Two to six colors, one gets picked.', c: 'var(--coral)' }
+  ];
+  const REST = { verb: 'Pick a tool', desc: 'Five ways to call on students. Hover a tile to peek at it, then click to jump in.', c: 'var(--sun)' };
+  const NAMES = ['Maya', 'Liam', 'Sofia', 'Noah', 'Ava', 'Ethan', 'Zoe', 'Owen'];
+
+  /* Little animations inside the drawings, only while a tile is live */
+  const ANIM = {
+    drum(svg) {
+      const mid = svg.querySelector('.mid'), t0 = svg.querySelector('.t0'), tm = svg.querySelector('.tm'), tp = svg.querySelector('.tp');
+      let i = 0;
+      return () => {
+        i = (i + 1) % NAMES.length;
+        mid.classList.remove('flip'); void mid.getBoundingClientRect(); mid.classList.add('flip');
+        setTimeout(() => { t0.textContent = NAMES[i]; tm.textContent = NAMES[mod(i - 1, NAMES.length)]; tp.textContent = NAMES[mod(i + 1, NAMES.length)]; }, 110);
+      };
+    },
+    num(svg) {
+      const big = svg.querySelector('.big3'), dots = [...svg.querySelectorAll('.dot')];
+      let v = 3;
+      return () => {
+        let x; do { x = 1 + Math.floor(Math.random() * 4); } while (x === v); v = x;
+        big.textContent = v; big.classList.remove('tick'); void big.getBoundingClientRect(); big.classList.add('tick');
+        dots.forEach((d, k) => d.setAttribute('fill', k === v - 1 ? '#8cc47c' : '#e9e0cc'));
+      };
+    }
+  };
+
+  const tilesEl = $('#tiles');
+  const tiles = [...tilesEl.querySelectorAll('.tile')].map((b, i) => {
+    const t = TOOLS[i];
+    b.style.setProperty('--w', t.c);
+    b.setAttribute('aria-label', `${t.name}. ${t.desc} Press ${i + 1}.`);
+    const step = ANIM[t.k] ? ANIM[t.k](b.querySelector('svg')) : null;
+    let timer = null;
+    return {
+      b,
+      start() { if (step && !timer && !reduced()) timer = setInterval(step, t.k === 'drum' ? 650 : 800); },
+      stop() { clearInterval(timer); timer = null; }
+    };
+  });
+
+  let current = -2, live = -1;
+  function setLive(i) {
+    if (live === i) return;
+    if (live >= 0) { tiles[live].stop(); tiles[live].b.classList.remove('live'); }
+    live = i;
+    tilesEl.classList.toggle('has-live', i >= 0);
+    if (i >= 0) { tiles[i].b.classList.add('live'); tiles[i].start(); }
+    if (i !== current) { current = i; setLabels(i, true); }
+  }
+  tiles.forEach((t, i) => {
+    t.b.addEventListener('pointerenter', e => { if (e.pointerType === 'mouse') setLive(i); });
+    t.b.addEventListener('focus', () => setLive(i));
+    t.b.addEventListener('click', () => open(i));
+  });
+  tilesEl.addEventListener('pointerleave', e => { if (e.pointerType === 'mouse' && !tilesEl.contains(document.activeElement)) setLive(-1); });
+  tilesEl.addEventListener('focusout', e => { if (!tilesEl.contains(e.relatedTarget)) setLive(-1); });
+
+  /* ---------- Labels ---------- */
+  const big = $('#big'), verb = $('#verb'), desc = $('#desc'), idx = $('#idx');
+  function fitBig() {
+    big.style.fontSize = '';
+    const max = big.parentElement.clientWidth;
+    let fs = parseFloat(getComputedStyle(big).fontSize);
+    while (big.offsetWidth > max && fs > 36) { fs -= 4; big.style.fontSize = fs + 'px'; }
+  }
+  let labelTimer;
+  // At rest the hero shows the app name; hovering a tile swaps in that tool
+  function setLabels(i, animate) {
+    const T = i < 0 ? REST : TOOLS[i];
+    const apply = () => {
+      if (i < 0) big.innerHTML = 'SELECT<sup>r</sup>'; else big.textContent = T.name;
+      verb.textContent = T.verb; desc.textContent = T.desc;
+      idx.textContent = i < 0 ? 'Five tools – Everyone answers' : `0${i + 1} / 05`;
+      big.style.setProperty('--tc', T.c);
+      fitBig();
+      if (animate && !reduced()) [big, verb, desc].forEach(el => { el.classList.remove('swap-out'); el.classList.add('swap-in'); });
+    };
+    clearTimeout(labelTimer);
+    if (animate && !reduced()) { [big, verb, desc].forEach(el => { el.classList.remove('swap-in'); el.classList.add('swap-out'); }); labelTimer = setTimeout(apply, 170); }
+    else apply();
+  }
+  addEventListener('resize', fitBig);
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(fitBig);
+
+  /* ---------- Keyboard ---------- */
+  addEventListener('keydown', e => {
+    if (opening || e.metaKey || e.ctrlKey || e.altKey) return;
+    if (/^[1-5]$/.test(e.key)) { e.preventDefault(); open(+e.key - 1); return; }
+    const onTile = document.activeElement && document.activeElement.classList.contains('tile');
+    const at = Math.max(0, tiles.findIndex(t => t.b === document.activeElement));
+    if (e.key === 'ArrowRight' || e.key === 'ArrowDown') { e.preventDefault(); tiles[onTile ? mod(at + 1, 5) : Math.max(0, current)].b.focus(); }
+    else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') { e.preventDefault(); tiles[onTile ? mod(at - 1, 5) : Math.max(0, current)].b.focus(); }
+  });
+
+  /* ---------- Open the tool ---------- */
+  let opening = false;
+  async function open(i) {
+    if (opening) return;
+    opening = true;
+    if (current !== i) { current = i; setLabels(i, false); }
+    tiles.forEach((t, k) => t.b.classList.toggle('opening-tile', k === i));
+    document.body.classList.add('opening');
+    await wait(reduced() ? 50 : 480);
+    const tool = TOOLS[i].k === 'num' ? 'numbers' : TOOLS[i].k;
+    location.href = 'SelectorsPlusSketch.html?tool=' + tool;
+  }
+
+  setLabels(-1, false);
+})();
+</script>
