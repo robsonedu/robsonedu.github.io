@@ -1106,6 +1106,7 @@ function runGroupingL(cls,L,opt){
   if(!opt.crit&&opt.mode!=='random'){if(opt.by)crit0.push({id:opt.by,goal:opt.mode==='similar'?'match':'mix'});if(opt.bal&&opt.bal!==opt.by)crit0.push({id:opt.bal,goal:'mix'})}
   const CR=[];crit0.forEach(c=>{const w=Math.pow(.5,CR.length);if(c.id==='__g'){CR.push({id:c.id,cat:gArr(),goal:c.goal,w});return}const col=cls.columns.find(x=>x.id===c.id);if(!col)return;if(isCat(col))CR.push({id:c.id,cat:catArr(col),goal:c.goal,w});else{const P=norm(pool,col),bm=bandsOf(pool,col);CR.push({id:c.id,P,Q:pool.map((s,i)=>bm.get(s.id)||quart(P[i])),pm:avg(P),goal:c.goal,w})}});
   const mode=CR.length?(opt.mode==='similar'?'similar':'mixed'):'random';
+  const PAIRC=CR.find(c=>c.P&&c.goal!=='match')||null; /* pairs: H with ML, MH with L */
   const idx=new Map(pool.map((s,i)=>[s.id,i]));
   const apart=pool.map(()=>new Set()),together=[];
   for(const r of cls.rules){const a=idx.get(r.a),b=idx.get(r.b);if(a===undefined||b===undefined)continue;if(r.type==='apart'){apart[a].add(b);apart[b].add(a)}else together.push([a,b])}
@@ -1129,7 +1130,7 @@ function runGroupingL(cls,L,opt){
     for(const C of CR){
       if(C.cat)c+=(C.goal==='match'?same(m,C.cat)*(C===C0?80:20):spread(m,C.cat)*25)*C.w;
       else if(C.goal==='match'){let s=0;for(const i of m)s+=C.P[i];const mu=s/k;let v=0;for(const i of m)v+=(C.P[i]-mu)**2;c+=v*(C===C0?400:30)*C.w}
-      else{let s=0;const qc=[0,0,0,0,0];for(const i of m){s+=C.P[i];qc[C.Q[i]]++}let v=((s/k-C.pm)**2)*80*k;const lim=Math.ceil(k/4);for(let x=1;x<=4;x++)if(qc[x]>lim)v+=(qc[x]-lim)*24;if(k>=4)for(let x=1;x<=4;x++)if(!qc[x])v+=10;c+=v*C.w}
+      else{let s=0;const qc=[0,0,0,0,0];for(const i of m){s+=C.P[i];qc[C.Q[i]]++}let v=((s/k-C.pm)**2)*80*k;if(k===2&&C===PAIRC){const d=Math.abs(C.Q[m[0]]-C.Q[m[1]]);v=d===2?0:d===3?20:d===1?40:60}const lim=Math.ceil(k/4);for(let x=1;x<=4;x++)if(qc[x]>lim)v+=(qc[x]-lim)*24;if(k>=4)for(let x=1;x<=4;x++)if(!qc[x])v+=10;c+=v*C.w}
     }
     for(let a=0;a<k;a++)for(let b=a+1;b<k;b++){const x=m[a],y=m[b];if(apart[x].has(y))c+=5000;c+=rep[x].get(y)||0}
     return c;
@@ -2426,7 +2427,8 @@ document.addEventListener('pointerdown',e=>{
     document.querySelectorAll('.room.edit [data-item]').forEach(x=>x.classList.toggle('sel',ui.selIds.includes(x.dataset.item)));
     const ids=ui.selIds.includes(it.id)?ui.selIds:[];
     const list=room.items.filter(i=>ids.includes(i.id)).map(i=>({it:i,x0:i.x,y0:i.y,el:document.querySelector(`.room.edit [data-item="${i.id}"]`)}));
-    drag={k:'item',list,toggled,x:e.clientX,y:e.clientY,rect:item.closest('.room').getBoundingClientRect(),moved:false};
+    const bx=list.reduce((B,o)=>{const m=dims(o.it);return{l:Math.min(B.l,o.x0-m.w/2),r:Math.max(B.r,o.x0+m.w/2),t:Math.min(B.t,o.y0-m.h/2),b:Math.max(B.b,o.y0+m.h/2)}},{l:1e9,r:-1e9,t:1e9,b:-1e9});
+    drag={k:'item',list,bx,toggled,x:e.clientX,y:e.clientY,rect:item.closest('.room').getBoundingClientRect(),moved:false};
     try{item.setPointerCapture(e.pointerId)}catch(x){}e.preventDefault();return}
   const floor=e.target.closest('.room.edit');
   if(floor){const rect=floor.getBoundingClientRect(),m=document.createElement('div');m.className='marquee';floor.appendChild(m);
@@ -2448,8 +2450,8 @@ document.addEventListener('pointermove',e=>{
   if(drag.k==='item'){
     let dx=(e.clientX-drag.x)/drag.rect.width*ROOM_W,dy=(e.clientY-drag.y)/drag.rect.height*ROOM_H;
     if(Math.abs(dx)+Math.abs(dy)>.3)drag.moved=true;
-    dx=Math.round(dx*2)/2;dy=Math.round(dy*2)/2;[dx,dy]=groupDelta(drag.list,dx,dy);
-    drag.list.forEach(o=>{const d=dims(o.it);o.it.x=o.x0+dx;o.it.y=o.y0+dy;if(o.el){o.el.style.left=pct((o.it.x-d.w/2)/ROOM_W);o.el.style.top=pct((o.it.y-d.h/2)/ROOM_H)}});return}
+    const B=drag.bx;if(B){dx=Math.round((B.l+dx)*2)/2-B.l;dy=Math.round((B.t+dy)*2)/2-B.t;const MG=1.25;if(B.l+dx<MG)dx=-B.l;else if(B.r+dx>ROOM_W-MG)dx=ROOM_W-B.r;if(B.t+dy<MG)dy=-B.t;else if(B.b+dy>ROOM_H-MG)dy=ROOM_H-B.b}else{dx=Math.round(dx*2)/2;dy=Math.round(dy*2)/2}[dx,dy]=groupDelta(drag.list,dx,dy);
+    drag.list.forEach(o=>{const d=base(o.it);o.it.x=o.x0+dx;o.it.y=o.y0+dy;if(o.el){o.el.style.left=pct((o.it.x-d.w/2)/ROOM_W);o.el.style.top=pct((o.it.y-d.h/2)/ROOM_H)}});return}
   if(drag.k==='marquee'){const D=drag;if(!D.moved&&Math.hypot(e.clientX-D.x,e.clientY-D.y)<5)return;D.moved=true;
     const x1=Math.min(D.x,e.clientX)-D.rect.left,x2=Math.max(D.x,e.clientX)-D.rect.left,y1=Math.min(D.y,e.clientY)-D.rect.top,y2=Math.max(D.y,e.clientY)-D.rect.top;
     Object.assign(D.m.style,{left:x1+'px',top:y1+'px',width:(x2-x1)+'px',height:(y2-y1)+'px'});
