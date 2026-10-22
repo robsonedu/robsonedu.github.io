@@ -496,6 +496,18 @@ html,body{height:100%}
 
 .p-zoom input[type=range]:focus,.p-zoom input[type=range]:focus-visible{outline:none;box-shadow:none}
 #pZoomVal{font-size:11px;font-weight:600;color:#6e6e73}
+.room.seat-mode .furn{scale:var(--pz,1);translate:calc((var(--pz,1) - 1) * var(--dx,0cqw)) calc((var(--pz,1) - 1) * var(--dy,0cqw));transition:scale .15s,translate .15s}
+.room.seat-mode .tlabel{scale:var(--pz,1);transform-origin:0 0;transition:scale .15s}
+.szwrap{display:grid;gap:0}
+.s-zoom{justify-self:end;margin:-6px 0 8px;display:flex;align-items:center;gap:2px;padding:4px;border-radius:999px;background:rgba(255,255,255,.82);-webkit-backdrop-filter:blur(20px);backdrop-filter:blur(20px);border:1px solid rgba(255,255,255,.9);box-shadow:0 4px 14px rgba(40,40,80,.12)}
+.sz-b{width:26px;height:26px;border:0;border-radius:50%;background:#fff;font:inherit;font-size:16px;font-weight:600;line-height:1;color:#1d1d1f;cursor:pointer;box-shadow:0 1px 3px rgba(0,0,0,.12);display:grid;place-items:center;padding:0}
+.s-zoom input[type=range]{width:120px;accent-color:#1d1d1f;margin:0}
+.s-zoom input[type=range]:focus,.s-zoom input[type=range]:focus-visible{outline:none;box-shadow:none}
+.sz-fit{border:0;background:none;font:inherit;font-size:11px;font-weight:600;color:#6e6e73;cursor:pointer;padding:2px 4px;min-width:40px;text-align:center;font-variant-numeric:tabular-nums}
+.sz-b:disabled{opacity:.35;cursor:default}
+.sz-fit:hover{color:#1d1d1f}
+@media print{.s-zoom{display:none!important}}
+
 .pz-fit{border:0;background:none;font:inherit;font-size:11px;font-weight:600;color:#6e6e73;cursor:pointer;padding:2px 6px;border-radius:6px}
 .pz-fit:hover{background:#f0f0f4;color:#1d1d1f}
 .p-setwrap{position:relative;display:inline-flex}
@@ -935,6 +947,7 @@ const FURN={
 let S=null;
 const ui={stpick:null,saveState:'saved',qswap:null,qpick:null,qAnim:false,psrc:'chart',tab:'arrange',selSeat:null,selItem:null,selIds:[],roomId:null,confirm:null,present:false,pview:'chart',pAnimate:false,animate:false,round:0,timer:{running:false,end:0,left:0},fails:0,lockUntil:0,lockMsg:'',showForgot:false};
 
+(()=>{try{const z=+localStorage.getItem('rgs.seatZoom');if(z>1)ui.sZoom=z}catch(e){}})();
 const uid=()=>Math.random().toString(36).slice(2,9)+Date.now().toString(36).slice(-4);
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const pct=v=>(v*100).toFixed(3)+'%';
@@ -1404,9 +1417,9 @@ function roomHTML(room,L,o){
   const cls=o.cls,cur=o.cur,mode=o.mode;
   const first=new Set(L.groups.map(g=>g.head)),gOf=new Map();
   L.groups.forEach(g=>g.items.forEach(it=>gOf.set(it.id,g)));
-  const ZA=mode==='present'?zoomAnchors(L):null;
+  const ZM=mode==='present'||mode==='seat',ZA=ZM?zoomAnchors(L):null;
   const rot=false;
-  let h=`<div class="room ${mode==='seat'?'seat-mode':mode==='present'?'pmode':mode}${mode==='seat'&&!cls.view.colors?' nocolor':''}${o.animate&&!reduceMotion?' reveal':''}">`;
+  let h=`<div class="room ${mode==='seat'?'seat-mode':mode==='present'?'pmode':mode}${mode==='seat'&&!cls.view.colors?' nocolor':''}${o.animate&&!reduceMotion?' reveal':''}"${mode==='seat'?` style="--pz:${ui.sZoom||1}"`:''}>`;
   let n=0,labels='';
   for(const it of room.items){
     const f=FURN[it.type];if(!f)continue;const d=dims(it),bs=base(it),A=angOf(it);
@@ -1417,8 +1430,8 @@ function roomHTML(room,L,o){
     const rz=(sel&&ui.selItem===it.id&&f.rs?`<span class="rz" data-rz="${it.id}" aria-hidden="true"></span>`:'')+(sel&&ui.selItem===it.id?`<span class="rot" data-rot="${it.id}" aria-hidden="true"></span>`:'');
     if(f.lm){const lab=it.label||(it.type==='board'&&mode==='present'?'Front of room':f.blank?'':f.text||f.label);h+=`<div class="lm lm-${it.type}${sel}" data-item="${it.id}" style="${st}"><span>${esc(lab)}</span>${rz}</div>`;continue}
     const g=gOf.get(it.id);
-    h+=`<div class="furn f-${it.type}${sel}${linkCls}" data-item="${it.id}" style="${st}${mode==='present'?`;--tc:var(--t${g.index%8+1});--gl:var(--gl${g.index%6+1});--dx:${((it.x-ZA.get(it.id).x)/ROOM_W*100).toFixed(3)}cqw;--dy:${((it.y-ZA.get(it.id).y)/ROOM_W*100).toFixed(3)}cqw`:''}">`;
-    if(first.has(it.id))labels+=`<span class="tlabel" style="${mode==='present'?`left:${(ZA.get(it.id).x/ROOM_W*100).toFixed(3)}%;top:calc(${(ZA.get(it.id).y/ROOM_H*100).toFixed(3)}% + var(--pz,1) * ${((ZA.get(it.id).top-ZA.get(it.id).y)/ROOM_H*100).toFixed(3)}%)`:`left:${pct((it.x-d.w/2)/ROOM_W)};top:${pct((it.y-d.h/2)/ROOM_H)}`}">${mode==='present'&&rot?'Group '+letter(g.index)+' · ':''}${esc(g.label)}${mode==='edit'&&g.linked?' · linked':''}</span>`;
+    h+=`<div class="furn f-${it.type}${sel}${linkCls}" data-item="${it.id}" style="${st}${mode==='present'?`;--tc:var(--t${g.index%8+1});--gl:var(--gl${g.index%6+1})`:''}${ZM?`;--dx:${((it.x-ZA.get(it.id).x)/ROOM_W*100).toFixed(3)}cqw;--dy:${((it.y-ZA.get(it.id).y)/ROOM_W*100).toFixed(3)}cqw`:''}">`;
+    if(first.has(it.id))labels+=`<span class="tlabel" style="${mode==='present'?`left:${(ZA.get(it.id).x/ROOM_W*100).toFixed(3)}%;top:calc(${(ZA.get(it.id).y/ROOM_H*100).toFixed(3)}% + var(--pz,1) * ${((ZA.get(it.id).top-ZA.get(it.id).y)/ROOM_H*100).toFixed(3)}%)`:mode==='seat'?`left:calc(${(ZA.get(it.id).x/ROOM_W*100).toFixed(3)}% + var(--pz,1) * ${((it.x-d.w/2-ZA.get(it.id).x)/ROOM_W*100).toFixed(3)}%);top:calc(${(ZA.get(it.id).y/ROOM_H*100).toFixed(3)}% + var(--pz,1) * ${((it.y-d.h/2-ZA.get(it.id).y)/ROOM_H*100).toFixed(3)}%)`:`left:${pct((it.x-d.w/2)/ROOM_W)};top:${pct((it.y-d.h/2)/ROOM_H)}`}">${mode==='present'&&rot?'Group '+letter(g.index)+' · ':''}${esc(g.label)}${mode==='edit'&&g.linked?' · linked':''}</span>`;
     const pts=seatPts(it);
     const xs=new Set(pts.map(p=>p[0].toFixed(2))).size,ys=new Set(pts.map(p=>p[1].toFixed(2))).size;
     const cw=.9/xs,ch=.84/ys,ow=odd?ch*bs.h/bs.w:cw,oh=odd?cw*bs.w/bs.h:ch,crs=qt?`;--cr:${-90*qt}deg;transform:rotate(var(--cr))`:'';
@@ -1467,7 +1480,7 @@ function arrangeHTML(cls){
   <section class="stage">
     ${chartDetailsHTML(cls)}
     ${hasSeats&&rp.list.length?`<div class="repeat-note${v.repeats?' open':''}"><button class="rn-head" data-act="toggleRepeats" aria-expanded="${!!v.repeats}"><span class="rn-ic" aria-hidden="true">↺</span><span><b>${rp.list.length} pair${rp.list.length===1?' has':'s have'}</b> been ${rp.type?'in '+TYPE_NAME[rp.type]+' groups':'grouped'} together before</span><span class="rn-link">${v.repeats?'Hide':'Show'}</span></button>${v.repeats?`<div class="rn-list">${rp.byG.map(([gi,ps])=>`<div class="rn-row"><b class="rn-t">${esc(L.groups[gi].label)}</b><span>${ps.map(p=>`<span class="rn-pair tipbtn" tabindex="0" data-tip="Together in ${esc(p.charts.join(', '))}">${esc(nameOf(cls,p.a))} + ${esc(nameOf(cls,p.b))}${p.charts.length>1?` <b>×${p.charts.length}</b>`:''}</span>`).join('')}</span></div>`).join('')}<small class="rn-hint">Hover a pair to see which chart they shared. Drag students to split them up.</small></div>`:''}</div>`:''}
-    <div class="roomscroll">${roomHTML(room,L,{mode:'seat',cls,cur,qm,flag:iss.flag,animate:ui.animate})}</div>
+    <div class="szwrap">${(()=>{ui.sZoomMax=zoomMax(room);if((ui.sZoom||1)>ui.sZoomMax)ui.sZoom=ui.sZoomMax;return''})()}${ui.sZoomMax>1?`<div class="s-zoom" aria-label="Seat size"><button class="sz-b" id="sZoomMinus" data-act="sZoomStep" data-arg="-0.1" aria-label="Smaller seats" title="Smaller seats"${(ui.sZoom||1)<=1?' disabled':''}>−</button><button class="sz-fit" id="sZoomVal" data-act="sZoomFit" title="Back to 100%">${Math.round((ui.sZoom||1)*100)}%</button><button class="sz-b" id="sZoomPlus" data-act="sZoomStep" data-arg="0.1" aria-label="Bigger seats" title="Bigger seats"${(ui.sZoom||1)>=ui.sZoomMax?' disabled':''}>+</button></div>`:''}<div class="roomscroll">${roomHTML(room,L,{mode:'seat',cls,cur,qm,flag:iss.flag,animate:ui.animate})}</div></div>
     ${unseated.length&&hasSeats?`<div class="tray"><span class="section-label" style="color:var(--danger)">Not seated</span>${unseated.map(s=>`<div class="seat filled q${qm.get(s.id)||0}${ui.selSeat==='u:'+s.id?' picked':''}" data-seat="u:${s.id}" data-sid="${s.id}" tabindex="0" role="button"><span class="nm">${esc(dname(s))}</span></div>`).join('')}</div>`:''}
     <p class="hint">${hasSeats?'Drag a student onto another seat to swap them. On a touch screen, tap one student, then tap where they should go. Hover a name to see your notes.':'Choose how to group on the left, then press Make groups.'}</p>
     ${hasSeats?`<div class="issues">${iss.list.length?iss.list.map(i=>`<div class="issue ${i.lvl}"><b>${i.lvl==='bad'?'Fix':i.lvl==='note'?'Note':'Check'}</b><span>${esc(i.t)}</span></div>`).join(''):`<div class="issue ok"><b>OK</b><span>Every seating rule is met.</span></div>`}</div>`:''}
@@ -2009,6 +2022,7 @@ function zoomMax(room){const L=layoutInfo(room),A=zoomAnchors(L),first=new Set(L
     if(first.has(it.id)){const lw=(g.label||'').length*.9+.6,lh=2.1;R.push({c:a.c,lab:1,f:z=>{const ly=a.y+z*(a.top-a.y);return{x0:a.x-z*lw/2,x1:a.x+z*lw/2,y0:ly-z*lh,y1:ly}}})}}));
   const ok=z=>{const B=R.map(r=>Object.assign({c:r.c},r.f(z)));for(let i=0;i<B.length;i++)for(let j=i+1;j<B.length;j++){const a=B[i],b=B[j];if(a.c===b.c)continue;if(a.x0<b.x1-.15&&b.x0<a.x1-.15&&a.y0<b.y1-.15&&b.y0<a.y1-.15)return false}return true};
   let z=1;while(z<2&&ok(z+.05))z+=.05;return Math.round(z*100)/100}
+function setSZoom(v){ui.sZoom=Math.round(clamp(v,1,ui.sZoomMax||2)*100)/100;try{localStorage.setItem('rgs.seatZoom',ui.sZoom)}catch(e){}const o=document.getElementById('sZoomVal'),r=document.querySelector('.room.seat-mode'),mi=document.getElementById('sZoomMinus'),pl=document.getElementById('sZoomPlus');if(o)o.textContent=Math.round(ui.sZoom*100)+'%';if(r)r.style.setProperty('--pz',ui.sZoom);if(mi)mi.disabled=ui.sZoom<=1;if(pl)pl.disabled=ui.sZoom>=(ui.sZoomMax||2);clearTimeout(setSZoom.t);setSZoom.t=setTimeout(()=>{try{fitNames(document)}catch(e){}},180)}
 function setZoom(v){ui.pZoom=clamp(v,1,ui.pZoomMax||2);const d=PD(),i=d.getElementById('pZoom'),o=d.getElementById('pZoomVal');if(i&&+i.value!==ui.pZoom)i.value=ui.pZoom;if(o)o.textContent=Math.round(ui.pZoom*100)+'%';fitPresent()}
 let pan=null;function panStart(e){const st=e.target.closest&&e.target.closest('.p-stage.zoomed');if(!st||e.target.closest('button,select,input'))return;pan={st,x:e.clientX,y:e.clientY,l:st.scrollLeft,t:st.scrollTop};st.classList.add('panning');const d=st.ownerDocument;const mv=ev=>{if(!pan)return;pan.st.scrollLeft=pan.l-(ev.clientX-pan.x);pan.st.scrollTop=pan.t-(ev.clientY-pan.y)},up=()=>{if(pan)pan.st.classList.remove('panning');pan=null;d.removeEventListener('pointermove',mv);d.removeEventListener('pointerup',up)};d.addEventListener('pointermove',mv);d.addEventListener('pointerup',up)}
 if(HAS_DOM)document.addEventListener('pointerdown',e=>{if(ui.present&&!ui.pwin)panStart(e)});
@@ -2162,6 +2176,8 @@ const ACT={
   pqKeep:()=>{const cls=need(),q=cls.quick,sn=ui.pSnap;if(!sn)return;Object.assign(q,sn,{groups:sn.groups.map(g=>g.slice()),blank:false,setId:null,name:defaultChartName(cls,sn.meta&&TYPE_NAME[sn.meta.mode]?{mode:sn.meta.mode}:null)});ui.pGroups=null;ui.pSnap=null;ACT.qSave();renderPresent();toast('Kept as “'+q.name+'”. Find it in the Groups title menu.')},
   pZoomStep:(b,d)=>setZoom((ui.pZoom||1)+(+d)),
   pZoomFit:()=>setZoom(1),
+  sZoomStep:(b,d)=>setSZoom((ui.sZoom||1)+(+d)),
+  sZoomFit:()=>setSZoom(1),
   pFlip:()=>{S.settings.presentFlip=!S.settings.presentFlip;save();renderPresent()},
   pSeatNums:()=>{S.settings.presentSeatNums=!S.settings.presentSeatNums;save();renderPresent()},
   pPrint:()=>{const d=PD(),w=d.defaultView;ui.pSet=false;renderPresent();d.body.classList.add('print-present');setTimeout(()=>{try{w.focus();w.print()}catch(e){}setTimeout(()=>d.body.classList.remove('print-present'),500)},60)},
@@ -2354,7 +2370,7 @@ document.addEventListener('click',e=>{
   ui.confirm=null;
   const fn=ACT[b.dataset.act];if(fn)fn(b,b.dataset.arg,e);
 });
-document.addEventListener('input',e=>{if(e.target&&e.target.id==='pZoom'){setZoom(+e.target.value);return}if(e.target&&e.target.id==='mgSearch'){const q=e.target.value.trim().toLowerCase();ui.mgQ=e.target.value;document.querySelectorAll('.mg-list>[data-mgname],.mg-body>[data-mgname],.hist>[data-mgname]').forEach(r=>r.style.display=!q||r.dataset.mgname.includes(q)?'':'none');document.querySelectorAll('.mg-class').forEach(c=>{const hit=!q||c.dataset.mgname.includes(q)||[...c.querySelectorAll('.mg-body>[data-mgname]')].some(r=>r.style.display!=='none');c.style.display=hit?'':'none'})}});
+document.addEventListener('input',e=>{if(e.target&&e.target.id==='pZoom'){setZoom(+e.target.value);return}if(e.target&&e.target.id==='sZoom'){setSZoom(+e.target.value);return}if(e.target&&e.target.id==='mgSearch'){const q=e.target.value.trim().toLowerCase();ui.mgQ=e.target.value;document.querySelectorAll('.mg-list>[data-mgname],.mg-body>[data-mgname],.hist>[data-mgname]').forEach(r=>r.style.display=!q||r.dataset.mgname.includes(q)?'':'none');document.querySelectorAll('.mg-class').forEach(c=>{const hit=!q||c.dataset.mgname.includes(q)||[...c.querySelectorAll('.mg-body>[data-mgname]')].some(r=>r.style.display!=='none');c.style.display=hit?'':'none'})}});
 document.addEventListener('change',e=>{const el=e.target.closest('[data-ch]');if(!el||!S)return;const fn=CH[el.dataset.ch];if(fn)fn(el,e)});
 document.addEventListener('keydown',e=>{
   if(e.key==='Enter'&&e.target.id==='newStud'){e.preventDefault();ACT.addStud();return}
