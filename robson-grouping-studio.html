@@ -158,6 +158,10 @@ textarea{min-height:110px;font-family:var(--f-mono);font-size:13px;resize:vertic
 .chart-tools .iconbtn.armed,.chart-tools .iconbtn.armed:hover:not(:disabled){background:#ff3b30;color:#fff;box-shadow:none}
 .chart-tools .tipbtn:last-child[data-tip]:hover::after,.chart-tools .tipbtn:last-child[data-tip]:focus-visible::after{left:auto;right:0;transform:none}
 .tipbtn{position:relative}
+#ntip{position:fixed;z-index:9999;max-width:260px;background:#1d1d1f;color:#fff;font-size:12.5px;font-weight:500;line-height:1.4;padding:7px 10px;border-radius:9px;box-shadow:0 6px 18px rgba(0,0,0,.2);pointer-events:none;opacity:0;transform:translateY(3px);transition:opacity .12s,transform .12s}
+#ntip.show{opacity:1;transform:none}
+@media print{#ntip{display:none!important}}
+
 .chart-tools .iconbtn.on,.chart-tools .iconbtn.on:hover:not(:disabled){background:#1d1d1f;color:#fff;box-shadow:none}
 .chart-head h3{white-space:nowrap}
 .chart-details{display:grid;gap:10px;padding:12px;border-radius:14px;background:rgba(118,118,128,.08)}
@@ -236,6 +240,25 @@ button.nc-row:hover{background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.08)}
 .room.edit .seat.tagseat.done{background:#8c52ff;border-style:solid}
 .room.edit .seat.tagseat.done .stag{color:#fff}
 .panel-toggle{padding:0}
+/* furniture shapes */
+.furn.sh-circle,.lm.sh-circle{border-radius:50%!important}
+.lm.lmtri{background:transparent!important;box-shadow:none!important;border-color:transparent!important;overflow:visible}
+.lm.lmtri-in{position:absolute;inset:0;width:auto;height:auto;clip-path:polygon(50% 0,100% 100%,0 100%);box-shadow:none!important;pointer-events:none}
+.lm.lmtri-in>span{transform:translateY(32%);font-size:.85em;letter-spacing:.04em}
+.furn.sh-triangle{background:none!important;border-color:transparent!important;box-shadow:none!important;isolation:isolate;-webkit-backdrop-filter:none!important;backdrop-filter:none!important}
+.furn.sh-triangle::before,.room.pmode .furn.sh-triangle::before{content:"";position:absolute;inset:0;height:auto;border-radius:0;z-index:-1;pointer-events:none;background:var(--furn);clip-path:polygon(50% 1.6px,calc(100% - 1.4px) calc(100% - 1px),1.4px calc(100% - 1px))}
+.furn.sh-triangle::after{content:"";position:absolute;inset:0;z-index:-2;pointer-events:none;background:var(--furn-line);clip-path:polygon(50% 0,100% 100%,0 100%)}
+.room.pmode .furn.sh-triangle::before{background:var(--gl,var(--gl1)),linear-gradient(180deg,rgba(255,255,255,.72),rgba(255,255,255,.48))}
+.room.pmode .furn.sh-triangle::after{background:rgba(255,255,255,.95)}
+.shapeseg svg{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:1.6;display:block;margin:auto}
+
+.addfurn{display:inline-flex;flex-direction:column;align-items:center;gap:4px;padding:8px 10px 7px;min-width:84px;height:auto;line-height:1.2;border-radius:14px!important}
+.addfurn .ficon{display:block;flex:none;width:34px!important;height:24px!important}
+.addroom .row{gap:8px}
+.collapse-h{all:unset;box-sizing:border-box;display:flex;align-items:center;justify-content:space-between;width:100%;cursor:pointer;font-size:17px;font-weight:600;letter-spacing:-.015em;color:var(--ink)}
+.collapse-h svg{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;color:#8e8e93;transition:transform .2s}
+.collapse-h[aria-expanded="true"] svg{transform:rotate(180deg)}
+.collapse-h:focus-visible{outline:2px solid #8c52ff;outline-offset:4px;border-radius:6px}
 .panel-toggle .pt-h{font-size:17px;font-weight:600;letter-spacing:-.015em}
 .seatnum{display:grid;gap:8px;padding:12px;border-radius:14px;background:rgba(118,118,128,.08)}
 .sn-h{font-size:13px;font-weight:600}
@@ -963,13 +986,23 @@ function base(it){const f=FURN[it.type];return{w:+it.w||f.w,h:+it.h||f.h}}
 function angOf(it){const a=it.ang!=null?+it.ang:(it.rot?90:0);return((a%360)+360)%360}
 function rotPt(x,y,a){const r=a*Math.PI/180,c=Math.cos(r),s=Math.sin(r);return[x*c-y*s,x*s+y*c]}
 function dims(it){const b=base(it),r=angOf(it)*Math.PI/180,c=Math.abs(Math.cos(r)),s=Math.abs(Math.sin(r));return{w:Math.round((b.w*c+b.h*s)*1000)/1000,h:Math.round((b.w*s+b.h*c)*1000)/1000}}
+/* find an open spot for new furniture: nearest to the middle of the room that doesn't overlap anything */
+function freeSpot(room,w,h,seats){const G=2.5,LB=2.5,boxes=room.items.map(i=>{const d=dims(i),lb=FURN[i.type]&&FURN[i.type].seats?LB:0;return{l:i.x-d.w/2-G,r:i.x+d.w/2+G,t:i.y-d.h/2-G-lb,b:i.y+d.h/2+G}});const tl=seats?LB:0;
+  const free=(x,y)=>boxes.every(B=>x+w/2<=B.l||x-w/2>=B.r||y+h/2<=B.t||y-h/2-tl>=B.b);const C=[];
+  for(let y=h/2;y<=ROOM_H-h/2+1e-9;y+=.5)for(let x=w/2;x<=ROOM_W-w/2+1e-9;x+=.5)C.push([x,y,(x-50)**2+((y-35)*1.3)**2]);
+  C.sort((a,b)=>a[2]-b[2]);for(const[x,y]of C)if(free(x,y))return{x,y};
+  const n=room.items.length%8;return{x:clamp(50+n*2,w/2,ROOM_W-w/2),y:clamp(35+n*2,h/2,ROOM_H-h/2)}}
 function clampItem(it){const d=dims(it);it.x=clamp(it.x,d.w/2,ROOM_W-d.w/2);it.y=clamp(it.y,d.h/2,ROOM_H-d.h/2)}
 function setSel(ids){ui.selIds=[...new Set(ids)];ui.selItem=ui.selIds.length===1?ui.selIds[0]:null}
 function freeLetter(room){const used=new Set(room.items.map(i=>(i.cluster||'').toUpperCase()));for(let i=0;i<702;i++){const l=i<26?letter(i):letter(Math.floor(i/26)-1)+letter(i%26);if(!used.has(l))return l}return 'Z'+Date.now()}
 function nextNum(room){return room.items.reduce((m,i)=>Math.max(m,+i.num||0),0)+1}
 function unifyLinks(room){const by={};room.items.forEach(i=>{const c=(i.cluster||'').toUpperCase();if(c&&FURN[i.type]&&FURN[i.type].seats)(by[c]=by[c]||[]).push(i)});Object.values(by).forEach(g=>{const m=Math.min(...g.map(i=>+i.num||1e6));if(m<1e6)g.forEach(i=>i.num=m)})}
 function numberRoom(room){const need=room.items.filter(i=>FURN[i.type]&&FURN[i.type].seats&&!i.num);if(!need.length)return;let n=nextNum(room);need.sort((a,b)=>Math.round(a.y/9)-Math.round(b.y/9)||a.x-b.x).forEach(i=>{i.num=n++})}
-function seatPts(it){const f=FURN[it.type];return f&&f.seats?f.seats:[]}
+function seatPts(it){const f=FURN[it.type];if(!f||!f.seats)return[];const P=f.seats;
+  if(it.shape==='circle')return P.map(([x,y])=>[.5+(x-.5)*(P.length>1?1.3:1),.5+(y-.5)*(P.length>1?1.3:1)].map(v=>.5+(v-.5)*.55));
+  if(it.shape==='triangle'){const ys=[...new Set(P.map(p=>p[1]))].sort((a,b)=>a-b),n=ys.length;return P.map(([x,y])=>{const r=ys.indexOf(y),ny=n===1?.68:.5+r*(.33/(n-1))+(n>2?0:.04);return[.5+(x-.5)*ny*1.05,ny]})}
+  return P}
+function seatK(it){return it.shape==='circle'?.7:it.shape==='triangle'?.56:1}
 function teamTag(n,size){if(size<2)return'';return(n+1)+(size===3?'ABC'[n]:n%2?'B':'A')}
 function ringOrder(P){if(P.length<2)return P.map(p=>p.i);const xs=P.map(p=>p.x),ys=P.map(p=>p.y),rx=Math.max(...xs)-Math.min(...xs),ry=Math.max(...ys)-Math.min(...ys);
   if(Math.min(rx,ry)<1.5)return P.slice().sort((a,b)=>(b.x+b.y)-(a.x+a.y)).map(p=>p.i);
@@ -1429,13 +1462,13 @@ function roomHTML(room,L,o){
     const sel=mode==='edit'&&ui.selIds.includes(it.id)?' sel':'';
     const linkCls=mode==='edit'&&gOf.get(it.id)&&gOf.get(it.id).linked?' linked':'';
     const rz=(sel&&ui.selItem===it.id&&f.rs?`<span class="rz" data-rz="${it.id}" aria-hidden="true"></span>`:'')+(sel&&ui.selItem===it.id?`<span class="rot" data-rot="${it.id}" aria-hidden="true"></span>`:'');
-    if(f.lm){const lab=it.label||(it.type==='board'&&mode==='present'?'Front of room':f.blank?'':f.text||f.label);h+=`<div class="lm lm-${it.type}${sel}" data-item="${it.id}" style="${st}"><span>${esc(lab)}</span>${rz}</div>`;continue}
+    if(f.lm){const lab=it.label||(it.type==='board'&&mode==='present'?'Front of room':f.blank?'':f.text||f.label);const shp=it.shape&&it.shape!=='rect'&&it.shape!=='square'?' sh-'+it.shape:'';h+=it.shape==='triangle'?`<div class="lm lmtri${sel}" data-item="${it.id}" style="${st}"><div class="lm lm-${it.type} lmtri-in"><span>${esc(lab)}</span></div>${rz}</div>`:`<div class="lm lm-${it.type}${shp}${sel}" data-item="${it.id}" style="${st}"><span>${esc(lab)}</span>${rz}</div>`;continue}
     const g=gOf.get(it.id);
-    h+=`<div class="furn f-${it.type}${sel}${linkCls}" data-item="${it.id}" style="${st}${mode==='present'?`;--tc:var(--t${g.index%8+1});--gl:var(--gl${g.index%6+1})`:''}${ZM?`;--dx:${((it.x-ZA.get(it.id).x)/ROOM_W*100).toFixed(3)}cqw;--dy:${((it.y-ZA.get(it.id).y)/ROOM_W*100).toFixed(3)}cqw`:''}">`;
+    h+=`<div class="furn f-${it.type}${it.shape==='circle'||it.shape==='triangle'?' sh-'+it.shape:''}${sel}${linkCls}" data-item="${it.id}" style="${st}${mode==='present'?`;--tc:var(--t${g.index%8+1});--gl:var(--gl${g.index%6+1})`:''}${ZM?`;--dx:${((it.x-ZA.get(it.id).x)/ROOM_W*100).toFixed(3)}cqw;--dy:${((it.y-ZA.get(it.id).y)/ROOM_W*100).toFixed(3)}cqw`:''}">`;
     if(first.has(it.id))labels+=`<span class="tlabel" style="${mode==='present'?`left:${(ZA.get(it.id).x/ROOM_W*100).toFixed(3)}%;top:calc(${(ZA.get(it.id).y/ROOM_H*100).toFixed(3)}% + var(--pz,1) * ${((ZA.get(it.id).top-ZA.get(it.id).y)/ROOM_H*100).toFixed(3)}%)`:mode==='seat'?`left:calc(${(ZA.get(it.id).x/ROOM_W*100).toFixed(3)}% + var(--pz,1) * ${((it.x-d.w/2-ZA.get(it.id).x)/ROOM_W*100).toFixed(3)}%);top:calc(${(ZA.get(it.id).y/ROOM_H*100).toFixed(3)}% + var(--pz,1) * ${((it.y-d.h/2-ZA.get(it.id).y)/ROOM_H*100).toFixed(3)}%)`:`left:${pct((it.x-d.w/2)/ROOM_W)};top:${pct((it.y-d.h/2)/ROOM_H)}`}">${mode==='present'&&rot?'Group '+letter(g.index)+' · ':''}${esc(g.label)}${mode==='edit'&&g.linked?' · linked':''}</span>`;
-    const pts=seatPts(it);
-    const xs=new Set(pts.map(p=>p[0].toFixed(2))).size,ys=new Set(pts.map(p=>p[1].toFixed(2))).size;
-    const cw=.9/xs,ch=.84/ys,ow=odd?ch*bs.h/bs.w:cw,oh=odd?cw*bs.w/bs.h:ch,crs=qt?`;--cr:${-90*qt}deg;transform:rotate(var(--cr))`:'';
+    const pts=seatPts(it),P0=f.seats,sk=seatK(it);
+    const xs=new Set(P0.map(p=>p[0].toFixed(2))).size,ys=new Set(P0.map(p=>p[1].toFixed(2))).size;
+    const cw=.9/xs*sk,ch=.84/ys*sk,ow=odd?ch*bs.h/bs.w:cw,oh=odd?cw*bs.w/bs.h:ch,crs=qt?`;--cr:${-90*qt}deg;transform:rotate(var(--cr))`:'';
     pts.forEach((p,k)=>{
       const key=it.id+':'+k;
       const ss=`left:${pct(p[0]-ow/2)};top:${pct(p[1]-oh/2)};width:${pct(ow)};height:${pct(oh)}${crs}`;
@@ -1454,7 +1487,7 @@ function roomHTML(room,L,o){
       const q=o.qm.get(s.id)||0,by=cls.columns.find(c=>c.id===cls.opts.by);
       const sub=[],sl=showList(cls);for(const c of showCols(cls)){if(!sl.includes(c.id))continue;if(c.id==='__g'){if(s.g)sub.push(s.g)}else if(hasVal(s,c)){const t=String(s.v[c.id]).trim();sub.push(esc(ABBR[t.toLowerCase()]||t))}}
       const rw=ui._rp&&ui._rp.with.get(s.id),tip=[s.notes||'',rw?'Grouped before with '+rw.map(x=>nameOf(cls,x)).join(', '):''].filter(Boolean).join(' · ');
-      h+=`<div class="seat filled q${q}${o.flag.has(key)?' flag':''}${rw?' rep':''}${ui.selSeat===key?' picked':''}" data-seat="${key}" data-sid="${s.id}" style="${ss};--d:${n*25}ms" tabindex="0" role="button" aria-label="${esc(s.name)} at ${esc(g.label)}"${tip?` title="${esc(tip)}"`:''}><span class="nm">${esc(dname(s))}</span>${s.notes?'<span class="note-dot" aria-hidden="true"></span>':''}${marks}${sub.length?`<span class="sub">${sub.join('\u2009·\u2009')}</span>`:''}</div>`;
+      h+=`<div class="seat filled q${q}${o.flag.has(key)?' flag':''}${rw?' rep':''}${ui.selSeat===key?' picked':''}" data-seat="${key}" data-sid="${s.id}" style="${ss};--d:${n*25}ms" tabindex="0" role="button" aria-label="${esc(s.name)} at ${esc(g.label)}"${tip?` data-ntip="${esc(tip)}" aria-description="${esc(tip)}"`:''}><span class="nm">${esc(dname(s))}</span>${s.notes?'<span class="note-dot" aria-hidden="true"></span>':''}${marks}${sub.length?`<span class="sub">${sub.join('\u2009·\u2009')}</span>`:''}</div>`;
     });
     h+=rz+'</div>';
   }
@@ -1505,16 +1538,13 @@ function arrangeHTML(cls){
       <button class="btn wide" data-act="mkOpen">${svg('plus')} Make New Chart</button>
       <small class="muted" style="margin-top:-6px">Choose Mixed, Similar or Random and the criteria, right here.</small>
     </section>`})():''}
-    <section class="panel compact"><h3>Show on my screen</h3>
-      <label class="check"><input type="checkbox" data-ch="view" data-key="colors"${v.colors?' checked':''}> ${isCat(by)?'Category colors':'Quartile colors'}</label>
+    <section class="panel compact"><button class="collapse-h" data-act="toggleDetails" aria-expanded="${!!ui.showDetails}">Show details<svg viewBox="0 0 16 16"><path d="M4 6l4 4 4-4"/></svg></button>
+      ${ui.showDetails?`      <label class="check"><input type="checkbox" data-ch="view" data-key="colors"${v.colors?' checked':''}> ${isCat(by)?'Category colors':'Quartile colors'}</label>
       ${showCols(cls).map(c=>`<label class="check"><input type="checkbox" data-ch="vshow" data-key="${c.id}"${showList(cls).includes(c.id)?' checked':''}> ${esc(c.name)}</label>`).join('')}
       <label class="check"><input type="checkbox" data-ch="view" data-key="seatNums"${v.seatNums===true?' checked':''}> Individual seats</label>
       ${room.hideTeam?'':`<label class="check"><input type="checkbox" data-ch="view" data-key="seatNos"${v.seatNos===true?' checked':''}> Team seats</label>`}
       <label class="check"><input type="checkbox" data-ch="view" data-key="repeats"${v.repeats?' checked':''}> Repeat partners</label>
-      <small class="muted">Present mode never shows scores, colors or notes.</small>
-    </section>
-    <section class="panel"><h3>Share</h3>
-      ${embedded?'':'<button class="btn" data-act="print">Print</button>'}
+      <small class="muted">Present mode never shows scores, colors or notes.</small>`:''}
     </section>
   </aside>`:''}</div>`;
 }
@@ -1575,10 +1605,19 @@ function rosterHTML(cls){
 }
 
 function editRoom(){let r=S.rooms.find(r=>r.id===ui.roomId);if(!r){const c=activeClass();r=c?roomOf(c):S.rooms[0];ui.roomId=r.id}return r}
+function furnIcon(k){const f=FURN[k],W=34,H=24,sc=Math.min((W-4)/f.w,(H-4)/f.h,1.7),w=Math.max(f.w*sc,k==='window'||k==='board'?W-4:3),h=Math.max(f.h*sc,3),x=(W-w)/2,y=(H-h)/2;
+  let b='';
+  if(f.seats){b=`<rect x="${x}" y="${y}" width="${w}" height="${h}" rx="2.5" fill="#fff" stroke="#8e8e93" stroke-width="1"/>`;const r=Math.min(w,h)*(f.seats.length>2?.15:.2);f.seats.forEach(([a,c])=>{b+=`<circle cx="${(x+a*w).toFixed(1)}" cy="${(y+c*h).toFixed(1)}" r="${Math.max(1.6,r).toFixed(1)}" fill="#8c52ff"/>`})}
+  else if(k==='board'||k==='blank')b=`<rect x="${x}" y="${y}" width="${w}" height="${h}" rx="1.5" fill="#1d1d1f"/>`;
+  else if(k==='door')b=`<rect x="${x}" y="${y}" width="${w}" height="${h}" rx="1" fill="none" stroke="#8e8e93" stroke-width="1" stroke-dasharray="2 1.5"/>`;
+  else if(k==='window')b=`<defs><linearGradient id="fiw" x1="0" x2="1"><stop offset="0" stop-color="#78b4ff"/><stop offset="1" stop-color="#aa8cff"/></linearGradient></defs><rect x="${x}" y="${y}" width="${w}" height="${h}" rx="1.5" fill="url(#fiw)"/>`;
+  else if(k==='counter')b=`<rect x="${x}" y="${y}" width="${w}" height="${h}" rx="1.5" fill="#dedee5" stroke="#b8b8c0" stroke-width="1"/>`;
+  else b=`<rect x="${x}" y="${y}" width="${w}" height="${h}" rx="2" fill="#fff" stroke="#8e8e93" stroke-width="1"/>`;
+  return`<svg class="ficon" viewBox="0 0 ${W} ${H}" width="${W}" height="${H}" aria-hidden="true">${b}</svg>`}
 function roomViewHTML(){
   const room=editRoom(),L=layoutInfo(room),users=S.classes.filter(c=>c.roomId===room.id),it=room.items.find(i=>i.id===ui.selItem),cls=activeClass();
   const seatType=it&&FURN[it.type].seats;
-  const addBtns=Object.entries(FURN).filter(([k,f])=>!f.hidden).map(([k,f])=>`<button class="btn small" data-act="addItem" data-arg="${k}">${esc(f.label)}</button>`).join('');
+  const addBtns=Object.entries(FURN).filter(([k,f])=>!f.hidden).map(([k,f])=>`<button class="btn small addfurn" data-act="addItem" data-arg="${k}">${furnIcon(k)}<span>${esc(f.label)}</span></button>`).join('');
   const presets=[['pods4','Pods of 4'],['pods6','Pods of 6'],['pairs','Rows of pairs'],['horseshoe','Horseshoe'],['blank','Empty room']];
   return`<div class="layout">
   <aside class="rail">
@@ -1594,6 +1633,7 @@ function roomViewHTML(){
       ${tables.length>1?(allLinked?`<button class="btn" data-act="unlinkSel">Unlink these tables</button>`:`<button class="btn primary" data-act="linkSel">Link as one table</button><small class="muted">Linked tables seat one group and share the lowest table number.</small>`):'<small class="muted">Select two or more tables to link them.</small>'}
       <div class="row"><button class="btn small" data-act="rotItem">Rotate 90° together</button>${confirmBtn('delItem','Remove all','Click again','delItem','')}<button class="btn small" data-act="clearSel">Clear selection</button></div></section>`})():`    <section class="panel"><div class="chart-head"><h3>${it?'Selected: '+esc(FURN[it.type].label):'Selected'}</h3>${it?`<div class="chart-tools"><button class="iconbtn tipbtn${ui.itemDetails?' on':''}" data-act="itemDetails" data-tip="${ui.itemDetails?'Hide size and angle':'Size and angle'}" aria-label="Size and angle" aria-expanded="${!!ui.itemDetails}">${svg('pencil')}</button></div>`:''}</div>
       ${it?`<label class="field"><span>Label</span><input type="text" data-ch="itemLabel" value="${esc(it.label)}" placeholder="${seatType?(it.cluster?'Desks '+esc(it.cluster):'Table '+(it.num||'')):FURN[it.type].blank?'Optional label':esc(FURN[it.type].text||FURN[it.type].label)}"></label>
+      <div class="field"><span>Shape</span><div class="seg four shapeseg" role="group" aria-label="Shape">${[['rect','Rectangle','<rect x="2.5" y="5.5" width="15" height="9" rx="1.5"/>'],['square','Square','<rect x="4.5" y="4.5" width="11" height="11" rx="1.5"/>'],['circle','Circle','<circle cx="10" cy="10" r="6.5"/>'],['triangle','Triangle','<path d="M10 3.5l7 12.5H3z" stroke-linejoin="round"/>']].map(([k,l,d])=>`<button data-act="setShape" data-arg="${k}" aria-pressed="${(it.shape||'rect')===k}" title="${l}" aria-label="${l}"><svg viewBox="0 0 20 20">${d}</svg></button>`).join('')}</div></div>
       ${ui.itemDetails?`${FURN[it.type].rs?(()=>{const d=base(it);return`<div class="two" style="gap:10px"><label class="field"><span>Length</span><input type="number" min="1" max="100" step="0.5" data-ch="itemSize" data-key="w" value="${d.w}"></label><label class="field"><span>Depth</span><input type="number" min="1" max="70" step="0.5" data-ch="itemSize" data-key="h" value="${d.h}"></label></div>`})():''}
       <label class="field"><span>Angle</span><input type="number" min="0" max="359" step="15" data-ch="itemAngle" value="${angOf(it)}"></label>
       <small class="muted">Drag the top handle to turn it (snaps every 15°, hold Shift for any angle)${FURN[it.type].rs?' or the corner handle to resize it':''}.</small>`:''}
@@ -2177,6 +2217,11 @@ const ACT={
   pqKeep:()=>{const cls=need(),q=cls.quick,sn=ui.pSnap;if(!sn)return;Object.assign(q,sn,{groups:sn.groups.map(g=>g.slice()),blank:false,setId:null,name:defaultChartName(cls,sn.meta&&TYPE_NAME[sn.meta.mode]?{mode:sn.meta.mode}:null)});ui.pGroups=null;ui.pSnap=null;ACT.qSave();renderPresent();toast('Kept as “'+q.name+'”. Find it in the Groups title menu.')},
   pZoomStep:(b,d)=>setZoom((ui.pZoom||1)+(+d)),
   pZoomFit:()=>setZoom(1),
+  setShape:(b,k)=>{const r=editRoom(),it=r.items.find(i=>i.id===ui.selItem);if(!it)return;const f=FURN[it.type],bs=base(it);
+    if(k==='square'){const m=Math.min(70,Math.max(bs.w,bs.h));it.w=m;it.h=m}
+    else if((k==='rect')&&bs.w===bs.h){if(f.w!==f.h){it.w=f.w;it.h=f.h}else{it.w=bs.w;it.h=Math.max(1,Math.round(bs.w*.75*2)/2)}}
+    if(k==='rect')delete it.shape;else it.shape=k;clampItem(it);save();render()},
+  toggleDetails:()=>{ui.showDetails=!ui.showDetails;render()},
   sZoomStep:(b,d)=>setSZoom((ui.sZoom||1)+(+d)),
   sZoomFit:()=>setSZoom(1),
   pFlip:()=>{S.settings.presentFlip=!S.settings.presentFlip;save();renderPresent()},
@@ -2251,7 +2296,7 @@ const ACT={
   dupRoom:()=>{const src=editRoom(),r=JSON.parse(JSON.stringify(src));r.id=uid();r.name=src.name+' copy';const map={};r.items.forEach(i=>{const n=uid();map[i.id]=n;i.id=n});S.rooms.push(r);ui.roomId=r.id;save();render()},
   delRoom:()=>{const r=editRoom();S.rooms=S.rooms.filter(x=>x.id!==r.id);S.classes.forEach(c=>{if(c.roomId===r.id)c.roomId=S.rooms[0].id});ui.roomId=S.rooms[0].id;save();render()},
   useRoom:()=>{need().roomId=editRoom().id;save();render();toast('Layout assigned')},
-  addItem:(b,t)=>{const r=editRoom(),f=FURN[t];const it={id:uid(),type:t,x:clamp(50+(Math.random()*10-5),f.w/2,ROOM_W-f.w/2),y:clamp(35+(Math.random()*10-5),f.h/2,ROOM_H-f.h/2),ang:0,label:'',cluster:''};if(f.seats)it.num=nextNum(r);r.items.push(it);setSel([it.id]);save();render()},
+  addItem:(b,t)=>{const r=editRoom(),f=FURN[t];const sp=freeSpot(r,f.w,f.h,!!f.seats);const it={id:uid(),type:t,x:sp.x,y:sp.y,ang:0,label:'',cluster:''};if(f.seats)it.num=nextNum(r);r.items.push(it);setSel([it.id]);save();render()},
   preset:(b,k)=>{const r=editRoom();r.items=preset(k);if(k==='blank')r.items=r.items.filter(i=>FURN[i.type].lm);setSel([]);save();render()},
   rotItem:()=>{const items=editRoom().items.filter(i=>ui.selIds.includes(i.id));if(!items.length)return;const cx=avg(items.map(i=>i.x)),cy=avg(items.map(i=>i.y));items.forEach(i=>{if(items.length>1){const o=rotPt(i.x-cx,i.y-cy,90);i.x=cx+o[0];i.y=cy+o[1]}i.ang=(angOf(i)+90)%360});items.forEach(clampItem);save();render()},
   dupItem:()=>{const r=editRoom(),it=r.items.find(i=>i.id===ui.selItem);if(!it)return;const d=dims(it);const c=Object.assign({},it,{id:uid(),label:'',cluster:'',x:clamp(it.x+3,d.w/2,ROOM_W-d.w/2),y:clamp(it.y+3,d.h/2,ROOM_H-d.h/2)});if(FURN[it.type].seats)c.num=nextNum(r);r.items.push(c);setSel([c.id]);save();render()},
@@ -2445,7 +2490,7 @@ document.addEventListener('pointermove',e=>{
     let idx=ths.findIndex(t=>{const r=t.getBoundingClientRect();return e.clientX<r.left+r.width/2});if(idx<0)idx=ths.length;D.to=idx;
     const r=idx<ths.length?ths[idx].getBoundingClientRect():ths[ths.length-1].getBoundingClientRect(),wr=wrap.getBoundingClientRect();
     const x=idx<ths.length?r.left+6:r.right+6;Object.assign(D.ind.style,{left:(x-1.5)+'px',top:Math.max(wr.top,0)+'px',height:Math.min(wr.bottom,innerHeight)-Math.max(wr.top,0)+'px'});return}
-  if(drag.k==='resize'){const D=drag,dl=rotPt((e.clientX-D.x)/D.rect.width*ROOM_W,(e.clientY-D.y)/D.rect.height*ROOM_H,-D.A);const w=clamp(Math.round((D.w0+dl[0])*2)/2,1,100),h=clamp(Math.round((D.h0+dl[1])*2)/2,1,70);D.it.w=w;D.it.h=h;const c=rotPt(w/2,h/2,D.A);D.it.x=D.ax+c[0];D.it.y=D.ay+c[1];D.el.style.left=pct((D.it.x-w/2)/ROOM_W);D.el.style.top=pct((D.it.y-h/2)/ROOM_H);D.el.style.width=pct(w/ROOM_W);D.el.style.height=pct(h/ROOM_H);return}
+  if(drag.k==='resize'){const D=drag,dl=rotPt((e.clientX-D.x)/D.rect.width*ROOM_W,(e.clientY-D.y)/D.rect.height*ROOM_H,-D.A);let w=clamp(Math.round((D.w0+dl[0])*2)/2,1,100),h=clamp(Math.round((D.h0+dl[1])*2)/2,1,70);if(D.it.shape==='square'){w=h=Math.min(70,Math.max(w,h))}D.it.w=w;D.it.h=h;const c=rotPt(w/2,h/2,D.A);D.it.x=D.ax+c[0];D.it.y=D.ay+c[1];D.el.style.left=pct((D.it.x-w/2)/ROOM_W);D.el.style.top=pct((D.it.y-h/2)/ROOM_H);D.el.style.width=pct(w/ROOM_W);D.el.style.height=pct(h/ROOM_H);return}
   if(drag.k==='rotate'){const D=drag,cx=D.rect.left+D.it.x/ROOM_W*D.rect.width,cy=D.rect.top+D.it.y/ROOM_H*D.rect.height;let a=Math.atan2(e.clientY-cy,e.clientX-cx)*180/Math.PI+90;a=((a%360)+360)%360;a=e.shiftKey?Math.round(a):Math.round(a/15)*15%360;D.it.ang=a;D.el.style.transform=a?`rotate(${a}deg)`:'';D.moved=true;return}
   if(drag.k==='item'){
     let dx=(e.clientX-drag.x)/drag.rect.width*ROOM_W,dy=(e.clientY-drag.y)/drag.rect.height*ROOM_H;
@@ -2466,6 +2511,16 @@ document.addEventListener('pointermove',e=>{
   document.querySelectorAll('.seat.drop').forEach(x=>{if(x!==t)x.classList.remove('drop')});
   if(t&&t!==drag.el)t.classList.add('drop');
 });
+
+/* Fast hover tooltip for student notes on the Seating Chart (the browser's own title tooltip waits ~2s) */
+(()=>{if(!HAS_DOM)return;let tip=null,tm=null,cur=null;
+  const hide=()=>{clearTimeout(tm);tm=null;cur=null;if(tip)tip.classList.remove('show')};
+  const show=el=>{if(!tip){tip=document.createElement('div');tip.id='ntip';tip.setAttribute('role','tooltip');document.body.appendChild(tip)}
+    tip.textContent=el.dataset.ntip;const r=el.getBoundingClientRect();tip.style.left='0px';tip.style.top='0px';tip.classList.add('show');
+    const w=tip.offsetWidth,h=tip.offsetHeight;let x=r.left+r.width/2-w/2,y=r.top-h-8;if(y<8)y=r.bottom+8;x=Math.max(8,Math.min(innerWidth-w-8,x));tip.style.left=x+'px';tip.style.top=y+'px'};
+  document.addEventListener('mouseover',e=>{const el=e.target.closest&&e.target.closest('[data-ntip]');if(el===cur)return;hide();if(!el||drag)return;cur=el;tm=setTimeout(()=>{if(cur===el&&document.contains(el))show(el)},250)});
+  document.addEventListener('pointerdown',hide,true);addEventListener('scroll',hide,true);addEventListener('blur',hide);
+})();
 const endDrag=(e,cancel)=>{
   if(!drag)return;const d=drag;drag=null;
   if(d.k==='crit'){if(!d.moved)return;d.ind&&d.ind.remove();document.body.classList.remove('dragging-col');if(!cancel&&d.to!=null){const o=tgtOpts(need(),d.tgt);let to=d.to;if(to>d.from)to--;if(to!==d.from){const[x]=o.crit.splice(d.from,1);o.crit.splice(to,0,x);save()}}render();return}
