@@ -1959,6 +1959,7 @@ function show(){
   const mb = $$('.js-mode').find(b=>btnKey(b) === paneKey());
   $('#cornerBtn').title = 'Tools · ' + (mb ? mb.textContent.trim() : 'Timer');
   updateLogo(); syncUrl(); liveDots();
+  if(typeof Tour !== 'undefined' && !Tour.active()) Tour.maybeAuto();
 }
 $$('.js-mode').forEach(b=>b.onclick = ()=>{ state.mode = b.dataset.mode; if(b.dataset.type) state.type = b.dataset.type; show(); });
 
@@ -1988,7 +1989,7 @@ document.addEventListener('keydown', e=>{
   else if(k === 'd') toggleTools();
   else if(/^[1-6]$/.test(k)){ const b = $$('#vdock .js-mode')[+k - 1]; if(b){ b.click(); peekDock(); } }
   else if(k === 'f') toggleFs();
-  else if(e.key === '?') Tour.start();
+  else if(e.key === '?') Tour.start(paneKey());
   else if(k === 'm') setMusic(!mbar.classList.contains('open'));
 });
 /* Buttons let go of focus after a click so Space never "re-clicks" them */
@@ -2291,11 +2292,18 @@ function checkAssetFolder(){
    GUIDED WALKTHROUGH — runs once on a teacher's first visit, and any time
    from the ? button in the dock (or the ? key). Skip or Esc ends it.
    ===================================================================== */
+const noTourParam = new URLSearchParams(location.search).has('notour');
 const Tour = (()=>{
   const el = $('#tour'), spot = $('#tourSpot'), tip = $('#tourTip');
   const toStandard = () => { if(paneKey() !== 'standard'){ state.mode = 'timer'; state.type = 'standard'; show(); } };
   const toolsOnly = () => { openDrawer(false); if(!dockPinned) setDock(false); };
-  const STEPS = [
+  /* Go to a tool (Timer types use mode "timer") and keep the dock out of the way */
+  const toTool = key => () => {
+    if(paneKey() !== key){ if(['standard','turn','bar'].includes(key)){ state.mode = 'timer'; state.type = key; } else state.mode = key; show(); }
+    toolsOnly();
+  };
+  const TOURS = {};
+  TOURS.standard = [
     {title:'Start a timer in one tap', text:'Tap a number to start a timer right away. The numbers are minutes; :15 and :30 are seconds.',
      target:'#stdPresets', before(){ toStandard(); toolsOnly(); }},
     {title:'Need more time?', text:'+30 sec adds 30 seconds, even while the timer is running.',
@@ -2311,6 +2319,35 @@ const Tour = (()=>{
     {title:'Music', text:'Play the Classroom playlist, or add your own YouTube playlist link.',
      target:'#musicBtn', side:'left', when:()=>!matchMedia('(max-width:600px)').matches, before(){ openDrawer(false); openDock(); }}
   ];
+  /* Short tours for the other tools. Each runs the first time a teacher opens that tool. */
+  TOURS.turn = [
+    {title:'How many people?', text:'Tap a colored circle to choose how many people take turns, from 1 to 4.', target:'#chipRow', before:toTool('turn')},
+    {title:'Time for each turn', text:'Pick how long each turn lasts. Every person gets the same time.', target:'#turnPresets', before:toTool('turn')},
+    {title:'Start the turns', text:'Press play. When a turn ends, a sound plays and the next person’s turn starts on its own. +15 sec gives the current turn more time.', target:'#turnControls', before:toTool('turn')},
+    {title:'A different length', text:'Type a time like 1:15 in the box, then press Set.', target:()=>$('#turnCustom').parentElement, before:toTool('turn')}
+  ];
+  TOURS.bar = [
+    {title:'One bar per turn', text:'Each bar is one turn; tap a number to choose how many turns, 1–6.', target:'#barsWrap', before:toTool('bar')},
+    {title:'Time for each turn', text:'Pick how long each turn lasts, or type a time and press Set.', target:()=>[$('#barPresets'), $('#barCustom').parentElement], before:toTool('bar')},
+    {title:'Watch the bars', text:'Press play. The glowing bar shrinks as time runs out, then the next bar starts on its own.', target:()=>$('#pane-bar [data-act=start]').parentElement, before:toTool('bar')}
+  ];
+  TOURS.routines = [
+    {title:'Your routine', text:'A routine is a list of steps, each with its own time. Tap any step to jump to it.', target:'.r-list', before:toTool('routines')},
+    {title:'Make it yours', text:'Press Edit to rename steps, change times, add steps, or load a ready-made routine like Stations or a PE circuit.', target:'#rEditBtn', before:toTool('routines')},
+    {title:'Run it', text:'Start runs the whole routine, step after step. The arrows skip back or ahead, and +30 adds time to the current step.', target:'.r-ctrls', before:toTool('routines')},
+    {title:'See what’s left', text:'The ring shows the time left in this step. While it runs, the bell shows when the step ends.', target:'.r-ring', before:toTool('routines')}
+  ];
+  TOURS.alarm = [
+    {title:'Add an alarm', text:'Press + to add an alarm. Pick a time, the days it repeats, a label, and a sound.', target:'#aAddBtn', before:toTool('alarm')},
+    {title:'Your alarms', text:'Turn each alarm on or off with its switch. Tap an alarm to change it, or press Edit to delete one.', target:'#aCard', before:toTool('alarm')},
+    {title:'Keep this page open', text:'The next alarm shows here. Alarms ring only while Timer PLUS is open in a tab.', target:'#aNext', before:toTool('alarm')}
+  ];
+  TOURS.stopwatch = [
+    {title:'Count up', text:'Play starts counting up, pause stops it, and Reset puts it back to zero.', target:()=>$('#pane-stopwatch [data-act=start]').parentElement, before:toTool('stopwatch')},
+    {title:'Laps', text:'Lap saves the current time to a list without stopping. Handy for timing each group or round.', target:'#pane-stopwatch [data-act=lap]', before:toTool('stopwatch')}
+  ];
+  const doneKey = k => k === 'standard' ? 'tourDone' : 'tourDone.' + k;
+  let STEPS = TOURS.standard, which = 'standard';
   let i = -1, on = false, t = null;
   function rectOf(step){
     let nodes = typeof step.target === 'function' ? step.target() : $(step.target);
@@ -2353,8 +2390,9 @@ const Tour = (()=>{
     requestAnimationFrame(()=>requestAnimationFrame(()=>{ place(); t = setTimeout(place, 120); }));
     $('#tourNext').focus({preventScroll:true});
   }
-  function start(){
+  function start(key){
     if(on) return;
+    which = TOURS[key] ? key : (TOURS[paneKey()] ? paneKey() : 'standard'); STEPS = TOURS[which]; i = -1;
     if(Alarm.sheetOpen()) Alarm.closeSheet();
     on = true; document.body.classList.add('touring');
     spot.classList.add('jump'); tip.classList.add('jump');           /* first spot appears in place */
@@ -2366,21 +2404,33 @@ const Tour = (()=>{
   function end(finished){
     on = false; clearTimeout(t); el.classList.remove('on'); el.setAttribute('aria-hidden', true);
     document.body.classList.remove('touring');
-    store.set('tourDone', true);
+    store.set(doneKey(which), true);
     openDrawer(false); if(!dockPinned) setDock(false);
     if(finished) toast('You can take the tour again from the ? button in the stack.', 4000);
   }
   $('#tourNext').onclick = () => go(i + 1);
   $('#tourBack').onclick = () => go(i - 1);
   $('#tourSkip').onclick = () => end(false);
-  $('#tourBtn').onclick = () => start();
+  $('#tourBtn').onclick = () => start(paneKey());
   addEventListener('resize', ()=>place());
   function key(e){
     if(e.key === 'Escape'){ e.preventDefault(); end(false); }
     else if(e.key === 'ArrowRight' || (e.key === 'Enter' && !e.target.closest('#tourBack,#tourSkip'))){ e.preventDefault(); go(i + 1); }
     else if(e.key === 'ArrowLeft'){ e.preventDefault(); go(i - 1); }
   }
-  return { start, end, key, active:()=>on };
+  /* First time a teacher opens a tool, show its tour (not while a timer is running or an alarm is ringing) */
+  let autoT = null;
+  function maybeAuto(delay = 600){
+    clearTimeout(autoT);
+    if(on || noTourParam) return;
+    autoT = setTimeout(()=>{
+      const k = paneKey();
+      if(on || !TOURS[k] || store.get(doneKey(k), false)) return;
+      if(Object.values(CTRL).some(c=>c.running()) || Alarm.sheetOpen() || document.querySelector('#ringOverlay.show, #rSheetWrap.show')) return;
+      start(k);
+    }, delay);
+  }
+  return { start, end, key, maybeAuto, active:()=>on, seen:k=>store.get(doneKey(k), false) };
 })();
 
 /* =====================================================================
@@ -2395,11 +2445,11 @@ const Tour = (()=>{
   applyTheme(themeId);
   checkAssetFolder();
   show();
-  const firstVisit = !store.get('tourDone', false);
+  const firstVisit = !Tour.seen(paneKey());
   if(dockPinned) setPinned(true);
   else if(!firstVisit) peekDock(2500);
-  /* Links that open a specific tool (?mode=…) skip the automatic tour; it runs on the next plain visit */
-  if(firstVisit && !p.has('notour') && !p.has('mode')) setTimeout(()=>{ if(!Object.values(CTRL).some(c=>c.running())) Tour.start(); }, 700);
+  /* Each tool's tour runs the first time a teacher opens it (?notour turns this off) */
+  Tour.maybeAuto(700);
   wake();
 })();
 </script>
