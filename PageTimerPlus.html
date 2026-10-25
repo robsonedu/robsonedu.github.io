@@ -63,7 +63,7 @@ body{
 
 /* ---------- Logo ---------- */
 .logo-bar{position:fixed;top:20px;left:20px;display:flex;align-items:center;z-index:50;pointer-events:none;}
-.logo-bar img{pointer-events:auto;}
+.logo-bar img,.logo-bar a{pointer-events:auto;}
 #extraLogo{height:160px;width:auto;margin-right:18px;display:none;}
 /* TIMEr PLUS logo: a vector, white or black to match the theme */
 .logo-link{display:block;color:var(--logo-color,#fff);filter:var(--logo-shadow,drop-shadow(0 2px 8px rgba(0,0,0,.55)));border-radius:6px;}
@@ -2073,9 +2073,8 @@ function makePlayer(){
   const l = curList();
   const vars = {playsinline:1, rel:0};
   if(l.kind === 'list'){ vars.listType = 'playlist'; vars.list = l.id; }
-  yt = new YT.Player('ytHost', {
-    host:'https://www.youtube-nocookie.com', width:'100%', height:'100%',
-    videoId: l.kind === 'video' ? l.id : undefined, playerVars: vars,
+  const opts = {
+    host:'https://www.youtube-nocookie.com', width:'100%', height:'100%', playerVars: vars,
     events:{
       onReady: () => { ytReady = true; yt.setVolume(mVol); renderBar(); if(wantPlay) yt.playVideo(); },
       onStateChange: e => {
@@ -2085,7 +2084,10 @@ function makePlayer(){
       },
       onError: () => { mPlaying = false; wantPlay = false; renderBar(); mbMsg('That video or playlist can’t be played here. Try another link.', 6000); }
     }
-  });
+  };
+  /* Only pass videoId for single videos: YouTube now rejects an empty videoId ("Invalid video id") and the player never starts */
+  if(l.kind === 'video') opts.videoId = l.id;
+  yt = new YT.Player('ytHost', opts);
 }
 function musicPlay(){
   wantPlay = true; setDrop(true);
