@@ -3,7 +3,7 @@
   "name": "RobsonEDU Timers",
   "short_name": "Timers",
   "start_url": "/PageTimers.html",
-  "scope": "/PageTimers.html",
+  "scope": "/",
   "display": "standalone",
   "background_color": "#000000",
   "theme_color": "#002744",
