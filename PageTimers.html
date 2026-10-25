@@ -5,7 +5,7 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
   <meta name="rating" content="child">
-  <meta name="description" content="RobsonEDU is an ad-free classroom tool for teachers and students.">
+  <meta name="description" content="Timer PLUS: a free, ad-free classroom timer with turn, bar, routine, alarm and stopwatch tools.">
   <link rel="stylesheet" href="assets/css/main.css" />
   <noscript><link rel="stylesheet" href="assets/css/noscript.css" /></noscript>
 
@@ -17,83 +17,81 @@
   <link rel="apple-touch-icon" href="images/IconCircleT%20(512%20x%20512%20px).png">
 
   <style>
-  /* Grid layout for thumbnails */
-  .thumb-grid {
+  /* ---------- Timer PLUS hero ---------- */
+  .tp-hero {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-    gap: 16px;
-    margin: 20px 0;
-  }
-  .thumb-grid a {
-    display: block;
-    text-align: center;
-    text-decoration: none; /* removes link underline */
-    border-bottom: none;   /* removes theme’s default underline line */
-  }
-.thumb-grid img {
-  width: 100%;
-  aspect-ratio: 16/9;   /* or 4/3 if you prefer squarer thumbs */
-  object-fit: fill;     /* forces squish/stretch instead of crop */
-  border-radius: 6px;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.25);
-  transition: transform 0.2s ease;
-}
-
-.thumb-grid img:hover {
-  transform: scale(1.05);
-}
-
-  /* Timer intro + clickable instruction graphic */
-  .timer-intro {
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 32px;
+    grid-template-columns: minmax(0, 1.45fr) minmax(0, 1fr);
+    gap: 36px;
     align-items: center;
-    margin: 24px 0 42px;
+    margin: 8px 0 40px;
   }
-  .timer-intro-text {
-    min-width: 0;
+  .tp-hero-pic { display: block; border-bottom: none; text-decoration: none; }
+  /* Slideshow: six screenshots fade through themes and tools, no script needed */
+  .tp-slides {
+    position: relative; aspect-ratio: 16/9; overflow: hidden; border-radius: 12px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.28); background: #0b1430;
+    transition: transform 0.25s ease, box-shadow 0.25s ease;
   }
-  .timer-intro-text p:last-child {
-    margin-bottom: 0;
+  .tp-hero-pic:hover .tp-slides { transform: scale(1.015); box-shadow: 0 14px 36px rgba(0,0,0,0.32); }
+  .tp-slides img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; display: block; }
+  .tp-slides img + img { opacity: 0; animation: tpShow 18s infinite; }
+  .tp-slides img:nth-child(2) { animation-delay: 3s; }
+  .tp-slides img:nth-child(3) { animation-delay: 6s; }
+  .tp-slides img:nth-child(4) { animation-delay: 9s; }
+  .tp-slides img:nth-child(5) { animation-delay: 12s; }
+  .tp-slides img:nth-child(6) { animation-delay: 15s; animation-name: tpShowLast; }
+  @keyframes tpShow { 0% { opacity: 0; } 3.33% { opacity: 1; } 19.9% { opacity: 1; } 20%, 100% { opacity: 0; } }
+  @keyframes tpShowLast { 0% { opacity: 0; } 3.33% { opacity: 1; } 16.67% { opacity: 1; } 20%, 100% { opacity: 0; } }
+  @media (prefers-reduced-motion: reduce) { .tp-slides img + img { animation: none; } }
+  .tp-badge {
+    display: inline-block; font-size: 0.7em; font-weight: 900; letter-spacing: 0.12em; line-height: 1.6;
+    text-transform: uppercase; background: #f2849e; color: #fff; padding: 0.1em 0.8em; border-radius: 99px; margin-bottom: 0.8em;
   }
-  .timer-intro-graphic {
-    min-width: 0;
-    display: flex;
-    justify-content: center;
-    align-items: center;
+  .tp-hero h2 { margin-bottom: 0.4em; }
+  .tp-hero ul.actions { margin-bottom: 1em; }
+  .tp-note { font-size: 0.85em; }
+
+  /* ---------- Jump straight to a tool ---------- */
+  .tool-row {
+    display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 12px; margin: 16px 0 48px;
   }
-  .timer-intro-graphic a {
-    display: block;
-    width: 100%;
-    max-width: 100%;
-    border-bottom: none;
-    text-decoration: none;
+  .tool-link {
+    display: flex; flex-direction: column; align-items: center; text-align: center; gap: 2px;
+    padding: 18px 8px 14px; border: solid 2px #c9c9c9; border-radius: 12px;
+    border-bottom: solid 2px #c9c9c9; color: inherit; text-decoration: none;
+    transition: border-color 0.2s ease, transform 0.2s ease, color 0.2s ease;
   }
-  .timer-intro-graphic img {
-    display: block;
-    width: 100%;
-    height: auto;
-    border-radius: 8px;
-    box-shadow: 0 3px 10px rgba(0,0,0,0.22);
-    transition: transform 0.2s ease, box-shadow 0.2s ease;
+  .tool-link:hover { border-color: #f2849e !important; color: #f2849e !important; transform: translateY(-2px); }
+  .tool-link .icon { font-size: 1.5em; margin-bottom: 6px; border-bottom: none; }
+  .tool-link strong { font-size: 1.05em; }
+  .tool-link small { font-size: 0.75em; line-height: 1.3; opacity: 0.8; }
+
+  /* ---------- Theme gallery ---------- */
+  .gallery-intro { margin-bottom: 0.5em; }
+  h3 { margin: 1.6em 0 0.6em; }
+  .theme-grid {
+    display: grid; grid-template-columns: repeat(auto-fill, minmax(170px, 1fr)); gap: 16px;
   }
-  @media (hover: hover) and (pointer: fine) {
-    .timer-intro-graphic img:hover {
-      transform: scale(1.015);
-      box-shadow: 0 5px 16px rgba(0,0,0,0.28);
-    }
+  .theme-card {
+    display: block; text-align: center; text-decoration: none; border-bottom: none; color: inherit; font-size: 0.85em;
+  }
+  .theme-card img {
+    display: block; width: 100%; aspect-ratio: 16/9; object-fit: cover; border-radius: 6px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.25); transition: transform 0.2s ease; margin-bottom: 6px;
+  }
+  .theme-card:hover img { transform: scale(1.05); }
+
+  @media screen and (max-width: 980px) {
+    .tool-row { grid-template-columns: repeat(3, minmax(0, 1fr)); }
   }
   @media screen and (max-width: 800px) {
-    .timer-intro {
-      grid-template-columns: 1fr;
-      gap: 20px;
-      margin-bottom: 34px;
-    }
+    .tp-hero { grid-template-columns: 1fr; gap: 20px; }
   }
-
-</style>
-
+  @media screen and (max-width: 480px) {
+    .tool-row { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .theme-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  }
+  </style>
 </head>
 <body class="is-preload">
   <div id="wrapper">
@@ -129,86 +127,95 @@
     <div id="main">
       <div class="inner">
         <h1 class="tight-heading">Timers</h1>
+        <p class="timers-intro"><strong>Timers</strong> are often underutilized, but they can make a big difference! Use a timer for everything: work time, share time, transitions, and more. You'll find that using timers helps things run more smoothly and keeps everyone on track.</p>
 
-        <!-- Jump Links -->
-        <p><strong>Quick Jump:</strong> 
-          <a href="#static">Static</a> | 
-          <a href="#motion">Motion</a> |
-          <a href="#seasonal">Seasonal</a> |
-          <a href="#turn">Turn</a>
-        </p>
-
-        <!-- Intro + Timer Instruction Graphic -->
-        <div class="timer-intro">
-          <div class="timer-intro-text">
-            <p><strong>Timers</strong> are often underutilized, but they can make a big difference! Use a timer for everything: work time, share time, transitions, and more. You'll find that using timers helps things run more smoothly and keeps everyone on track.</p>
-            <p>For even more usability, <a href="https://docs.google.com/document/d/1Zbu1rMa0OyI_rcKiobL84ipw7_EOrRrDA1KUxoiLY4I/edit?usp=sharing" target="_blank" rel="noopener noreferrer"><strong>follow these instructions</strong></a> to save this page as an <strong>app</strong> on your device.</p>
+        <!-- Timer PLUS -->
+        <section class="tp-hero" id="timer-plus">
+          <a class="tp-hero-pic" href="PageTimerPlus.html" aria-label="Open Timer PLUS">
+            <div class="tp-slides">
+              <img src="images/TimerPlusHero1.jpg" alt="Timer PLUS: Timer on the RGB Topo theme">
+              <img src="images/TimerPlusHero2.jpg" alt="Timer PLUS: Turn timer on the Mountain theme" loading="lazy">
+              <img src="images/TimerPlusHero3.jpg" alt="Timer PLUS: Bar timer on the Beach theme" loading="lazy">
+              <img src="images/TimerPlusHero4.jpg" alt="Timer PLUS: Routines on the Flower theme" loading="lazy">
+              <img src="images/TimerPlusHero5.jpg" alt="Timer PLUS: Alarms on the Star Wars theme" loading="lazy">
+              <img src="images/TimerPlusHero6.jpg" alt="Timer PLUS: Stopwatch on the Road theme" loading="lazy">
+            </div>
+          </a>
+          <div>
+            <span class="tp-badge">New</span>
+            <h2 class="tp-title">Timer PLUS: All in One Tool</h2>
+            <p>Every RobsonEDU timer, now in one place. Run a countdown, give partners equal turns, step through a lesson routine, set class bells, or time with a stopwatch, with 35+ themes and a classroom music player. Your settings and routines are saved on your device.</p>
+            <ul class="actions">
+              <li><a href="PageTimerPlus.html" class="button primary">Open Timer PLUS</a></li>
+            </ul>
+            <p class="tp-note">New here? Press the <strong>?</strong> button in Timer PLUS for a quick tour. For even more usability, <a href="https://docs.google.com/document/d/1Zbu1rMa0OyI_rcKiobL84ipw7_EOrRrDA1KUxoiLY4I/edit?usp=sharing" target="_blank" rel="noopener noreferrer"><strong>follow these instructions</strong></a> to save it as an <strong>app</strong> on your device.</p>
           </div>
+        </section>
 
-          <div class="timer-intro-graphic">
-            <a href="images/Timer%20Instruction%20Graphic.jpg" target="_blank" rel="noopener noreferrer" aria-label="Open timer instruction graphic full size">
-              <img src="images/Timer%20Instruction%20Graphic.jpg" alt="Timer controls and instructions showing how to set custom times, start and reset the timer, add 30 seconds, use preset intervals, and toggle the YouTube music player">
-            </a>
-          </div>
-        </div>
-						
-        <!-- Static Timers -->
-        <h2 id="static">Static Timers</h2>
-        <div class="thumb-grid">
-          <a href="TimerBryant.html"><img src="images/THUMBBryant.jpg" alt="Bryant Timer"></a>
-          <a href="TimerTopo.html"><img src="images/THUMBTopo.png" alt="RGB Topo Timer"></a>
-          <a href="Timer90s.html"><img src="images/THUMB90s.jpg" alt="90s Timer"></a>
-          <a href="TimerRoad.html"><img src="images/THUMBRoad.jpg" alt="Road Timer"></a>
-          <a href="TimerCrumpledPaper.html"><img src="images/THUMBCrumpledPaper.jpg" alt="Crumpled Paper Timer"></a>
-          <a href="TimerAbstractArt.html"><img src="images/THUMBAbstractART.jpg" alt="Abstract Art Timer"></a>
-          <a href="TimerColorful.html"><img src="images/THUMBcolor.jpg" alt="Colorful Timer"></a>
-          <a href="TimerColorDots.html"><img src="images/THUMBColorDots.jpg" alt="Color Dots Timer"></a>
-          <a href="TimerColorFloaters.html"><img src="images/THUMBFloaters.jpg" alt="Color Floaters Timer"></a>
-          <a href="TimerFlower.html"><img src="images/THUMBTimerFlower.jpg" alt="Flower Timer"></a>
-          <a href="TimerFrenchCountrySide.html"><img src="images/THUMBFrenchCountrySide.jpg" alt="French Country Side Timer"></a>
-          <a href="TimerBeach.html"><img src="images/THUMBBeach.jpg" alt="Beach Timer"></a>
-          <a href="TimerMountain.html"><img src="images/THUMBMountain.jpg" alt="Mountain Timer"></a>
-          <a href="TimerSWSpace.html"><img src="images/THUMBswSpace.jpg" alt="Star Wars Timer"></a>
-          <a href="TimerMandalorian.html"><img src="images/THUMBMandalorian.jpg" alt="Mandalorian Timer"></a>
-          <a href="TimerHP.html"><img src="images/THUMBHP.jpg" alt="Harry Potter Timer"></a>
-          <a href="TimerSpongebob.html"><img src="images/THUMBSpongebob.png" alt="Spongebob Timer"></a>
-          <a href="TimerSpongebobBB.html"><img src="images/THUMBSpongebobBB.png" alt="Spongebob Bikini Bottom Timer"></a>
-          <a href="TimerSpiderman.html"><img src="images/THUMBSpiderman.jpg" alt="Spiderman Timer"></a>
-          <a href="TimerZelda.html"><img src="images/THUMBZeldaBoTW.jpg" alt="Zelda Breath of the Wild Timer"></a>
-          <a href="TimerNeonBlue.html"><img src="images/THUMBNeonBlue.jpg" alt="Neon Blue Timer"></a>
-          <a href="TimerNeonPink.html"><img src="images/THUMBNeonPink.jpg" alt="Neon Pink Timer"></a>
-          <a href="TimerNeonYellow.html"><img src="images/THUMBNeonYellow.jpg" alt="Neon Yellow Timer"></a>
-          <!-- <a href="Timer67.html"><img src="images/THUMBTIMER67.JPG" alt="67 Timer"></a> -->
+        <!-- Jump to a tool -->
+        <h2 id="tools">Jump Straight to a Tool</h2>
+        <div class="tool-row">
+          <a class="tool-link" href="PageTimerPlus.html?mode=timer&amp;type=standard"><span class="icon solid fa-clock" aria-hidden="true"></span><strong>Timer</strong><small>Countdown with presets</small></a>
+          <a class="tool-link" href="PageTimerPlus.html?mode=timer&amp;type=turn"><span class="icon solid fa-user-friends" aria-hidden="true"></span><strong>Turn</strong><small>Equal turns for partners</small></a>
+          <a class="tool-link" href="PageTimerPlus.html?mode=timer&amp;type=bar"><span class="icon solid fa-align-left" aria-hidden="true"></span><strong>Bar</strong><small>Turns shown as bars</small></a>
+          <a class="tool-link" href="PageTimerPlus.html?mode=routines"><span class="icon solid fa-redo" aria-hidden="true"></span><strong>Routines</strong><small>A lesson, step by step</small></a>
+          <a class="tool-link" href="PageTimerPlus.html?mode=alarm"><span class="icon solid fa-bell" aria-hidden="true"></span><strong>Alarm</strong><small>Bells at set times</small></a>
+          <a class="tool-link" href="PageTimerPlus.html?mode=stopwatch"><span class="icon solid fa-stopwatch" aria-hidden="true"></span><strong>Stopwatch</strong><small>Count up, with laps</small></a>
         </div>
 
-        <!-- Motion Timers -->
-        <h2 id="motion">Motion Timers</h2>
-        <div class="thumb-grid">
-          <a href="TimerMotionGreenThing.html"><img src="images/THUMBGreenThing.jpg" alt="Green Thing Motion Timer"></a>
-          <a href="TimerMotionTraffic.html"><img src="images/THUMBTraffic.jpg" alt="Traffic Motion Timer"></a>
-          <a href="TimerOcean.html"><img src="images/THUMBOcean.png" alt="Ocean Timer"></a>
-          <a href="TimerMotionGolf.html"><img src="images/THUMBGolf.jpg" alt="Golf Motion Timer"></a>
-          <a href="TimerMotionVinyl.html"><img src="images/THUMBVinyl.jpg" alt="Vinyl Motion Timer"></a>
-          <a href="TimerMotionClouds.html"><img src="images/THUMBClouds.jpg" alt="Clouds Motion Timer"></a>
+        <!-- Theme gallery -->
+        <h2 id="themes">Pick a Theme</h2>
+        <p class="gallery-intro">Pick a theme below to open Timer PLUS with that look. You can switch themes anytime from the menu in the top right corner.</p>
+        <p><strong>Quick Jump:</strong> <a href="#static">Static</a> | <a href="#motion">Motion</a> | <a href="#seasonal">Seasonal</a></p>
+
+        <h3 id="static">Static</h3>
+        <div class="theme-grid">
+          <a class="theme-card" href="PageTimerPlus.html?theme=bryant"><img src="images/THUMBBryant.jpg" alt="Bryant theme" loading="lazy"><span>Bryant</span></a>
+          <a class="theme-card" href="PageTimerPlus.html?theme=topo"><img src="images/THUMBTopo.png" alt="RGB Topo theme" loading="lazy"><span>RGB Topo</span></a>
+          <a class="theme-card" href="PageTimerPlus.html?theme=90s"><img src="images/THUMB90s.jpg" alt="90s theme" loading="lazy"><span>90s</span></a>
+          <a class="theme-card" href="PageTimerPlus.html?theme=road"><img src="images/THUMBRoad.jpg" alt="Road theme" loading="lazy"><span>Road</span></a>
+          <a class="theme-card" href="PageTimerPlus.html?theme=crumpled"><img src="images/THUMBCrumpledPaper.jpg" alt="Crumpled Paper theme" loading="lazy"><span>Crumpled Paper</span></a>
+          <a class="theme-card" href="PageTimerPlus.html?theme=abstract"><img src="images/THUMBAbstractART.jpg" alt="Abstract Art theme" loading="lazy"><span>Abstract Art</span></a>
+          <a class="theme-card" href="PageTimerPlus.html?theme=colorful"><img src="images/THUMBcolor.jpg" alt="Colorful theme" loading="lazy"><span>Colorful</span></a>
+          <a class="theme-card" href="PageTimerPlus.html?theme=colordots"><img src="images/THUMBColorDots.jpg" alt="Color Dots theme" loading="lazy"><span>Color Dots</span></a>
+          <a class="theme-card" href="PageTimerPlus.html?theme=floaters"><img src="images/THUMBFloaters.jpg" alt="Color Floaters theme" loading="lazy"><span>Color Floaters</span></a>
+          <a class="theme-card" href="PageTimerPlus.html?theme=flower"><img src="images/THUMBTimerFlower.jpg" alt="Flower theme" loading="lazy"><span>Flower</span></a>
+          <a class="theme-card" href="PageTimerPlus.html?theme=french"><img src="images/THUMBFrenchCountrySide.jpg" alt="French Countryside theme" loading="lazy"><span>French Countryside</span></a>
+          <a class="theme-card" href="PageTimerPlus.html?theme=beach"><img src="images/THUMBBeach.jpg" alt="Beach theme" loading="lazy"><span>Beach</span></a>
+          <a class="theme-card" href="PageTimerPlus.html?theme=mountain"><img src="images/THUMBMountain.jpg" alt="Mountain theme" loading="lazy"><span>Mountain</span></a>
+          <a class="theme-card" href="PageTimerPlus.html?theme=swspace"><img src="images/THUMBswSpace.jpg" alt="Star Wars theme" loading="lazy"><span>Star Wars</span></a>
+          <a class="theme-card" href="PageTimerPlus.html?theme=mandalorian"><img src="images/THUMBMandalorian.jpg" alt="Mandalorian theme" loading="lazy"><span>Mandalorian</span></a>
+          <a class="theme-card" href="PageTimerPlus.html?theme=dcc"><img src="images/THUMBDungeonCrawlerCarl.jpg" alt="Dungeon Crawler Carl theme" loading="lazy"><span>Dungeon Crawler Carl</span></a>
+          <a class="theme-card" href="PageTimerPlus.html?theme=hp"><img src="images/THUMBHP.jpg" alt="Harry Potter theme" loading="lazy"><span>Harry Potter</span></a>
+          <a class="theme-card" href="PageTimerPlus.html?theme=spongebob"><img src="images/THUMBSpongebob.png" alt="SpongeBob theme" loading="lazy"><span>SpongeBob</span></a>
+          <a class="theme-card" href="PageTimerPlus.html?theme=spongebobbb"><img src="images/THUMBSpongebobBB.png" alt="Bikini Bottom theme" loading="lazy"><span>Bikini Bottom</span></a>
+          <a class="theme-card" href="PageTimerPlus.html?theme=spiderman"><img src="images/THUMBSpiderman.jpg" alt="Spider-Man theme" loading="lazy"><span>Spider-Man</span></a>
+          <a class="theme-card" href="PageTimerPlus.html?theme=zelda"><img src="images/THUMBZeldaBoTW.jpg" alt="Zelda theme" loading="lazy"><span>Zelda</span></a>
+          <a class="theme-card" href="PageTimerPlus.html?theme=neonblue"><img src="images/THUMBNeonBlue.jpg" alt="Neon Blue theme" loading="lazy"><span>Neon Blue</span></a>
+          <a class="theme-card" href="PageTimerPlus.html?theme=neonpink"><img src="images/THUMBNeonPink.jpg" alt="Neon Pink theme" loading="lazy"><span>Neon Pink</span></a>
+          <a class="theme-card" href="PageTimerPlus.html?theme=neonyellow"><img src="images/THUMBNeonYellow.jpg" alt="Neon Yellow theme" loading="lazy"><span>Neon Yellow</span></a>
         </div>
 
-        <!-- Seasonal -->
-        <h2 id="seasonal">Seasonal Timers</h2>
-        <div class="thumb-grid">
-          <a href="TimerMotionFallCats.html"><img src="images/THUMBTimerMotionFallCats.png" alt="Fall Motion Timer"></a>
-          <a href="TimerMotionChristmasPaper.html"><img src="images/THUMBChristmasPaper.jpg" alt="Christmas Paper Motion Timer"></a>
-          <a href="TimerMotionWinter.html"><img src="images/THUMBWinter.jpg" alt="Winter Motion Timer"></a>
-          <a href="TimerMotionHearts.html"><img src="images/THUMBHearts.jpg" alt="Hearts Motion Timer"></a>
-          <a href="TimerMotionSpring.html"><img src="images/THUMBSpring.jpg" alt="Spring Motion Timer"></a>
-          <a href="TimerSummerBreak.html"><img src="images/THUMBSummerBreak.jpg" alt="Summer Break Timer"></a>
+        <h3 id="motion">Motion</h3>
+        <div class="theme-grid">
+          <a class="theme-card" href="PageTimerPlus.html?theme=greenthing"><img src="images/THUMBGreenThing.jpg" alt="Green Thing theme" loading="lazy"><span>Green Thing</span></a>
+          <a class="theme-card" href="PageTimerPlus.html?theme=traffic"><img src="images/THUMBTraffic.jpg" alt="Traffic theme" loading="lazy"><span>Traffic</span></a>
+          <a class="theme-card" href="PageTimerPlus.html?theme=ocean"><img src="images/THUMBOcean.png" alt="Ocean theme" loading="lazy"><span>Ocean</span></a>
+          <a class="theme-card" href="PageTimerPlus.html?theme=golf"><img src="images/THUMBGolf.jpg" alt="Golf theme" loading="lazy"><span>Golf</span></a>
+          <a class="theme-card" href="PageTimerPlus.html?theme=vinyl"><img src="images/THUMBVinyl.jpg" alt="Vinyl theme" loading="lazy"><span>Vinyl</span></a>
+          <a class="theme-card" href="PageTimerPlus.html?theme=clouds"><img src="images/THUMBClouds.jpg" alt="Clouds theme" loading="lazy"><span>Clouds</span></a>
         </div>
-        
-        <!-- Turn Timers -->
-        <h2 id="turn">Turn Timers</h2>
-        <div class="thumb-grid">
-          <a href="TurnTimer.html"><img src="images/THUMBTurnTimer.jpg" alt="Turn Timer"></a>
-          <a href="BarTimer.html"><img src="images/THUMBBarTimer.jpg" alt="Turn Timer"></a>
+
+        <h3 id="seasonal">Seasonal</h3>
+        <div class="theme-grid">
+          <a class="theme-card" href="PageTimerPlus.html?theme=fallcats"><img src="images/THUMBTimerMotionFallCats.png" alt="Fall theme" loading="lazy"><span>Fall</span></a>
+          <a class="theme-card" href="PageTimerPlus.html?theme=christmas"><img src="images/THUMBChristmasPaper.jpg" alt="Christmas Paper theme" loading="lazy"><span>Christmas Paper</span></a>
+          <a class="theme-card" href="PageTimerPlus.html?theme=winter"><img src="images/THUMBWinter.jpg" alt="Winter theme" loading="lazy"><span>Winter</span></a>
+          <a class="theme-card" href="PageTimerPlus.html?theme=hearts"><img src="images/THUMBHearts.jpg" alt="Hearts theme" loading="lazy"><span>Hearts</span></a>
+          <a class="theme-card" href="PageTimerPlus.html?theme=spring"><img src="images/THUMBSpring.jpg" alt="Spring theme" loading="lazy"><span>Spring</span></a>
+          <a class="theme-card" href="PageTimerPlus.html?theme=summer"><img src="images/THUMBSummerBreak.jpg" alt="Summer Break theme" loading="lazy"><span>Summer Break</span></a>
         </div>
+
       </div>
     </div>
 

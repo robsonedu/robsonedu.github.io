@@ -1,0 +1,2365 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Timer Plus</title>
+<link rel="icon" type="image/png" href="images/FaviconCircleR.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;700&family=Slackey&family=Henny+Penny&family=Bangers&display=swap" rel="stylesheet">
+<style>
+/* =====================================================================
+   THEME VARIABLES — every value here is overwritten by applyTheme().
+   Defaults match TimerRoad.html.
+   ===================================================================== */
+:root{
+  --text:#fff;
+  --body-shadow:0 0 8px rgba(0,0,0,0.7);
+  --timer-shadow:0 0 8px rgba(0,0,0,0.7);
+  --glow1:#fff; --glow2:#fff; --glow-op:0.7;
+  --btn-border:rgba(255,255,255,0.6);
+  --btn-color:#fff;
+  --btn-hover-bg:rgba(255,255,255,0.4);
+  --btn-hover-color:#000;
+  --btn-blur:5px;
+  --btn-shadow:0 0 8px rgba(0,0,0,0.7);
+  --input-bg:rgba(255,255,255,0.9);
+  --input-color:#000;
+  --input-border:1px solid #ccc;
+  --placeholder:#333;
+  --music:#fff; --music-hover:#ccc;
+  --accent:#00cdff;
+  --ring:#fff;
+  --font:'Inter',sans-serif;
+  --timer-weight:700;
+  --overlay:0.4;
+  --presets-top:25px;
+}
+
+*{box-sizing:border-box;}
+html,body{margin:0;}
+body{
+  min-height:100vh;
+  background:#000;
+  font-family:var(--font);
+  color:var(--text);
+  text-shadow:var(--body-shadow);
+  font-size:1.5rem;
+  font-weight:700;
+  overflow-x:hidden;
+}
+
+/* ---------- Backgrounds (image, video, overlay) ---------- */
+#bgImg,#bgVid,#bgOverlay{position:fixed;inset:0;width:100vw;height:100vh;pointer-events:none;}
+#bgImg{z-index:0;background-color:#000;}
+/* The background picture is a real image element (object-fit: cover), which every browser and preview shows */
+#bgPic{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center center;display:block;}
+#bgPic[hidden]{display:none;}
+#bgVid{z-index:0;object-fit:cover;display:none;background:#000;}
+#bgOverlay{z-index:0;background:rgba(0,0,0,var(--overlay));}
+
+/* ---------- Logo ---------- */
+.logo-bar{position:fixed;top:20px;left:20px;display:flex;align-items:center;z-index:50;pointer-events:none;}
+.logo-bar img{pointer-events:auto;}
+#extraLogo{height:160px;width:auto;margin-right:18px;display:none;}
+/* TIMEr PLUS logo: a vector, white or black to match the theme */
+.logo-link{display:block;color:var(--logo-color,#fff);filter:var(--logo-shadow,drop-shadow(0 2px 8px rgba(0,0,0,.55)));border-radius:6px;}
+.logo-link:focus-visible{outline:2px solid var(--dock-accent);outline-offset:4px;}
+#logoSvg{display:block;height:44px;width:auto;}
+@media (max-width:870px){ #logoSvg{height:34px;} }
+.logo-bar a{text-decoration:none;}
+
+/* ---------- TOOLS: one corner button (top right) that opens either
+   a VERTICAL DOCK (hover or click) or a TOOLS PANEL (click), chosen in either menu.
+   The chrome stays neutral glass so it reads on every theme. ---------- */
+:root{--dock-line:rgba(255,255,255,.14);--dock-muted:rgba(232,237,247,.68);--dock-accent:#fff;--ease:cubic-bezier(.2,.8,.2,1);}
+.chrome{transition:opacity .4s ease;}
+.vdock svg,.corner-btn svg,.seg svg{fill:none;stroke:currentColor;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round;flex:none;}
+
+.corner-btn{
+  position:fixed;top:20px;right:20px;z-index:46;display:grid;place-items:center;width:48px;height:48px;padding:0;
+  border-radius:16px;border:1px solid var(--dock-line);background:rgba(16,16,18,.5);
+  backdrop-filter:blur(5px);-webkit-backdrop-filter:blur(5px);
+  color:#f3f5f9;cursor:pointer;opacity:.6;transition:opacity .3s,background .2s;
+}
+.corner-btn:hover,.corner-btn.active,.corner-btn:focus-visible{opacity:1;background:rgba(16,16,18,.75);}
+.corner-btn svg{width:22px;height:22px;}
+.corner-btn .live-dot{position:absolute;top:8px;right:8px;width:7px;height:7px;border-radius:50%;background:#2fb344;box-shadow:0 0 6px #2fb344;display:none;}
+.corner-btn.has-live .live-dot{display:block;}
+
+/* Vertical dock. Tools view by default; Themes takes over the dock at double width. */
+.vdock{
+  position:fixed;top:80px;right:20px;z-index:45;width:94px;display:flex;flex-direction:column;padding:7px;border-radius:22px;
+  background:rgba(16,16,18,.62);border:1px solid var(--dock-line);
+  backdrop-filter:blur(5px);-webkit-backdrop-filter:blur(5px);
+  box-shadow:0 20px 60px rgba(0,0,0,.45),inset 0 1px 0 rgba(255,255,255,.08);
+  transform:translateX(calc(100% + 30px));opacity:0;pointer-events:none;
+  transition:transform .45s var(--ease),opacity .3s ease,width .35s var(--ease);font-family:'Inter',sans-serif;text-shadow:none;color:#f3f5f9;
+}
+.vdock.themes{width:196px;}
+.vdock.open{transform:none;opacity:1;pointer-events:auto;}
+.vcol{display:flex;flex-direction:column;gap:3px;max-height:calc(100vh - 114px);overflow-y:auto;scrollbar-width:none;}
+.vcol::-webkit-scrollbar,.tgrid::-webkit-scrollbar{display:none;}
+
+/* Themes view — replaces the tools, two thumbnails across */
+.vdock.themes .vcol{display:none;}
+.tcol{display:none;flex-direction:column;gap:8px;max-height:min(640px,calc(100vh - 114px));}
+.vdock.themes .tcol{display:flex;animation:tIn .3s var(--ease);}
+@keyframes tIn{from{opacity:0;transform:translateX(8px);}to{opacity:1;transform:none;}}
+.tcol-head{display:flex;align-items:center;gap:6px;padding:2px 2px 0;}
+.tcol-head b{font:700 14px 'Inter',sans-serif;}
+.tback{width:32px;height:32px;display:grid;place-items:center;border:0;border-radius:10px;background:rgba(255,255,255,.07);color:#f3f5f9;cursor:pointer;}
+.tback:hover{background:rgba(255,255,255,.14);}
+.tback svg{width:18px;height:18px;}
+.tcats{display:flex;gap:2px;padding:3px;border-radius:12px;background:rgba(0,0,0,.28);border:1px solid var(--dock-line);}
+.tcats button{flex:1;height:28px;padding:0;border-radius:9px;border:1.5px solid transparent;background:transparent;color:var(--dock-muted);font:600 11px 'Inter',sans-serif;cursor:pointer;}
+.tcats button:hover{color:#fff;}
+.tcats button[aria-selected="true"]{color:#fff;background:#0b0b0c;border-color:var(--dock-accent);}
+.tgrid{flex:1;min-height:0;overflow-y:auto;scrollbar-width:none;display:grid;grid-template-columns:1fr 1fr;gap:10px 8px;align-content:start;padding:2px 2px 6px;}
+.vbtn{
+  position:relative;flex:none;display:flex;flex-direction:column;align-items:center;gap:3px;padding:8px 4px;border-radius:14px;
+  border:1.5px solid transparent;background:transparent;color:var(--dock-muted);font:600 11px 'Inter',sans-serif;cursor:pointer;
+  transition:background .2s,color .2s,border-color .2s;
+}
+.vbtn:hover{background:rgba(255,255,255,.1);color:#fff;}
+.vbtn[aria-pressed="true"]{color:#fff;background:#0b0b0c;border-color:var(--dock-accent);}
+.vbtn svg{width:22px;height:22px;}
+.vsep{flex:none;height:1px;background:var(--dock-line);margin:4px 8px;}
+.vgrid{flex:none;display:grid;grid-template-columns:1fr 1fr;gap:3px;}
+.vicon{height:38px;display:grid;place-items:center;border:0;border-radius:12px;background:transparent;color:#f3f5f9;cursor:pointer;}
+.vicon:hover{background:rgba(255,255,255,.12);}
+.vicon[aria-pressed="true"]{background:rgba(255,255,255,.16);color:var(--dock-accent);}
+.vicon svg{width:20px;height:20px;}
+.js-mode.live::after{content:"";position:absolute;top:6px;right:8px;width:7px;height:7px;border-radius:50%;background:#2fb344;box-shadow:0 0 6px #2fb344;}
+
+/* Segmented control (theme groups, timer types in the panel, menu style) */
+.seg{display:flex;padding:3px;border-radius:14px;background:rgba(0,0,0,.25);border:1px solid var(--dock-line);}
+.seg button{
+  position:relative;white-space:nowrap;height:40px;padding:0 12px;display:flex;align-items:center;justify-content:center;gap:6px;
+  border:1.5px solid transparent;border-radius:11px;background:transparent;font:600 14px 'Inter',sans-serif;
+  color:var(--dock-muted);cursor:pointer;transition:background .25s,color .25s,border-color .25s;
+}
+.seg button:hover{color:#fff;}
+.seg button svg{width:18px;height:18px;}
+.seg button[aria-selected="true"],.seg button[aria-pressed="true"]{color:#fff;background:#0b0b0c;border-color:var(--dock-accent);}
+
+/* Tools panel (same sheet as Themes) */
+
+
+body.idle .chrome{opacity:0 !important;pointer-events:none !important;}
+/* ---------- Guided walkthrough (first visit, or the tour button in the dock) ---------- */
+#tour{position:fixed;inset:0;z-index:120;display:none;}
+#tour.on{display:block;}
+.tour-block{position:absolute;inset:0;}
+.tour-spot{
+  position:absolute;border-radius:16px;pointer-events:none;
+  box-shadow:0 0 0 9999px rgba(0,0,0,.6),0 0 0 2px var(--dock-accent),0 0 24px 4px color-mix(in srgb,var(--dock-accent) 55%,transparent);
+  transition:top .35s var(--ease),left .35s var(--ease),width .35s var(--ease),height .35s var(--ease);
+}
+/* During the tour the dock appears in place, so the highlight lands on it immediately */
+body.touring .vdock,body.touring .vdock *,body.touring .corner-btn{transition:none !important;animation:none !important;}
+.tour-spot.jump,.tour-tip.jump{transition:none;}
+.tour-tip{
+  position:absolute;width:min(300px,calc(100vw - 32px));padding:16px 16px 12px;border-radius:18px;
+  background:rgba(22,22,24,.96);border:1px solid var(--dock-line);box-shadow:0 20px 60px rgba(0,0,0,.55);
+  font-family:'Inter',sans-serif;color:#f3f5f9;text-shadow:none;
+  transition:top .35s var(--ease),left .35s var(--ease),opacity .2s ease;
+}
+.tour-tip h4{margin:0 0 6px;font:700 16px 'Inter',sans-serif;}
+.tour-tip p{margin:0;font:400 14px/1.5 'Inter',sans-serif;color:rgba(243,245,249,.82);}
+.tour-foot{display:flex;align-items:center;gap:8px;margin-top:14px;}
+.tour-count{flex:1;font:600 12px 'Inter',sans-serif;color:var(--dock-muted);font-variant-numeric:tabular-nums;}
+.tour-foot button{border:0;border-radius:10px;font:600 13.5px 'Inter',sans-serif;padding:8px 14px;cursor:pointer;}
+#tourSkip{background:transparent;color:var(--dock-muted);padding:8px 6px;}
+#tourSkip:hover{color:#fff;}
+#tourBack{background:rgba(255,255,255,.1);color:#fff;}
+#tourBack[hidden]{display:none;}
+#tourNext{background:var(--dock-accent);color:#111;}
+.tour-foot button:focus-visible{outline:2px solid #fff;outline-offset:2px;}
+/* Background preview: drop an image or video on the page */
+body.dropping::after{
+  content:"Drop to preview this as the background";position:fixed;inset:14px;z-index:300;display:grid;place-items:center;
+  border:3px dashed rgba(255,255,255,.75);border-radius:24px;background:rgba(0,0,0,.4);
+  font:700 1.4rem 'Inter',sans-serif;color:#fff;text-shadow:none;pointer-events:none;
+}
+.toast{
+  position:fixed;left:50%;bottom:24px;z-index:300;transform:translate(-50%,20px);opacity:0;pointer-events:none;
+  padding:12px 18px;border-radius:14px;background:rgba(16,16,18,.85);border:1px solid var(--dock-line);
+  font:600 14px 'Inter',sans-serif;color:#f3f5f9;text-shadow:none;transition:opacity .3s,transform .3s var(--ease);max-width:calc(100vw - 32px);
+}
+.toast.show{opacity:1;transform:translate(-50%,0);}
+body.idle{cursor:none;}
+
+/* ---------- Stage + panes ---------- */
+#stage{
+  position:relative;z-index:1;min-height:100vh;
+  padding:90px 16px 60px;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+}
+.pane{display:none;flex-direction:column;align-items:center;width:100%;}
+.pane.active{display:flex;}
+
+/* ---------- Shared timer digits (from the standard timer) ---------- */
+.timer{
+  font-size:7.5rem;font-weight:var(--timer-weight);text-shadow:var(--timer-shadow);
+  transition:transform .3s ease,text-shadow .4s ease;line-height:1.15;
+  font-variant-numeric:tabular-nums;
+}
+.timer.running{transform:scale(1.1);}
+.timer.glow{animation:glowPulse 2s infinite ease-in-out;}
+@keyframes glowPulse{
+  0%,100%{text-shadow:0 0 10px var(--glow1),0 0 20px var(--glow2);opacity:1;}
+  50%{text-shadow:0 0 30px var(--glow1),0 0 60px var(--glow2);opacity:var(--glow-op);}
+}
+
+/* ---------- Shared themed buttons + inputs ---------- */
+.row{margin-top:25px;display:flex;flex-wrap:wrap;gap:20px;justify-content:center;align-items:center;}
+.btn{
+  padding:15px 35px;font-size:1.5rem;font-weight:700;font-family:var(--font);
+  border:2px solid var(--btn-border);background:transparent;color:var(--btn-color);
+  border-radius:30px;cursor:pointer;text-shadow:var(--btn-shadow);
+  backdrop-filter:blur(5px);-webkit-backdrop-filter:blur(5px); /* set per theme by applyTheme() */
+  transition:background .3s,color .3s,transform .2s;
+}
+.btn:hover{background:var(--btn-hover-bg);color:var(--btn-hover-color);transform:scale(1.05);}
+.btn:active{transform:scale(0.97);}
+.btn:disabled{opacity:.5;cursor:default;transform:none;}
+.btn.icon{font-family:'Inter',sans-serif;font-size:1.275rem;}
+.btn.icon[data-act="reset"]{font-family:var(--font);}
+.btn.round{width:80px;height:80px;border-radius:50%;padding:0;font-size:1.3rem;}
+.btn.sm{padding:8px 18px;font-size:1rem;border-radius:24px;}
+.btn.sm.round{width:56px;height:56px;padding:0;border-radius:50%;}
+.presets{margin-top:var(--presets-top);}
+.tinput{
+  width:110px;padding:10px;font-size:1.5rem;font-weight:700;font-family:var(--font);
+  border-radius:8px;border:var(--input-border);text-align:center;
+  background:var(--input-bg);color:var(--input-color);
+}
+.tinput::placeholder{color:var(--placeholder);opacity:1;}
+.tinput.sm{width:100px;padding:8px;font-size:1rem;}
+.err{min-height:1.2em;font:700 .95rem 'Inter',sans-serif;color:#ffd43b;text-shadow:0 0 6px #000;margin-top:8px;}
+
+/* ---------- Neutral glass card (editors, lists) ---------- */
+.glass{
+  margin-top:24px;width:min(680px,100%);padding:18px 20px;border-radius:16px;
+  background:rgba(0,0,0,0.55);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);
+  border:1px solid rgba(255,255,255,0.15);
+  font:400 1rem 'Inter',sans-serif;color:#fff;text-shadow:none;color-scheme:dark;
+}
+.glass[hidden]{display:none;}
+.glass h3{margin:0 0 12px;font-size:1rem;font-weight:700;}
+.glass .muted{color:rgba(255,255,255,0.65);font-size:.9rem;}
+.glass input[type=text],.glass input[type=time],.glass input[type=number],.glass select{
+  font:400 1rem 'Inter',sans-serif;color:#fff;background:rgba(255,255,255,0.1);
+  border:1px solid rgba(255,255,255,0.25);border-radius:8px;padding:8px 10px;min-width:0;
+}
+.glass select option{color:#000;}
+.glass input::placeholder{color:rgba(255,255,255,0.5);}
+.gbtn{
+  font:700 .9rem 'Inter',sans-serif;color:#fff;background:rgba(255,255,255,0.1);
+  border:1px solid rgba(255,255,255,0.3);border-radius:8px;padding:8px 12px;cursor:pointer;white-space:nowrap;
+}
+.gbtn:hover{background:rgba(255,255,255,0.22);}
+.gbtn.x{padding:6px 10px;background:transparent;border-color:transparent;color:rgba(255,255,255,0.7);}
+.gbtn.x:hover{color:#fff;background:rgba(255,255,255,0.12);}
+.grow{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:10px;}
+.grow > input[type=text]{flex:1;}
+
+/* ---------- TURN timer (from TurnTimer.html) ---------- */
+.chip-row{display:grid;grid-auto-flow:column;gap:28px;align-items:center;justify-items:center;min-height:160px;position:relative;}
+.turn-wrapper{position:relative;width:160px;height:160px;display:grid;place-items:center;}
+.turn-chip{
+  position:relative;width:120px;height:120px;border-radius:50%;display:grid;place-items:center;
+  font:700 2.5rem 'Inter',sans-serif;color:#fff;text-shadow:0 0 8px rgba(0,0,0,0.7);
+  box-shadow:0 0 20px rgba(0,0,0,0.6);transition:opacity .4s,transform .18s ease;cursor:pointer;
+}
+.turn-chip.active{transform:scale(1.08);}
+.turn-chip.dim{opacity:.25;}
+.turn1{background:#e03131;} .turn2{background:#2fb344;} .turn3{background:#ffd43b;} .turn4{background:#1e66f5;}
+.ring{position:absolute;inset:0;transform:rotate(-90deg);}
+.ring circle{fill:none;stroke-width:10;stroke-linecap:round;}
+.ring-bg{stroke:rgba(255,255,255,0.25);}
+.ring-bar{stroke:var(--ring);filter:drop-shadow(0 0 6px rgba(255,255,255,0.85));transition:stroke-dashoffset .1s linear;}
+#turnTimer{font-size:2.6rem;margin-top:18px;}
+@keyframes chipPulse{0%,100%{transform:scale(1);opacity:1;box-shadow:0 0 12px #fff;}50%{transform:scale(1.12);opacity:.7;box-shadow:0 0 30px #fff;}}
+@keyframes timerPulse{0%,100%{opacity:1;text-shadow:0 0 10px var(--glow1),0 0 20px var(--glow2);}50%{opacity:.7;text-shadow:0 0 25px var(--glow1),0 0 45px var(--glow2);}}
+.chip-pulsate{animation:chipPulse 1.5s infinite ease-in-out;}
+.chip2-pulse{animation-delay:.3s;} .chip3-pulse{animation-delay:.6s;} .chip4-pulse{animation-delay:.9s;}
+.timer-pulsate{animation:timerPulse 1.5s infinite ease-in-out;}
+@keyframes flashAdd{0%{color:#0f0;text-shadow:0 0 20px #0f0;}100%{color:var(--text);}}
+.flash-add{animation:flashAdd .6s;}
+.float-label{position:absolute;font:700 1.2rem 'Inter',sans-serif;color:#0f0;animation:floatUp 1s forwards;pointer-events:none;}
+.float-label.sel{top:-30px;color:#00f4ff;}
+@keyframes floatUp{0%{opacity:1;transform:translateY(0);}100%{opacity:0;transform:translateY(-25px);}}
+@keyframes selectFlash{0%{box-shadow:0 0 0 #fff;transform:scale(1);}50%{box-shadow:0 0 25px #fff;transform:scale(1.1);}100%{box-shadow:0 0 0 #fff;transform:scale(1);}}
+.chip-flash{animation:selectFlash .6s ease;}
+#pane-turn .row{margin-top:14px;gap:16px;}
+#pane-turn .btn.round{font-size:1.2rem;}
+
+/* ---------- BAR timer (from BarTimer.html) ---------- */
+#pane-bar{width:min(92vw,1000px);}
+/* Same space above and below the bar panel */
+#pane-bar{--bar-gap:clamp(14px,2.6vh,26px);}
+#barTimer{font-size:clamp(2.4rem,6.6vh,3.6rem);line-height:1.1;margin-bottom:var(--bar-gap);}
+.bars-wrap{
+  width:100%;display:flex;flex-direction:column;gap:clamp(5px,1vh,9px);
+  /* Glass panel behind the bars only, so they read on busy backgrounds */
+  padding:clamp(10px,2vh,18px) clamp(12px,2vw,22px);border-radius:26px;
+  background:var(--bar-panel);border:1px solid var(--bar-panel-edge);box-shadow:0 20px 60px rgba(0,0,0,.35);
+  backdrop-filter:blur(5px);-webkit-backdrop-filter:blur(5px);
+}
+.bar-row{display:grid;grid-template-columns:70px 1fr;align-items:center;gap:12px;}
+.count-btn{
+  width:clamp(40px,6.4vh,58px);height:clamp(40px,6.4vh,58px);border-radius:50%;font:800 1.6rem 'Inter',sans-serif;
+  border:2px solid var(--accent);background:var(--bar-count-bg);color:var(--btn-color);cursor:pointer;
+}
+.count-btn:hover{background:var(--btn-hover-bg);color:var(--btn-hover-color);transform:scale(1.05);}
+.bar-row.row-active .count-btn{background:var(--accent);color:var(--bar-on-accent);border-color:var(--accent);box-shadow:0 0 16px var(--accent);transform:scale(1.05);}
+/* Outlined bars: a light inner edge and a dark outer edge show on any background */
+.bar-shell{width:100%;height:clamp(16px,2.8vh,26px);border-radius:999px;background:var(--bar-track);overflow:hidden;box-shadow:inset 0 0 0 1.5px var(--bar-edge-in),0 0 0 1.5px var(--bar-edge-out);position:relative;}
+.bar-fill{
+  position:absolute;inset:0;width:100%;
+  background:linear-gradient(90deg,var(--accent) 0%,color-mix(in srgb,var(--accent) 78%,#000) 100%);
+  box-shadow:0 0 24px color-mix(in srgb,var(--accent) 95%,transparent);transition:width .1s linear;
+}
+@keyframes shellPulse{
+  0%,100%{box-shadow:inset 0 0 0 1.5px var(--bar-edge-in),0 0 0 1.5px var(--bar-edge-out),0 0 10px color-mix(in srgb,var(--accent) 60%,transparent),0 0 24px color-mix(in srgb,var(--accent) 85%,transparent);}
+  50%{box-shadow:inset 0 0 0 1.5px var(--bar-edge-in),0 0 0 1.5px var(--bar-edge-out),0 0 18px color-mix(in srgb,var(--accent) 85%,transparent),0 0 40px var(--accent);}
+}
+.row-active .bar-shell{animation:shellPulse 1.25s ease-in-out infinite;}
+.bar-shell::after{content:"";position:absolute;inset:0;background:linear-gradient(120deg,transparent 0%,rgba(255,255,255,.35) 35%,rgba(255,255,255,.1) 50%,transparent 65%);transform:translateX(-120%);}
+@keyframes shimmer{0%{transform:translateX(-120%);}100%{transform:translateX(120%);}}
+.row-active .bar-shell::after{animation:shimmer 1.8s linear infinite;}
+.row-dim .count-btn{opacity:.55;}
+.row-done .bar-shell{background:var(--bar-track);}
+#pane-bar .row{margin-top:clamp(6px,1.3vh,12px);gap:10px;}
+#pane-bar .bars-wrap + .row{margin-top:var(--bar-gap);}
+@media (max-height:780px){ #pane-bar .btn.sm.round{width:48px;height:48px;font-size:.85rem;} #pane-bar .btn.sm{padding:6px 14px;} }
+
+/* ---------- ROUTINES (iOS Clock style: progress ring, round buttons, step list) ---------- */
+.r-wrap{display:flex;align-items:center;justify-content:center;gap:clamp(24px,4.5vw,64px);width:min(1100px,100%);flex-wrap:wrap;}
+.r-main{display:flex;flex-direction:column;align-items:center;gap:clamp(16px,3vh,28px);}
+.r-ring{
+  position:relative;width:min(clamp(240px,46vh,390px),78vw);aspect-ratio:1;border-radius:50%;
+  background:var(--bar-panel);border:1px solid var(--bar-panel-edge);box-shadow:0 20px 60px rgba(0,0,0,.35);
+  backdrop-filter:blur(5px);-webkit-backdrop-filter:blur(5px);
+}
+.r-ring > svg{position:absolute;inset:0;width:100%;height:100%;transform:rotate(-90deg);}
+.r-ring > svg circle{fill:none;stroke-width:8;stroke-linecap:round;}
+.r-track{stroke:color-mix(in srgb,var(--text) 14%,transparent);}
+.r-prog{stroke:var(--accent);transition:stroke-dashoffset .25s linear;filter:drop-shadow(0 0 6px color-mix(in srgb,var(--accent) 65%,transparent));}
+.r-center{position:absolute;inset:13%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;text-align:center;color:var(--text);}
+.r-step{max-width:100%;font:600 clamp(1rem,2.5vh,1.4rem)/1.2 var(--font);opacity:.92;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;text-shadow:none;}
+.r-time{font-size:clamp(3rem,9.5vh,5.4rem);font-weight:var(--timer-weight);line-height:1;font-variant-numeric:tabular-nums;text-shadow:var(--timer-shadow);}
+.r-time.glow{animation:glowPulse 2s infinite ease-in-out;}
+.r-ends{display:flex;align-items:center;gap:6px;font:500 clamp(.8rem,1.8vh,1rem) 'Inter',sans-serif;opacity:.78;text-shadow:none;}
+.r-ends svg{width:14px;height:14px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;}
+.r-step.flash{animation:glowPulse 1.2s 3 ease-in-out;}
+.r-ctrls{display:flex;align-items:center;gap:clamp(10px,1.6vw,18px);}
+.r-circ,.r-mini{
+  /* Same look as the Timer buttons: theme border and text, see-through, theme blur */
+  position:relative;display:grid;place-items:center;padding:0;cursor:pointer;
+  border:2px solid var(--btn-border);background:transparent;color:var(--btn-color);
+  font:700 1.05rem var(--font);text-shadow:var(--btn-shadow);
+  backdrop-filter:blur(5px);-webkit-backdrop-filter:blur(5px);
+  transition:background .3s,color .3s,transform .2s;
+}
+.r-circ:hover,.r-mini:hover{background:var(--btn-hover-bg);color:var(--btn-hover-color);transform:scale(1.05);}
+.r-circ:active,.r-mini:active{transform:scale(.97);}
+.r-circ{width:clamp(66px,9.5vh,80px);aspect-ratio:1;border-radius:50%;}
+.r-mini{height:50px;min-width:50px;padding:0 14px;border-radius:30px;}
+.r-mini svg{width:20px;height:20px;fill:currentColor;}
+/* Step list card */
+.r-list{
+  width:min(380px,100%);border-radius:22px;overflow:hidden;background:rgba(16,16,18,.74);border:1px solid var(--dock-line);
+  box-shadow:0 20px 60px rgba(0,0,0,.4);backdrop-filter:blur(5px);-webkit-backdrop-filter:blur(5px);
+  font-family:'Inter',sans-serif;color:#f3f5f9;text-shadow:none;
+}
+.rl-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;padding:16px 18px 12px;}
+.rl-title{font:700 22px 'Inter',sans-serif;letter-spacing:-.01em;overflow-wrap:anywhere;}
+.rl-sub{font:500 13px 'Inter',sans-serif;color:var(--dock-muted);margin-top:3px;}
+.rl-edit{border:0;background:transparent;color:var(--dock-accent);font:500 16px 'Inter',sans-serif;cursor:pointer;padding:2px 0;}
+.rl-rows{max-height:min(44vh,420px);overflow-y:auto;}
+.rl-row{display:flex;align-items:center;gap:12px;padding:11px 18px;border-top:1px solid rgba(255,255,255,.08);cursor:pointer;transition:background .15s;}
+.rl-row:hover{background:rgba(255,255,255,.04);}
+.rl-row.cur{background:rgba(255,255,255,.08);}
+.rl-dot{width:22px;height:22px;flex:none;border-radius:50%;border:2px solid rgba(255,255,255,.28);display:grid;place-items:center;}
+.rl-dot svg{width:13px;height:13px;fill:none;stroke:#0b2a12;stroke-width:3;stroke-linecap:round;stroke-linejoin:round;}
+.rl-row.done .rl-dot{background:#30d158;border-color:#30d158;}
+.rl-row.cur .rl-dot{border-color:var(--dock-accent);}
+.rl-row.cur .rl-dot::before{content:"";width:10px;height:10px;border-radius:50%;background:var(--dock-accent);}
+.rl-row.cur.running .rl-dot::before{animation:rlPulse 1.4s infinite ease-in-out;}
+@keyframes rlPulse{0%,100%{transform:scale(1);opacity:1;}50%{transform:scale(.6);opacity:.55;}}
+.rl-name{flex:1;min-width:0;font:500 15.5px 'Inter',sans-serif;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.rl-row.done .rl-name{color:var(--dock-muted);}
+.rl-dur{font:500 15px 'Inter',sans-serif;color:var(--dock-muted);font-variant-numeric:tabular-nums;}
+.rl-row.cur .rl-dur{color:#fff;}
+.rl-foot{display:flex;justify-content:space-between;gap:10px;padding:11px 18px 14px;border-top:1px solid rgba(255,255,255,.08);font:500 13px 'Inter',sans-serif;color:var(--dock-muted);}
+.rl-empty{padding:20px 18px;border-top:1px solid rgba(255,255,255,.08);color:var(--dock-muted);font:500 14px 'Inter',sans-serif;text-align:center;}
+/* Edit Routine sheet (shares the Add Alarm sheet styles) */
+.as-cap{margin:2px 30px 6px;font:600 12px 'Inter',sans-serif;letter-spacing:.06em;text-transform:uppercase;color:var(--dock-muted);}
+.rs-step{display:flex;align-items:center;gap:8px;min-height:48px;padding:6px 8px 6px 12px;border-top:1px solid rgba(255,255,255,.09);}
+.rs-step:first-child{border-top:0;}
+.rs-del{flex:none;width:22px;height:22px;border-radius:50%;border:0;background:#ff3b30;display:grid;place-items:center;cursor:pointer;padding:0;}
+.rs-del::before{content:"";width:10px;height:2.5px;border-radius:2px;background:#fff;}
+.rs-step input{min-width:0;background:transparent;border:0;color:#fff;font:500 15.5px 'Inter',sans-serif;outline:none;padding:6px 4px;border-radius:6px;}
+.rs-step input:focus{background:rgba(255,255,255,.08);}
+.rs-n{flex:1;}
+.rs-t{width:64px;text-align:right;color:var(--dock-muted) !important;font-variant-numeric:tabular-nums;}
+.rs-mv{display:flex;}
+.rs-mv button{width:26px;height:28px;border:0;border-radius:7px;background:transparent;color:var(--dock-muted);cursor:pointer;font-size:14px;}
+.rs-mv button:hover{background:rgba(255,255,255,.1);color:#fff;}
+.rs-add{display:flex;align-items:center;gap:10px;width:100%;min-height:48px;padding:6px 14px 6px 12px;border:0;border-top:1px solid rgba(255,255,255,.09);background:transparent;color:#f3f5f9;font:500 15.5px 'Inter',sans-serif;cursor:pointer;text-align:left;}
+.rs-add .plus{width:22px;height:22px;border-radius:50%;background:#30d158;display:grid;place-items:center;}
+.rs-add .plus::before{content:"+";color:#fff;font:700 17px/1 'Inter',sans-serif;margin-top:-1px;}
+.as-row .switch{margin-left:auto;}
+.as-full{width:100%;justify-content:center;border:0;background:transparent;color:var(--dock-accent);cursor:pointer;font:500 15.5px 'Inter',sans-serif;}
+.rs-lib small{display:block;color:var(--dock-muted);font-size:12px;font-weight:500;}
+.rs-lib .grow1{flex:1;min-width:0;}
+.rs-msg{margin:-4px 30px 12px;font:500 13px 'Inter',sans-serif;color:#30d158;}
+.rs-msg.err{color:#ff9f0a;}
+.rs-msg:empty{display:none;}
+
+/* ---------- ALARM (laid out like the iOS Clock app) ---------- */
+.clock{font-size:8rem;line-height:1.1;text-shadow:var(--timer-shadow);font-weight:var(--timer-weight);font-variant-numeric:tabular-nums;}
+.clock .ampm{font-size:2.4rem;margin-left:10px;}
+.a-date{font-size:1.5rem;opacity:.9;}
+.a-next{font-size:1.2rem;margin-top:14px;opacity:.9;text-align:center;}
+.switch{position:relative;flex:none;width:51px;height:31px;border-radius:999px;background:rgba(120,120,128,.36);border:0;cursor:pointer;transition:background .2s;}
+.switch::after{content:"";position:absolute;top:2px;left:2px;width:27px;height:27px;border-radius:50%;background:#fff;box-shadow:0 2px 6px rgba(0,0,0,.3);transition:left .2s var(--ease);}
+.switch[aria-checked="true"]{background:#34c759;}
+.switch[aria-checked="true"]::after{left:22px;}
+
+/* Alarm list */
+.alist{
+  margin-top:24px;width:min(560px,100%);border-radius:22px;overflow:hidden;
+  background:rgba(16,16,18,.74);border:1px solid var(--dock-line);box-shadow:0 20px 60px rgba(0,0,0,.4);
+  backdrop-filter:blur(5px);-webkit-backdrop-filter:blur(5px);
+  font-family:'Inter',sans-serif;color:#f3f5f9;text-shadow:none;
+}
+.al-bar{display:flex;align-items:center;justify-content:space-between;padding:12px 14px 0 18px;}
+.al-link{border:0;background:transparent;color:var(--dock-accent);font:500 16px 'Inter',sans-serif;cursor:pointer;padding:6px 2px;}
+.al-plus{width:36px;height:36px;border-radius:50%;border:0;background:rgba(255,255,255,.1);color:var(--dock-accent);display:grid;place-items:center;cursor:pointer;}
+.al-plus:hover{background:rgba(255,255,255,.18);}
+.al-plus svg{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:2.2;stroke-linecap:round;}
+.al-title{margin:2px 18px 6px;font:700 30px 'Inter',sans-serif;letter-spacing:-.02em;}
+.al-rows{max-height:44vh;overflow-y:auto;}
+.al-row{display:flex;align-items:center;gap:14px;padding:12px 18px;border-top:1px solid rgba(255,255,255,.08);cursor:pointer;transition:background .15s;}
+.al-row:hover{background:rgba(255,255,255,.04);}
+.al-del{display:none;flex:none;width:24px;height:24px;border-radius:50%;border:0;background:#ff3b30;place-items:center;cursor:pointer;padding:0;}
+.al-del::before{content:"";width:11px;height:2.5px;border-radius:2px;background:#fff;}
+.alist.editing .al-del{display:grid;}
+.alist.editing .switch{display:none;}
+.al-main{flex:1;min-width:0;}
+.al-time{font:300 46px/1 'Inter',sans-serif;letter-spacing:-.02em;font-variant-numeric:tabular-nums;}
+.al-time small{font-size:21px;font-weight:400;margin-left:4px;letter-spacing:0;}
+.al-sub{font:500 13.5px 'Inter',sans-serif;color:var(--dock-muted);margin-top:5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.al-row.off .al-time,.al-row.off .al-sub{opacity:.45;}
+.al-sub .snz{color:#ff9f0a;}
+.al-chev{display:none;width:16px;height:16px;fill:none;stroke:var(--dock-muted);stroke-width:2;stroke-linecap:round;stroke-linejoin:round;flex:none;}
+.alist.editing .al-chev{display:block;}
+.al-empty{padding:22px 18px 28px;border-top:1px solid rgba(255,255,255,.08);text-align:center;color:var(--dock-muted);font:500 14px 'Inter',sans-serif;}
+
+/* Add / edit alarm sheet */
+#aSheetWrap,#rSheetWrap{position:fixed;inset:0;z-index:85;display:none;align-items:center;justify-content:center;padding:16px;background:rgba(0,0,0,.5);}
+#aSheetWrap.show,#rSheetWrap.show{display:flex;}
+.asheet{
+  width:min(420px,100%);max-height:calc(100vh - 32px);overflow-y:auto;border-radius:22px;
+  background:#1c1c1e;border:1px solid var(--dock-line);box-shadow:0 30px 90px rgba(0,0,0,.6);
+  font-family:'Inter',sans-serif;color:#f3f5f9;text-shadow:none;animation:sheetIn .3s var(--ease);
+}
+@keyframes sheetIn{from{opacity:0;transform:translateY(16px);}to{opacity:1;transform:none;}}
+.as-head{position:sticky;top:0;z-index:2;display:flex;align-items:center;justify-content:space-between;padding:12px 14px;background:#1c1c1e;}
+.as-head b{font:600 16px 'Inter',sans-serif;}
+.as-btn{border:0;background:transparent;color:var(--dock-accent);font:500 16px 'Inter',sans-serif;cursor:pointer;padding:6px 4px;}
+.as-btn.save{font-weight:700;}
+.wheel{position:relative;display:flex;justify-content:center;gap:2px;height:180px;margin:4px 16px 16px;}
+.wheel::before{content:"";position:absolute;left:0;right:0;top:72px;height:36px;border-radius:10px;background:rgba(255,255,255,.1);pointer-events:none;}
+.wcol{
+  position:relative;width:76px;height:180px;overflow-y:auto;scroll-snap-type:y mandatory;scrollbar-width:none;
+  padding:72px 0;box-sizing:border-box;outline:none;border-radius:10px;
+  -webkit-mask-image:linear-gradient(transparent,#000 32%,#000 68%,transparent);mask-image:linear-gradient(transparent,#000 32%,#000 68%,transparent);
+}
+.wcol::-webkit-scrollbar{display:none;}
+.wcol:focus-visible{box-shadow:inset 0 0 0 2px var(--dock-accent);}
+.wcol div{height:36px;line-height:36px;text-align:center;scroll-snap-align:center;font:400 23px 'Inter',sans-serif;color:rgba(255,255,255,.38);cursor:pointer;font-variant-numeric:tabular-nums;user-select:none;}
+.wcol div.sel{color:#fff;}
+.as-group{margin:0 16px 14px;border-radius:14px;background:#2c2c2e;overflow:hidden;}
+.as-row{display:flex;align-items:center;gap:12px;min-height:48px;padding:8px 14px;border-top:1px solid rgba(255,255,255,.09);font:500 15.5px 'Inter',sans-serif;}
+.as-row:first-child{border-top:0;}
+.as-row.click{cursor:pointer;}
+.as-row .val{flex:1;min-width:0;text-align:right;color:var(--dock-muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.as-row svg.chev{width:15px;height:15px;fill:none;stroke:var(--dock-muted);stroke-width:2;stroke-linecap:round;stroke-linejoin:round;flex:none;transition:transform .2s;}
+.as-row.click[aria-expanded="true"] svg.chev{transform:rotate(90deg);}
+.as-row input[type=text]{flex:1;min-width:0;text-align:right;background:transparent;border:0;color:#fff;font:inherit;outline:none;}
+.as-row input::placeholder{color:var(--dock-muted);}
+.as-row select{background:transparent;color:var(--dock-muted);border:0;font:inherit;cursor:pointer;margin-left:auto;}
+.as-row select option{color:#000;}
+.days{display:flex;gap:5px;margin-left:auto;}
+.days button{width:30px;height:30px;border-radius:50%;border:1px solid rgba(255,255,255,.18);background:transparent;color:var(--dock-muted);font:600 12px 'Inter',sans-serif;cursor:pointer;padding:0;}
+.days button[aria-pressed="true"]{background:var(--dock-accent);border-color:transparent;color:#111;}
+.qdays{display:flex;gap:6px;justify-content:flex-end;padding:0 14px 10px;}
+.qdays button{border:0;background:rgba(255,255,255,.08);color:var(--dock-muted);font:600 12px 'Inter',sans-serif;border-radius:999px;padding:5px 11px;cursor:pointer;}
+.qdays button:hover{color:#fff;}
+.as-sounds[hidden]{display:none;}
+.as-snd{display:flex;align-items:center;gap:10px;min-height:42px;padding:6px 14px 6px 18px;border-top:1px solid rgba(255,255,255,.06);font:500 14.5px 'Inter',sans-serif;cursor:pointer;}
+.as-snd:hover{background:rgba(255,255,255,.04);}
+.as-snd .ck{width:18px;flex:none;color:var(--dock-accent);}
+.as-snd .ck svg{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round;}
+.as-snd small{display:block;color:var(--dock-muted);font-size:12px;}
+.as-del{display:block;width:calc(100% - 32px);margin:0 16px 16px;padding:13px;border-radius:14px;border:0;background:#2c2c2e;color:#ff453a;font:600 15.5px 'Inter',sans-serif;cursor:pointer;}
+.as-del[hidden]{display:none;}
+.as-err{margin:-6px 16px 12px;font:500 13px 'Inter',sans-serif;color:#ff9f0a;}
+.as-err:empty{display:none;}
+
+/* Ringing: a black box with a 28px blur so it stands out on any theme */
+#ringOverlay{position:fixed;inset:0;z-index:95;display:none;align-items:center;justify-content:center;padding:16px;background:rgba(0,0,0,.3);}
+#ringOverlay.show{display:flex;}
+.ring-box{
+  width:min(640px,100%);padding:38px 32px 32px;border-radius:32px;text-align:center;
+  background:rgba(0,0,0,.72);backdrop-filter:blur(28px);-webkit-backdrop-filter:blur(28px);
+  border:1px solid rgba(255,255,255,.14);box-shadow:0 30px 90px rgba(0,0,0,.6);
+  font-family:'Inter',sans-serif;color:#fff;text-shadow:none;animation:ringIn .45s var(--ease);
+}
+@keyframes ringIn{from{opacity:0;transform:scale(.94);}to{opacity:1;transform:none;}}
+.ring-bell{display:inline-grid;place-items:center;width:64px;height:64px;border-radius:50%;background:rgba(255,159,10,.18);color:#ff9f0a;animation:bellShake 1.2s infinite ease-in-out;}
+.ring-bell svg{width:32px;height:32px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;}
+@keyframes bellShake{0%,50%,100%{transform:rotate(0);}10%,30%{transform:rotate(-14deg);}20%,40%{transform:rotate(14deg);}}
+.ring-kicker{margin-top:14px;font:700 13px 'Inter',sans-serif;letter-spacing:.22em;text-transform:uppercase;color:#ff9f0a;}
+#ringLabel{margin:8px 0 4px;font:700 clamp(2.4rem,7vw,4.6rem)/1.08 'Inter',sans-serif;letter-spacing:-.02em;overflow-wrap:anywhere;}
+#ringTime{font:300 clamp(1.6rem,4vw,2.4rem) 'Inter',sans-serif;color:rgba(255,255,255,.78);font-variant-numeric:tabular-nums;}
+.ring-btns{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;margin-top:28px;}
+.ring-btns button{min-width:170px;padding:17px 28px;border-radius:999px;border:0;font:700 19px 'Inter',sans-serif;cursor:pointer;transition:transform .15s,filter .15s;}
+.ring-btns button:active{transform:scale(.97);}
+#ringSnooze{background:#ff9f0a;color:#241500;min-width:230px;}
+#ringSnooze:hover{filter:brightness(1.08);}
+#ringSnooze[hidden]{display:none;}
+#ringStop{background:rgba(255,255,255,.16);color:#fff;}
+#ringStop:hover{background:rgba(255,255,255,.24);}
+
+/* ---------- STOPWATCH ---------- */
+.laps{max-height:34vh;overflow:auto;}
+.lap{display:grid;grid-template-columns:80px 1fr 1fr;gap:10px;padding:7px 0;border-top:1px solid rgba(255,255,255,0.1);font-variant-numeric:tabular-nums;}
+.lap:first-child{border-top:0;}
+.lap .tot{color:rgba(255,255,255,0.6);text-align:right;}
+
+
+/* ---------- Theme thumbnails (inside the dock) ---------- */
+.thumb{display:flex;flex-direction:column;justify-content:flex-start;background:none;border:0;padding:0;cursor:pointer;color:#f3f5f9;text-align:center;font:600 10.5px 'Inter',sans-serif;line-height:1.25;}
+.thumb .pic{
+  display:block;width:100%;aspect-ratio:16/9;border-radius:9px;overflow:hidden;
+  background:#333 center/cover no-repeat;border:2px solid transparent;transition:transform .2s,border-color .2s;
+}
+.thumb .pic img{width:100%;height:100%;object-fit:cover;display:block;}
+.thumb:hover .pic{transform:scale(1.04);}
+.thumb[aria-pressed="true"] .pic{border-color:var(--dock-accent);}
+.thumb .nm{display:block;margin-top:3px;}
+
+/* ---------- MUSIC MINI BAR (YouTube) — left of the stacks button ----------
+   A 256 x 88 bar. While music plays, the YouTube player drops down under it
+   (YouTube requires its player to be visible and at least 200 x 200). */
+.mbar{
+  position:fixed;top:20px;right:80px;z-index:47;width:256px;padding:10px;border-radius:18px;
+  background:rgba(16,16,18,.74);border:1px solid var(--dock-line);
+  box-shadow:0 20px 60px rgba(0,0,0,.45),inset 0 1px 0 rgba(255,255,255,.08);
+  backdrop-filter:blur(5px);-webkit-backdrop-filter:blur(5px);
+  font-family:'Inter',sans-serif;color:#f3f5f9;text-shadow:none;
+  transform:translateX(16px);opacity:0;pointer-events:none;
+  transition:transform .35s var(--ease),opacity .25s ease,right .35s var(--ease);
+}
+.mbar.open{transform:none;opacity:1;pointer-events:auto;}
+/* Close button: appears when you point at the music bar (always shown on touch screens) */
+.mb-close{
+  position:absolute;top:-9px;left:-9px;z-index:3;width:24px;height:24px;border-radius:50%;padding:0;cursor:pointer;
+  display:grid;place-items:center;border:1px solid var(--dock-line);background:rgba(44,44,48,.96);color:#f3f5f9;
+  box-shadow:0 4px 12px rgba(0,0,0,.4);opacity:0;transform:scale(.8);transition:opacity .2s,transform .2s var(--ease);
+}
+.mb-close svg{width:12px;height:12px;stroke-width:2.4;}
+.mbar:hover .mb-close,.mbar:focus-within .mb-close{opacity:1;transform:none;}
+.mb-close:hover{background:#ff453a;border-color:#ff453a;}
+@media (hover:none){ .mb-close{opacity:1;transform:none;} }
+body.dock-open .mbar{right:126px;}
+.mbar svg{fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round;flex:none;}
+.mb-top{display:flex;gap:10px;height:68px;}
+.mb-thumb{position:relative;width:68px;height:68px;border-radius:10px;overflow:hidden;flex:none;background:#3a3427;display:grid;place-items:center;color:#e8dcb5;}
+.mb-thumb svg{width:26px;height:26px;}
+.mb-thumb img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;}
+.mb-eq{position:absolute;left:6px;bottom:6px;display:none;gap:2px;align-items:flex-end;height:14px;padding:2px 3px;border-radius:4px;background:rgba(0,0,0,.55);}
+.mb-eq i{width:3px;height:4px;border-radius:1px;background:#fff;animation:mbEq .9s infinite ease-in-out;}
+.mb-eq i:nth-child(2){animation-delay:.2s;} .mb-eq i:nth-child(3){animation-delay:.4s;}
+@keyframes mbEq{0%,100%{height:3px;}50%{height:11px;}}
+.mbar.playing .mb-eq{display:flex;}
+.mb-info{min-width:0;flex:1;display:flex;flex-direction:column;justify-content:space-between;}
+.mb-song{font:600 12.5px 'Inter',sans-serif;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.mb-sub{font:500 11px 'Inter',sans-serif;color:var(--dock-muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:2px;}
+.mb-ctrls{display:flex;gap:2px;margin-left:-4px;}
+.mb-b{width:28px;height:28px;display:grid;place-items:center;border:0;border-radius:8px;background:transparent;color:#f3f5f9;cursor:pointer;padding:0;}
+.mb-b:hover{background:rgba(255,255,255,.12);}
+.mb-b.main{background:rgba(255,255,255,.16);}
+.mb-b[aria-expanded="true"]{background:rgba(255,255,255,.18);color:var(--dock-accent);}
+.mb-b svg{width:17px;height:17px;}
+.mb-b.main svg{fill:currentColor;stroke:none;}
+.mb-drop{height:0;overflow:hidden;transition:height .35s var(--ease),margin .35s var(--ease);}
+.mbar.dropped .mb-drop{height:200px;margin-top:10px;}
+.mb-player{width:236px;height:200px;border-radius:12px;overflow:hidden;background:#000;}
+.mb-player iframe{width:100%;height:100%;border:0;display:block;}
+.mb-pop{position:absolute;left:0;right:0;top:calc(100% + 6px);padding:8px;border-radius:14px;
+  background:rgba(16,16,18,.94);border:1px solid var(--dock-line);box-shadow:0 16px 40px rgba(0,0,0,.45);font:500 12.5px 'Inter',sans-serif;}
+.mb-pop[hidden]{display:none;}
+.mb-vol{display:flex;align-items:center;gap:10px;padding:4px 6px;}
+.mb-vol input{flex:1;accent-color:var(--dock-accent);}
+.mb-vol output{width:28px;text-align:right;font-variant-numeric:tabular-nums;color:var(--dock-muted);}
+.mb-row{display:flex;align-items:center;gap:8px;padding:7px 8px;border-radius:9px;cursor:pointer;}
+.mb-row:hover{background:rgba(255,255,255,.08);}
+.mb-row .nm{flex:1;min-width:0;}
+.mb-row .nm b{display:block;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.mb-row .nm small{display:block;color:var(--dock-muted);font-size:11px;}
+.mb-row svg{width:16px;height:16px;}
+.mb-row .chk{color:var(--dock-accent);}
+.mb-x{width:24px;height:24px;display:grid;place-items:center;border:0;border-radius:7px;background:transparent;color:var(--dock-muted);cursor:pointer;}
+.mb-x:hover{background:rgba(255,255,255,.12);color:#fff;}
+.mb-add{border-top:1px solid var(--dock-line);margin-top:4px;padding-top:4px;}
+.mb-form{display:flex;flex-direction:column;gap:6px;padding:6px 4px 2px;}
+.mb-form[hidden]{display:none;}
+.mb-form input{font:400 12.5px 'Inter',sans-serif;color:#fff;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.25);border-radius:8px;padding:7px 9px;min-width:0;}
+.mb-form input::placeholder{color:rgba(255,255,255,.5);}
+.mb-form button{align-self:flex-end;font:600 12.5px 'Inter',sans-serif;color:#fff;background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.28);border-radius:8px;padding:6px 14px;cursor:pointer;}
+.mb-msg{font:500 11.5px 'Inter',sans-serif;color:#ffd43b;padding:6px 4px 0;}
+.mb-msg:empty{display:none;}
+
+/* ---------- Responsive (mirrors the originals' breakpoints) ---------- */
+@media (max-width:1200px){ #extraLogo{height:90px;} }
+@media (max-width:870px){
+  .timer{font-size:4rem;}
+  .btn{padding:10px 20px;font-size:1.2rem;}
+  .btn.round{width:60px;height:60px;font-size:1rem;}
+  .tinput{width:80px;font-size:1.2rem;}
+  .row{gap:12px;margin-top:15px;}
+  .clock{font-size:4.5rem;} .clock .ampm{font-size:1.6rem;}
+  .al-time{font-size:38px;} .ring-btns button{min-width:0;flex:1;}
+  #ringLabel{font-size:3.5rem;}
+}
+@media (max-width:768px){
+  .chip-row{grid-template-columns:repeat(2,1fr);grid-auto-flow:row;gap:20px;}
+  .turn-wrapper{width:120px;height:120px;} .turn-chip{width:90px;height:90px;font-size:2rem;}
+  #turnTimer{font-size:2rem;}
+  .bar-row{grid-template-columns:60px 1fr;} .count-btn{width:56px;height:56px;font-size:1.4rem;}
+}
+@media (max-width:600px){
+  .mbar,#musicBtn{display:none !important;}
+  .logo-bar{display:none;}
+  .bar-shell{height:22px;}
+  .turn-wrapper{width:100px;height:100px;} .turn-chip{width:75px;height:75px;font-size:1.6rem;}
+}
+}
+</style>
+</head>
+<body>
+
+<!-- Backgrounds -->
+<div id="bgImg"><img id="bgPic" alt="" hidden onerror="this.hidden=true"></div>
+<video id="bgVid" autoplay muted loop playsinline></video>
+<div id="bgOverlay"></div>
+
+<!-- Logo (Bryant adds its B on the left) -->
+<div class="logo-bar">
+  <img id="extraLogo" alt="" onerror="this.style.display='none'">
+  <a class="logo-link" href="https://www.robsonedu.com/PageTimers.html" title="Back to RobsonEDU Timers" aria-label="TIMEr Plus. Back to RobsonEDU Timers">
+    <svg id="logoSvg" viewBox="97 62 1852 328" aria-hidden="true" focusable="false"><path fill="currentColor" fill-rule="evenodd" d="M1766.8 383.2C1762.5 382.6 1755.1 380.8 1752.6 379.8C1748.2 377.9 1742.6 374.9 1740.8 373.4C1732.5 366.8 1726.5 357.4 1724.1 347.5C1722.0 338.9 1722.0 337.8 1722.0 295.8L1722.0 255.0L1737.7 255.0L1753.4 255.0L1753.6 296.1C1753.8 329.7 1754.0 337.7 1754.6 339.5C1756.9 346.9 1761.0 351.2 1768.0 353.4C1769.0 353.7 1772.3 354.0 1775.2 354.0C1780.8 354.0 1782.6 353.7 1786.4 351.8C1791.0 349.6 1794.5 345.3 1796.2 339.6C1796.5 338.4 1796.8 323.8 1797.0 296.5L1797.2 255.2L1813.0 255.2L1828.8 255.2L1828.9 293.2C1829.0 329.7 1828.8 338.9 1827.5 344.0C1827.3 345.0 1826.8 346.8 1826.5 348.0C1826.2 349.2 1825.8 350.7 1825.5 351.2C1820.7 363.1 1815.0 369.9 1805.0 375.9C1801.2 378.1 1794.9 380.7 1791.0 381.5C1789.5 381.8 1787.5 382.3 1786.5 382.6C1784.7 383.1 1769.4 383.6 1766.8 383.2ZM1886.2 383.0C1876.7 381.6 1869.8 379.1 1862.8 374.5C1857.1 370.7 1851.5 364.2 1849.5 359.0C1849.1 358.0 1848.7 357.0 1848.5 356.8C1848.1 356.3 1847.7 354.2 1846.6 347.5C1846.2 345.7 1846.3 344.5 1846.6 344.1C1847.0 343.6 1850.9 343.5 1862.8 343.5C1871.4 343.5 1878.8 343.6 1879.2 343.8C1879.6 344.0 1880.0 344.6 1880.0 345.2C1880.0 347.4 1881.6 351.0 1883.6 353.2C1886.2 356.2 1889.3 357.6 1893.8 357.9C1902.4 358.5 1908.6 354.6 1909.3 348.2C1909.8 344.3 1908.8 341.6 1905.9 338.8C1902.1 335.3 1897.4 333.1 1885.5 329.5C1882.6 328.6 1879.8 327.7 1879.2 327.5C1878.7 327.3 1877.5 326.8 1876.5 326.5C1875.5 326.2 1874.1 325.6 1873.2 325.2C1872.4 324.9 1870.7 324.2 1869.5 323.7C1858.4 319.3 1850.4 310.9 1847.7 301.0C1846.7 297.2 1846.7 285.0 1847.7 281.2C1850.4 271.2 1857.5 262.8 1867.4 258.4C1872.4 256.1 1875.6 255.0 1879.2 254.5C1881.2 254.2 1883.8 253.7 1885.2 253.5C1888.3 252.9 1897.5 252.9 1901.0 253.5C1902.5 253.7 1905.3 254.2 1907.2 254.5C1912.5 255.3 1919.2 257.9 1924.1 261.1C1933.2 267.0 1939.0 276.1 1940.5 287.2C1940.9 290.3 1940.9 291.3 1940.4 291.6C1940.0 291.8 1932.4 291.9 1923.5 291.9L1907.3 291.8L1906.5 289.2C1905.1 285.1 1904.7 284.3 1902.6 282.4C1899.4 279.5 1897.4 278.8 1892.2 278.8C1888.2 278.8 1887.5 278.9 1885.4 280.2C1882.3 281.9 1880.6 284.6 1880.2 287.9C1879.2 296.0 1883.9 299.8 1903.2 306.2C1906.3 307.2 1909.4 308.4 1910.2 308.7C1911.1 309.1 1912.3 309.6 1913.0 309.8C1913.7 310.0 1915.3 310.6 1916.5 311.1C1926.5 315.6 1929.3 317.4 1934.3 322.6C1939.0 327.6 1940.7 331.0 1942.1 338.5C1942.7 341.6 1942.3 351.1 1941.6 353.0C1941.3 353.7 1940.8 355.3 1940.5 356.5C1939.8 359.0 1937.7 363.0 1935.5 366.2C1932.4 370.7 1924.3 377.1 1919.2 379.0C1918.4 379.3 1917.1 379.9 1916.3 380.2C1912.1 382.1 1905.7 383.1 1897.5 383.3C1893.0 383.4 1887.9 383.2 1886.2 383.0ZM428.2 381.9C428.1 381.5 428.1 334.0 428.1 276.2L428.2 171.2L454.0 171.2C474.3 171.2 479.7 171.4 479.7 171.9C479.7 172.2 479.6 219.7 479.6 277.5L479.5 382.5L454.0 382.5C433.8 382.5 428.4 382.4 428.2 381.9ZM159.0 297.2L159.0 212.5L131.0 212.5L103.0 212.5L103.1 191.9L103.2 171.2L184.2 171.1C244.0 171.0 265.3 171.1 265.8 171.6C266.4 172.0 266.5 175.7 266.4 192.2L266.2 212.2L238.5 212.5L210.8 212.8L210.6 297.4L210.5 382.0L184.7 382.0L159.0 382.0L159.0 297.2ZM653.1 276.6L653.2 171.2L683.0 171.1C699.4 171.1 713.0 171.2 713.4 171.4C713.7 171.6 714.5 173.0 715.0 174.4C716.5 178.4 717.7 181.2 720.5 188.0C721.9 191.4 723.5 195.3 724.1 196.6C724.6 197.9 725.5 200.1 726.0 201.5C726.5 202.9 727.5 205.1 728.0 206.5C728.5 207.9 729.5 210.1 730.0 211.5C730.5 212.9 731.4 215.1 731.9 216.4C732.5 217.7 734.1 221.6 735.5 225.0C736.9 228.4 738.5 232.3 739.1 233.6C739.6 234.9 740.5 237.1 741.0 238.5C741.5 239.9 742.5 242.1 743.0 243.5C743.5 244.9 744.5 247.1 745.0 248.5C745.5 249.9 746.4 252.1 746.9 253.4C747.5 254.7 749.1 258.6 750.5 262.0C751.9 265.4 753.5 269.3 754.1 270.6C754.6 271.9 755.5 274.1 756.0 275.5C756.5 276.9 757.5 279.1 758.0 280.5C758.5 281.9 759.5 284.1 760.0 285.5C760.5 286.9 761.4 289.1 761.9 290.4C762.5 291.7 764.1 295.6 765.5 299.0C768.5 306.2 769.7 309.2 771.1 313.0C771.7 314.5 772.4 315.9 772.7 316.1C773.2 316.4 774.1 314.6 776.6 308.4C778.6 303.3 779.5 300.9 780.6 298.4C781.1 296.9 782.1 294.6 782.6 293.2C783.2 291.9 784.1 289.6 784.6 288.2C785.2 286.9 786.0 284.7 786.5 283.5C787.5 281.0 788.8 277.7 790.4 273.6C791.0 272.2 792.0 269.8 792.6 268.4C793.1 266.9 794.0 264.7 794.6 263.4C795.1 262.1 796.0 259.9 796.5 258.5C797.0 257.1 797.9 254.9 798.4 253.6C799.7 250.5 801.3 246.4 802.8 243.0C804.3 239.2 805.9 235.2 807.0 232.5C808.0 230.0 809.3 226.7 810.9 222.6C811.5 221.2 812.4 218.9 812.9 217.6C813.5 216.3 814.4 214.0 815.0 212.5C815.6 211.0 816.6 208.6 817.1 207.2C817.7 205.9 818.6 203.5 819.2 202.0C819.9 200.5 820.8 198.1 821.4 196.8C821.9 195.4 822.9 193.1 823.4 191.6C824.0 190.2 825.0 187.8 825.6 186.4C826.1 184.9 827.0 182.7 827.6 181.4C830.0 175.2 830.6 173.7 831.2 172.5L831.8 171.2L861.8 171.2L891.8 171.2L891.9 276.6L892.0 382.0L866.3 382.0L840.5 382.0L840.5 319.6C840.5 267.3 840.4 257.4 839.8 258.3C839.5 258.8 839.0 259.7 838.9 260.2C838.7 260.8 838.1 262.5 837.5 264.0C836.9 265.5 836.2 267.3 836.0 268.0C835.6 269.2 834.0 273.5 831.0 281.5C828.0 289.5 826.4 293.8 826.0 295.0C825.8 295.7 825.1 297.5 824.5 299.0C823.9 300.5 823.2 302.3 823.0 303.0C822.8 303.7 822.1 305.5 821.5 307.0C820.9 308.5 820.2 310.3 820.0 311.0C819.8 311.7 819.1 313.5 818.5 315.0C817.9 316.5 817.2 318.3 817.0 319.0C816.8 319.7 816.1 321.5 815.5 323.0C814.9 324.5 814.2 326.3 814.0 327.0C813.8 327.7 813.1 329.5 812.5 331.0C811.9 332.5 811.2 334.3 811.0 335.0C810.8 335.7 809.9 338.1 809.1 340.2C808.3 342.4 807.1 345.6 806.5 347.2C805.9 348.9 805.1 351.1 804.7 352.1C803.4 355.5 802.4 358.2 801.7 360.1C801.3 361.2 800.7 362.8 800.3 363.9C799.4 366.3 798.3 369.2 797.3 371.9C796.9 373.0 796.1 375.0 795.7 376.1C795.3 377.3 794.5 379.1 794.1 380.1L793.3 382.0L772.7 382.0L752.0 382.0L751.3 380.6C750.9 379.8 750.0 377.6 749.3 375.7C748.6 373.8 747.4 370.4 746.5 368.1C744.2 361.8 742.2 356.4 740.5 351.9C739.6 349.6 738.3 346.1 737.5 344.0C735.7 339.2 733.5 333.4 731.5 328.0C730.6 325.7 729.3 322.1 728.5 320.0C727.7 317.9 726.3 314.1 725.3 311.5C724.4 308.9 722.9 304.9 722.1 302.6C721.2 300.4 719.8 296.7 719.0 294.5C718.2 292.3 716.8 288.7 716.0 286.5C715.2 284.3 713.8 280.8 713.0 278.6C712.2 276.5 710.9 272.9 710.0 270.6C709.2 268.4 707.8 264.6 707.0 262.4C706.1 260.1 705.3 257.9 705.1 257.4C705.0 256.9 704.7 256.5 704.4 256.5C704.2 256.5 704.0 283.3 704.0 319.2L704.0 382.0L678.5 382.0L653.0 382.0L653.1 276.6ZM1065.1 276.6L1065.2 171.2L1129.5 171.2L1193.8 171.2L1193.9 191.9L1194.0 212.5L1155.4 212.6L1116.8 212.8L1116.6 233.9L1116.5 255.0L1150.8 255.0L1185.0 255.0L1184.9 274.9L1184.8 294.8L1150.6 294.9L1116.5 295.0L1116.5 318.0L1116.5 341.0L1155.1 341.1L1193.8 341.2L1193.9 361.6L1194.0 382.0L1129.5 382.0L1065.0 382.0L1065.1 276.6ZM1524.0 318.5L1524.0 255.0L1553.0 255.0C1569.7 255.0 1582.9 255.2 1584.1 255.5C1585.3 255.7 1587.6 256.2 1589.2 256.6C1592.6 257.2 1599.6 259.7 1601.4 260.9C1602.1 261.3 1603.2 262.0 1604.0 262.5C1606.6 263.9 1612.0 269.0 1614.0 272.0C1616.5 275.7 1618.7 280.5 1619.5 284.0C1619.8 285.5 1620.3 287.4 1620.5 288.3C1621.1 290.3 1621.1 301.2 1620.5 303.2C1620.3 304.1 1619.8 306.0 1619.5 307.5C1618.0 314.4 1612.5 322.6 1606.4 327.2C1603.0 329.8 1594.8 334.0 1593.1 334.0C1592.5 334.0 1591.9 334.2 1591.8 334.4C1591.5 334.9 1586.6 335.7 1579.2 336.5C1576.8 336.8 1570.3 337.0 1564.9 337.0L1555.0 337.0L1555.0 359.5L1555.0 382.0L1539.5 382.0L1524.0 382.0L1524.0 318.5ZM1636.5 318.5L1636.5 255.0L1652.2 255.0L1668.0 255.0L1668.1 306.3L1668.2 357.6L1687.8 357.5C1698.5 357.5 1707.5 357.7 1707.9 357.9C1708.4 358.2 1708.5 361.0 1708.4 370.0L1708.2 381.8L1672.4 381.9L1636.5 382.0L1636.5 318.5ZM1571.4 311.3C1575.8 311.2 1578.8 310.9 1579.1 310.6C1579.4 310.3 1580.0 310.0 1580.4 310.0C1581.7 310.0 1585.5 306.9 1586.7 304.9C1588.5 301.7 1589.3 296.8 1588.6 292.8C1587.6 287.3 1585.7 284.6 1581.1 282.4L1577.8 280.8L1566.5 280.8L1555.2 280.8L1555.1 295.7C1555.0 304.0 1555.1 311.0 1555.2 311.3C1555.3 311.6 1557.0 311.8 1559.8 311.7C1562.3 311.6 1567.5 311.4 1571.4 311.3ZM1360.5 192.6C1357.3 190.6 1355.5 186.8 1354.4 179.8C1353.6 174.3 1354.5 153.1 1356.0 140.8C1356.5 136.9 1356.8 129.5 1357.9 96.0C1358.2 87.9 1358.6 79.7 1358.8 77.8C1359.5 70.7 1362.8 67.8 1370.0 67.8C1373.3 67.9 1374.3 68.1 1376.2 69.2C1379.6 71.2 1380.0 72.3 1380.0 80.5C1380.0 84.3 1380.2 87.5 1380.4 87.5C1380.6 87.5 1381.2 86.7 1381.8 85.6C1383.4 82.9 1388.6 77.4 1392.1 74.8C1401.4 67.7 1413.6 66.1 1426.8 70.1C1432.3 71.8 1438.2 75.3 1440.0 77.9C1441.1 79.4 1441.2 80.2 1441.2 83.7C1441.2 89.7 1439.4 92.4 1434.0 94.4C1430.9 95.4 1429.4 95.1 1423.5 92.1C1415.1 87.8 1413.3 87.5 1406.8 88.9C1402.8 89.8 1399.9 91.6 1395.9 95.5C1392.4 99.1 1391.7 100.1 1388.1 107.6C1384.6 114.7 1381.7 122.4 1379.4 130.8C1379.1 131.8 1378.7 133.3 1378.5 134.0C1378.3 134.7 1377.9 141.1 1377.7 148.2C1377.6 155.4 1377.3 167.2 1377.1 174.5L1376.8 187.8L1375.4 189.8C1373.6 192.6 1370.5 194.0 1366.1 194.0C1363.2 194.0 1362.4 193.8 1360.5 192.6Z"/></svg>
+  </a>
+</div>
+
+<!-- TOOLS — the stacks button in the top-right corner opens the vertical dock.
+     Choosing Themes swaps the tools for theme choices, two across, in a wider dock. -->
+<button class="corner-btn chrome" id="cornerBtn" type="button" title="Tools" aria-label="Tools" aria-expanded="false">
+  <span class="live-dot" aria-hidden="true"></span><svg viewBox="0 0 20 20"><path d="M3.5 5.5h13M3.5 10h13M3.5 14.5h13"/></svg>
+</button>
+
+<nav class="vdock chrome" id="vdock" aria-label="Timer tools">
+  <section class="tcol" id="drawer" aria-label="Themes" aria-hidden="true">
+    <div class="tcol-head">
+      <button class="tback" id="themeBack" type="button" title="Back to tools" aria-label="Back to tools"><svg viewBox="0 0 20 20"><path d="M12 5l-5 5 5 5"/></svg></button>
+      <b>Themes</b>
+    </div>
+    <div class="tcats" id="catBar" role="tablist" aria-label="Theme groups">
+      <button role="tab" data-cat="static" type="button">Static</button>
+      <button role="tab" data-cat="motion" type="button">Motion</button>
+      <button role="tab" data-cat="seasonal" type="button">Seasonal</button>
+    </div>
+    <div class="tgrid" id="themeGrid"></div>
+  </section>
+  <div class="vcol">
+  <button class="vbtn" id="themeBtn" type="button" title="Themes (T)" aria-pressed="false"><svg viewBox="0 0 20 20"><path d="M10 17.5a7.5 7.5 0 1 1 7.5-7.5c0 1.8-1.5 2.9-3.2 2.9h-1.8a1.6 1.6 0 0 0-1.2 2.8 1.1 1.1 0 0 1-1.3 1.8z"/><circle cx="6.3" cy="8.8" r=".8"/><circle cx="10" cy="6.2" r=".8"/><circle cx="13.7" cy="8.8" r=".8"/></svg><span>Themes</span></button>
+  <div class="vsep"></div>
+  <button class="vbtn js-mode" data-mode="timer" data-type="standard" type="button" title="Timer (1)"><svg viewBox="0 0 20 20"><circle cx="10" cy="10" r="7.5"/><path d="M10 5.5V10l3 2"/></svg><span>Timer</span></button>
+  <button class="vbtn js-mode" data-mode="timer" data-type="turn" type="button" title="Turn timer (2)"><svg viewBox="0 0 20 20"><circle cx="6" cy="6" r="2.6"/><circle cx="14" cy="6" r="2.6"/><circle cx="6" cy="14" r="2.6"/><circle cx="14" cy="14" r="2.6"/></svg><span>Turn</span></button>
+  <button class="vbtn js-mode" data-mode="timer" data-type="bar" type="button" title="Bar timer (3)"><svg viewBox="0 0 20 20"><path d="M3 5.5h14M3 10h10M3 14.5h6"/></svg><span>Bar</span></button>
+  <button class="vbtn js-mode" data-mode="routines" type="button" title="Routines (4)"><svg viewBox="0 0 20 20"><path d="M4 8a6 6 0 0 1 10.5-3.5L16 6M16 2.5V6h-3.5M16 12a6 6 0 0 1-10.5 3.5L4 14M4 17.5V14h3.5"/></svg><span>Routines</span></button>
+  <button class="vbtn js-mode" data-mode="alarm" type="button" title="Alarm (5)"><svg viewBox="0 0 20 20"><circle cx="10" cy="11" r="6"/><path d="M10 8v3l2 1.5M3 4.5l2.5-2M17 4.5l-2.5-2M6 16.5l-1.3 1.5M14 16.5l1.3 1.5"/></svg><span>Alarm</span></button>
+  <button class="vbtn js-mode" data-mode="stopwatch" type="button" title="Stopwatch (6)"><svg viewBox="0 0 20 20"><circle cx="10" cy="11.5" r="6"/><path d="M8 2.5h4M10 2.5v3M10 11.5l2.5-2.5M15.5 5.5l1.2-1.2"/></svg><span>Stopwatch</span></button>
+  <div class="vsep"></div>
+  <div class="vgrid">
+    <button class="vicon" id="musicBtn" type="button" title="Music (M)" aria-label="Music" aria-pressed="false"><svg viewBox="0 0 20 20"><path d="M8 15.5V4l9-1.5V14"/><circle cx="5.8" cy="15.5" r="2.2"/><circle cx="14.8" cy="14" r="2.2"/></svg></button>
+    <button class="vicon" id="fsBtn" type="button" title="Full screen (F)" aria-label="Full screen"><svg viewBox="0 0 20 20"><path d="M3 7.5V3h4.5M12.5 3H17v4.5M17 12.5V17h-4.5M7.5 17H3v-4.5"/></svg></button>
+    <button class="vicon" id="pinBtn" type="button" title="Keep the dock open" aria-label="Keep the dock open" aria-pressed="false"><svg viewBox="0 0 20 20"><path d="M7 2.5h6M8 2.5v5l-3 3.5h10l-3-3.5v-5M10 11v6.5"/></svg></button>
+    <button class="vicon" id="tourBtn" type="button" title="Take the tour (?)" aria-label="Take the tour"><svg viewBox="0 0 20 20"><circle cx="10" cy="10" r="7.5"/><path d="M7.8 7.8a2.3 2.3 0 1 1 3.2 2.1c-.6.3-1 .8-1 1.4v.4"/><circle cx="10" cy="14.2" r=".5" fill="currentColor"/></svg></button>
+  </div>
+  </div>
+</nav>
+
+
+<main id="stage">
+
+  <!-- ============ TIMER › STANDARD ============ -->
+  <section class="pane" id="pane-standard">
+    <div class="timer" id="stdTimer">5:00</div>
+    <div class="row">
+      <button class="btn icon" data-act="start" aria-label="Start">▶</button>
+      <button class="btn icon" data-act="pause" aria-label="Pause">‖</button>
+      <button class="btn icon" data-act="reset">Reset</button>
+      <button class="btn" data-act="add">+30 sec</button>
+    </div>
+    <div class="row">
+      <button class="btn" data-act="set" style="padding:15px 20px">Set</button>
+      <input class="tinput" type="text" id="stdCustom" placeholder="MM:SS" inputmode="numeric">
+    </div>
+    <div class="err" id="stdErr"></div>
+    <div class="row presets" id="stdPresets">
+      <button class="btn round" data-m="0" data-s="15">:15</button>
+      <button class="btn round" data-m="0" data-s="30">:30</button>
+      <button class="btn round" data-m="1">1</button><button class="btn round" data-m="2">2</button>
+      <button class="btn round" data-m="3">3</button><button class="btn round" data-m="4">4</button>
+      <button class="btn round" data-m="5">5</button><button class="btn round" data-m="6">6</button>
+      <button class="btn round" data-m="7">7</button><button class="btn round" data-m="8">8</button>
+      <button class="btn round" data-m="9">9</button><button class="btn round" data-m="10">10</button>
+    </div>
+  </section>
+
+  <!-- ============ TIMER › TURN ============ -->
+  <section class="pane" id="pane-turn">
+    <div class="chip-row" id="chipRow"></div>
+    <div class="timer" id="turnTimer">0:30</div>
+    <div class="row" style="position:relative" id="turnControls">
+      <button class="btn icon" data-act="start" aria-label="Start">▶</button>
+      <button class="btn icon" data-act="pause" aria-label="Pause">‖</button>
+      <button class="btn icon" data-act="reset">Reset</button>
+      <button class="btn" data-act="add">+15 sec</button>
+    </div>
+    <div class="row" id="turnPresets">
+      <button class="btn round" data-m="0" data-s="15">:15</button>
+      <button class="btn round" data-m="0" data-s="20">:20</button>
+      <button class="btn round" data-m="0" data-s="25">:25</button>
+      <button class="btn round" data-m="0" data-s="30">:30</button>
+      <button class="btn round" data-m="0" data-s="45">:45</button>
+      <button class="btn round" data-m="1" data-s="0">1:00</button>
+      <button class="btn round" data-m="1" data-s="30">1:30</button>
+    </div>
+    <div class="row">
+      <button class="btn" data-act="set" style="padding:15px 20px">Set</button>
+      <input class="tinput" type="text" id="turnCustom" placeholder="MM:SS" inputmode="numeric">
+    </div>
+    <div class="err" id="turnErr"></div>
+  </section>
+
+  <!-- ============ TIMER › BAR ============ -->
+  <section class="pane" id="pane-bar">
+    <div class="timer" id="barTimer">0:30</div>
+    <div class="bars-wrap" id="barsWrap"></div>
+    <div class="row">
+      <button class="btn sm icon" data-act="start" aria-label="Start">▶</button>
+      <button class="btn sm icon" data-act="pause" aria-label="Pause">‖</button>
+      <button class="btn sm icon" data-act="reset">Reset</button>
+      <button class="btn sm" data-act="add">+15</button>
+    </div>
+    <div class="row" id="barPresets">
+      <button class="btn sm round" data-m="0" data-s="15">:15</button>
+      <button class="btn sm round" data-m="0" data-s="20">:20</button>
+      <button class="btn sm round" data-m="0" data-s="25">:25</button>
+      <button class="btn sm round" data-m="0" data-s="30">:30</button>
+      <button class="btn sm round" data-m="0" data-s="45">:45</button>
+      <button class="btn sm round" data-m="1" data-s="0">1:00</button>
+      <button class="btn sm round" data-m="1" data-s="30">1:30</button>
+    </div>
+    <div class="row">
+      <button class="btn sm" data-act="set">Set</button>
+      <input class="tinput sm" type="text" id="barCustom" placeholder="MM:SS" inputmode="numeric">
+    </div>
+    <div class="err" id="barErr"></div>
+  </section>
+
+  <!-- ============ ROUTINES ============ -->
+  <section class="pane" id="pane-routines">
+    <div class="r-wrap">
+      <div class="r-main">
+        <div class="r-ring">
+          <svg viewBox="0 0 200 200" aria-hidden="true"><circle class="r-track" cx="100" cy="100" r="92"/><circle class="r-prog" id="rProg" cx="100" cy="100" r="92"/></svg>
+          <div class="r-center">
+            <div class="r-step" id="rName">Warm-up</div>
+            <div class="r-time" id="rTimer" aria-live="off">5:00</div>
+            <div class="r-ends" id="rEnds"></div>
+          </div>
+        </div>
+        <div class="r-ctrls">
+          <button class="r-circ gray" type="button" data-act="reset">Reset</button>
+          <button class="r-mini" type="button" data-act="prev" title="Previous step" aria-label="Previous step"><svg viewBox="0 0 20 20"><path d="M4 4h2.2v12H4zM16.5 4.2v11.6L7.6 10z"/></svg></button>
+          <button class="r-mini" type="button" data-act="add" title="Add 30 seconds">+30</button>
+          <button class="r-mini" type="button" data-act="next" title="Next step" aria-label="Next step"><svg viewBox="0 0 20 20"><path d="M13.8 4H16v12h-2.2zM3.5 4.2v11.6L12.4 10z"/></svg></button>
+          <button class="r-circ go" type="button" id="rGo" data-act="toggle">Start</button>
+        </div>
+      </div>
+      <div class="r-list">
+        <div class="rl-head">
+          <div><div class="rl-title" id="rTitle">Lesson block</div><div class="rl-sub" id="rSub"></div></div>
+          <button class="rl-edit" id="rEditBtn" type="button">Edit</button>
+        </div>
+        <div class="rl-rows" id="rSteps"></div>
+        <div class="rl-foot" id="rFoot"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ ALARM ============ -->
+  <section class="pane" id="pane-alarm">
+    <div class="clock" id="aClock">12:00<span class="ampm">PM</span></div>
+    <div class="a-date" id="aDate"></div>
+    <div class="a-next" id="aNext">No alarms set</div>
+    <div class="alist" id="aCard">
+      <div class="al-bar">
+        <button class="al-link" id="aEdit" type="button">Edit</button>
+        <button class="al-plus" id="aAddBtn" type="button" title="Add alarm" aria-label="Add alarm"><svg viewBox="0 0 20 20"><path d="M10 4v12M4 10h12"/></svg></button>
+      </div>
+      <div class="al-title">Alarms</div>
+      <div class="al-rows" id="aList"></div>
+    </div>
+  </section>
+
+  <!-- ============ STOPWATCH ============ -->
+  <section class="pane" id="pane-stopwatch">
+    <div class="timer" id="swTimer">0:00.0</div>
+    <div class="row">
+      <button class="btn icon" data-act="start" aria-label="Start">▶</button>
+      <button class="btn icon" data-act="pause" aria-label="Pause">‖</button>
+      <button class="btn icon" data-act="reset">Reset</button>
+      <button class="btn" data-act="lap">Lap</button>
+    </div>
+    <div class="glass laps" id="swLaps" hidden></div>
+  </section>
+
+</main>
+
+<!-- Alarm ringing (shows over any tool): black box, 28px blur, Snooze and Stop -->
+<div id="ringOverlay" role="alertdialog" aria-modal="true" aria-labelledby="ringLabel">
+  <div class="ring-box">
+    <div class="ring-bell" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M6 8a6 6 0 1 1 12 0c0 7 3 9 3 9H3s3-2 3-9M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg></div>
+    <div class="ring-kicker">Alarm</div>
+    <div id="ringLabel">Alarm</div>
+    <div id="ringTime"></div>
+    <div class="ring-btns">
+      <button type="button" id="ringSnooze">Snooze 5 min</button>
+      <button type="button" id="ringStop">Stop</button>
+    </div>
+  </div>
+</div>
+
+<!-- Edit Routine sheet -->
+<div id="rSheetWrap" role="dialog" aria-modal="true" aria-labelledby="rsTitle">
+  <div class="asheet">
+    <div class="as-head">
+      <button class="as-btn" id="rsCancel" type="button">Cancel</button>
+      <b id="rsTitle">Edit Routine</b>
+      <button class="as-btn save" id="rsDone" type="button">Done</button>
+    </div>
+    <div class="as-group"><div class="as-row"><span>Name</span><input type="text" id="rsName" placeholder="Routine name" maxlength="40" aria-label="Routine name"></div></div>
+    <div class="as-cap">Steps</div>
+    <div class="as-group" id="rsSteps"></div>
+    <div class="as-cap">Options</div>
+    <div class="as-group">
+      <div class="as-row"><span>Auto-advance</span><button class="switch" id="rsAuto" type="button" role="switch" aria-checked="true" aria-label="Auto-advance"></button></div>
+      <div class="as-row"><span>Repeat</span><select id="rsRepeat" aria-label="Repeat"><option value="1">Once</option><option value="2">2 times</option><option value="3">3 times</option><option value="4">4 times</option><option value="5">5 times</option><option value="6">6 times</option><option value="8">8 times</option><option value="10">10 times</option><option value="12">12 times</option></select></div>
+    </div>
+    <div class="as-group"><button class="as-row as-full" id="rsSave" type="button">Save to My Routines</button></div>
+    <div class="rs-msg" id="rsMsg" role="status"></div>
+    <div class="as-cap">Load a routine</div>
+    <div class="as-group" id="rsLib"></div>
+  </div>
+</div>
+
+<!-- Add / edit alarm sheet -->
+<div id="aSheetWrap" role="dialog" aria-modal="true" aria-labelledby="asTitle">
+  <div class="asheet">
+    <div class="as-head">
+      <button class="as-btn" id="asCancel" type="button">Cancel</button>
+      <b id="asTitle">Add Alarm</b>
+      <button class="as-btn save" id="asSave" type="button">Save</button>
+    </div>
+    <div class="wheel">
+      <div class="wcol" id="wH" tabindex="0" role="listbox" aria-label="Hour"></div>
+      <div class="wcol" id="wM" tabindex="0" role="listbox" aria-label="Minute"></div>
+      <div class="wcol" id="wP" tabindex="0" role="listbox" aria-label="AM or PM"></div>
+    </div>
+    <div class="as-group">
+      <div class="as-row"><span>Repeat</span><div class="days" id="asDays"><button type="button" data-d="0" aria-label="Sunday" aria-pressed="false">S</button><button type="button" data-d="1" aria-label="Monday" aria-pressed="false">M</button><button type="button" data-d="2" aria-label="Tuesday" aria-pressed="false">T</button><button type="button" data-d="3" aria-label="Wednesday" aria-pressed="false">W</button><button type="button" data-d="4" aria-label="Thursday" aria-pressed="false">T</button><button type="button" data-d="5" aria-label="Friday" aria-pressed="false">F</button><button type="button" data-d="6" aria-label="Saturday" aria-pressed="false">S</button></div></div>
+      <div class="qdays"><button type="button" data-q="none">Never</button><button type="button" data-q="weekdays">Weekdays</button><button type="button" data-q="all">Every day</button></div>
+      <div class="as-row"><span>Label</span><input type="text" id="asLabel" placeholder="Alarm" maxlength="40" aria-label="Label"></div>
+      <div class="as-row click" id="asSoundRow" role="button" tabindex="0" aria-expanded="false"><span>Sound</span><span class="val" id="asSoundVal">Theme sound</span><svg class="chev" viewBox="0 0 20 20"><path d="M8 5l5 5-5 5"/></svg></div>
+      <div class="as-sounds" id="asSounds" hidden></div>
+      <div class="as-row"><span>Snooze</span><select id="asSnoozeMin" aria-label="Snooze length"><option value="1">1 min</option><option value="3">3 min</option><option value="5" selected>5 min</option><option value="9">9 min</option><option value="10">10 min</option></select><button class="switch" id="asSnooze" type="button" role="switch" aria-checked="true" aria-label="Snooze"></button></div>
+    </div>
+    <div class="as-err" id="asErr"></div>
+    <button class="as-del" id="asDelete" type="button" hidden>Delete Alarm</button>
+  </div>
+</div>
+
+<!-- MUSIC MINI BAR (YouTube) — opens to the left of the stacks button.
+     The YouTube player drops down under the bar while music plays. -->
+<section class="mbar" id="musicBar" aria-label="Music" aria-hidden="true">
+  <button class="mb-close" id="mbClose" type="button" title="Close music (stops playing)" aria-label="Close music"><svg viewBox="0 0 20 20"><path d="M5 5l10 10M15 5L5 15"/></svg></button>
+  <div class="mb-top">
+    <div class="mb-thumb"><svg viewBox="0 0 20 20"><path d="M8 15.5V4l9-1.5V14"/><circle cx="5.8" cy="15.5" r="2.2"/><circle cx="14.8" cy="14" r="2.2"/></svg><img id="mbThumb" alt="" hidden onerror="this.hidden=true"><span class="mb-eq" aria-hidden="true"><i></i><i></i><i></i></span></div>
+    <div class="mb-info">
+      <div><div class="mb-song" id="mbSong">Classroom</div><div class="mb-sub" id="mbSub">YouTube playlist · Allen Robson</div></div>
+      <div class="mb-ctrls">
+        <button class="mb-b" id="mbPrev" type="button" title="Previous song" aria-label="Previous song"><svg viewBox="0 0 20 20"><path d="M5 4.5v11M15.5 4.5L8 10l7.5 5.5z"/></svg></button>
+        <button class="mb-b main" id="mbPlay" type="button" title="Play" aria-label="Play"></button>
+        <button class="mb-b" id="mbNext" type="button" title="Next song" aria-label="Next song"><svg viewBox="0 0 20 20"><path d="M15 4.5v11M4.5 4.5L12 10l-7.5 5.5z"/></svg></button>
+        <button class="mb-b" id="mbVolB" type="button" title="Volume" aria-label="Volume" aria-expanded="false"><svg viewBox="0 0 20 20"><path d="M3.5 8v4h3l4 3.5v-11l-4 3.5zM13.5 7.5a3.5 3.5 0 0 1 0 5M15.5 5.5a6.5 6.5 0 0 1 0 9"/></svg></button>
+        <button class="mb-b" id="mbListB" type="button" title="Playlists" aria-label="Playlists" aria-expanded="false"><svg viewBox="0 0 20 20"><path d="M3 5.5h10M3 10h10M3 14.5h6M15 12v6M12.5 15.5L15 18l2.5-2.5"/></svg></button>
+      </div>
+    </div>
+  </div>
+  <div class="mb-drop"><div class="mb-player"><div id="ytHost"></div></div></div>
+  <div class="mb-pop" id="mbVolPop" hidden>
+    <div class="mb-vol"><svg viewBox="0 0 20 20"><path d="M3.5 8v4h3l4 3.5v-11l-4 3.5zM13.5 7.5a3.5 3.5 0 0 1 0 5M15.5 5.5a6.5 6.5 0 0 1 0 9"/></svg><input type="range" id="mbVol" min="0" max="100" step="1" aria-label="Volume"><output id="mbVolOut">60</output></div>
+  </div>
+  <div class="mb-pop" id="mbListPop" hidden>
+    <div id="mbRows"></div>
+    <div class="mb-add">
+      <div class="mb-row" id="mbAddRow" role="button" tabindex="0"><svg viewBox="0 0 20 20"><path d="M10 4.5v11M4.5 10h11"/></svg><span class="nm"><b>Add a playlist link</b></span></div>
+      <form class="mb-form" id="mbForm" hidden>
+        <input type="text" id="mbUrl" placeholder="Paste a YouTube playlist or video link" aria-label="YouTube link">
+        <input type="text" id="mbName" placeholder="Name, like Calm or Clean up" aria-label="Playlist name">
+        <button type="submit">Add</button>
+      </form>
+    </div>
+  </div>
+  <div class="mb-msg" id="mbMsg" role="status"></div>
+</section>
+
+
+<div class="toast" id="toast" role="status"></div>
+
+<!-- Guided walkthrough -->
+<div id="tour" aria-hidden="true">
+  <div class="tour-block"></div>
+  <div class="tour-spot" id="tourSpot"></div>
+  <div class="tour-tip" id="tourTip" role="dialog" aria-modal="true" aria-labelledby="tourTitle" aria-describedby="tourText">
+    <h4 id="tourTitle"></h4>
+    <p id="tourText"></p>
+    <div class="tour-foot">
+      <span class="tour-count" id="tourCount"></span>
+      <button type="button" id="tourSkip">Skip</button>
+      <button type="button" id="tourBack">Back</button>
+      <button type="button" id="tourNext">Next</button>
+    </div>
+  </div>
+</div>
+
+<!-- Sounds -->
+<audio id="endSound" preload="auto"></audio>
+<audio id="warnSound" preload="auto"></audio>
+<audio id="turnSound" preload="auto"></audio>
+<audio id="finalSound" preload="auto"></audio>
+<audio id="alarmSound" preload="auto" loop></audio>
+<audio id="alarmPreview" preload="none"></audio>
+
+<script>
+/* =====================================================================
+   SETTINGS
+   ASSET_BASE: where your images/ and audio/ folders are, relative to this
+   page. Leave '' when this file sits next to them (same as your timers).
+   ===================================================================== */
+const ASSET_BASE = '';
+/* If the images/ folder isn't next to this page (for example, the file was
+   opened from Downloads), pictures and sounds load from the live site instead. */
+const SITE_BASE = 'https://www.robsonedu.com/';
+let assetBase = ASSET_BASE;
+const IMG = p => assetBase + 'images/' + p;
+const AUD = p => assetBase + 'audio/' + p;
+const DEFAULT_THEME = 'topo';
+
+/* =====================================================================
+   THEMES — one entry per timer page. Anything left out uses BASE
+   (which is TimerRoad.html). To add a theme, copy an entry and change it.
+   ===================================================================== */
+const BASE = {
+  image:null, video:null, bgColor:'#000', overlay:0.4,
+  text:'#fff', bodyShadow:'0 0 8px rgba(0,0,0,0.7)', timerShadow:null,
+  glow1:'#fff', glow2:'#fff', glowOp:0.7,
+  btnBorder:'rgba(255,255,255,0.6)', btnColor:'#fff', btnHoverBg:'rgba(255,255,255,0.4)', btnHoverColor:'#000',
+  btnBlur:'5px', btnShadow:null,
+  inputBg:'rgba(255,255,255,0.9)', inputColor:'#000', inputBorder:'1px solid #ccc', placeholder:'#333',
+  music:'#fff', musicHover:'#ccc', accent:'#00cdff', ring:null,
+  font:"'Inter',sans-serif", timerWeight:700, logo:'Wh', extraLogo:null, presetsTop:'25px',
+  endSound:'Computer_Magic-Microsift-1901299923.mp3', endRepeat:3, endCutoff:0.65, endVolume:1,
+  warnSound:'Tick%20Tock%20Clock.mp3', warnAt:10
+};
+const DARK_TEXT = {text:'#000', bodyShadow:'0 0 8px rgba(0,0,0,0.6)', btnBorder:'rgba(0,0,0,0.6)', btnColor:'#000',
+  inputBorder:'2px solid #000', inputBg:'rgba(255,255,255,0)', inputColor:'#000', placeholder:'#000',
+  music:'#000', musicHover:'#000', logo:'BK', overlay:0, accent:'#111', ring:'#000'};
+const NEON = (c,a) => Object.assign({}, DARK_TEXT, {bgColor:c, accent:a, glow1:c, glow2:'#000', glowOp:0.9,
+  endSound:'ringtone-019-365651.mp3', warnSound:'5SecondDing.mp3', warnAt:5});
+const RING019 = 'ringtone-019-365651.mp3';
+const T = (id,name,cat,thumb,o) => Object.assign({id,name,cat,thumb}, o);
+
+const THEMES = [
+  /* ---------- Static ---------- */
+  T('bryant','Bryant','static','THUMBBryant.jpg',{accent:'#ffffff',image:'blue%20brick%20wall.png',extraLogo:'Bryant_B-White.png'}),
+  T('topo','RGB Topo','static','THUMBTopo.png',{accent:'#38b6ff',image:'RGB%20Topo%204K.png',overlay:0,btnBorder:'#ffffff99',inputBg:'#000f26',inputColor:'#fff',placeholder:'#fff',endSound:'ringtone-032-480574.mp3',endRepeat:1,endCutoff:1}),
+  T('90s','90s','static','THUMB90s.jpg',{accent:'#f3b24e',image:'Nickelodeon3.jpg',overlay:0,endSound:'ac-bel-105874.mp3'}),
+  T('road','Road','static','THUMBRoad.jpg',{accent:'#e9e4da',image:'pexels-veeterzy-39811.jpg'}),
+  T('crumpled','Crumpled Paper','static','THUMBCrumpledPaper.jpg',Object.assign({},DARK_TEXT,{bgColor:'#fff',image:'white-paper-texture.jpg',timerShadow:'0 0 12px white',glow1:'#ffffff',glow2:'#000000'})),
+  T('abstract','Abstract Art','static','THUMBAbstractART.jpg',{accent:'#d9532c',image:'AbstractART.jpg'}),
+  T('colorful','Colorful','static','THUMBcolor.jpg',{accent:'#e936a8',image:'pexels-codioful-6985001.jpg',overlay:0,endSound:RING019}),
+  T('colordots','Color Dots','static','THUMBColorDots.jpg',{accent:'#e8894f',image:'ColorDots.jpg',overlay:0.3,endSound:RING019}),
+  T('floaters','Color Floaters','static','THUMBFloaters.jpg',{image:'ColorFloaters.jpg',overlay:0.2,btnBorder:'#8e8de8',accent:'#8e8de8',endSound:RING019}),
+  T('flower','Flower','static','THUMBTimerFlower.jpg',{image:'Purpleflower.jpg',overlay:0.25,btnBorder:'#fdd917',accent:'#fdd917',inputBg:'rgba(255,255,255,0)',inputColor:'#fff',placeholder:'rgb(253,217,23)',endSound:RING019}),
+  T('french','French Countryside','static','THUMBFrenchCountrySide.jpg',{accent:'#e6b43c',image:'FrenchCountryside.png',overlay:0.2,inputBg:'rgba(255,255,255,0)',inputColor:'#fff',placeholder:'#fff',endSound:RING019}),
+  T('beach','Beach','static','THUMBBeach.jpg',{accent:'#f0a66b',image:'Beach.jpg',overlay:0.1}),
+  T('mountain','Mountain','static','THUMBMountain.jpg',{accent:'#cfe3ee',image:'Mountiain.jpg',overlay:0.3}),
+  T('swspace','Star Wars','static','THUMBswSpace.jpg',{image:'DarkSpace.jpg',text:'#e2cc0a',glow1:'#e2cc0a',glow2:'#e2cc0a',btnBorder:'#e2cc0a',btnColor:'#e2cc0a',inputBorder:'1px solid #e2cc0a',inputBg:'rgba(255,255,255,0.17)',inputColor:'#e2cc0a',placeholder:'#ffe81fb5',music:'#e2cc0a',musicHover:'#e2cc0a',accent:'#e2cc0a',ring:'#e2cc0a',endSound:'star-wars-R2soundsringtone-101soundboards.mp3'}),
+  T('mandalorian','Mandalorian','static','THUMBMandalorian.jpg',{image:'mandalorian.jpg',btnBorder:'#97a35e',accent:'#97a35e',inputBg:'rgba(255,255,255,0)',inputColor:'#fff',placeholder:'#fff',endSound:'MandalorianthemeRINGTONE.mp3',endRepeat:1,endCutoff:1,warnSound:'MandalorianFLUTE.mp3'}),
+  T('dcc','Dungeon Crawler Carl','static','THUMBDungeonCrawlerCarl.jpg',{image:'DungeonCrawlerCarl.jpg',overlay:0,font:"'Bangers',sans-serif",timerWeight:400,text:'#f9c033',glow1:'#fd006c',glow2:'#fd006c',btnBorder:'#fd006c',btnColor:'#f9c033',btnHoverBg:'#fd006c',btnHoverColor:'#000',inputBorder:'2px solid #fd006c',inputBg:'rgba(0,0,0,0.35)',inputColor:'#f9c033',placeholder:'#f9c033b3',music:'#f9c033',musicHover:'#fd006c',accent:'#fd006c',ring:'#fd006c',endSound:'New%20Achievement.mp3',endRepeat:2,endCutoff:1}),
+  T('hp','Harry Potter','static','THUMBHP.jpg',{image:'HogwartsLegacy.jpg',accent:'#c9b37e',inputBg:'rgba(255,255,255,0)',inputColor:'#fff',placeholder:'rgba(175,159,122,0.8)',endSound:'HarryPotterRingtone.mp3'}),
+  T('spongebob','SpongeBob','static','THUMBSpongebob.png',{image:'sponge-on-the-run-4k-ba-3840x2160.jpg',overlay:0.2,font:"'Slackey',sans-serif",btnBorder:'#F9E24D',accent:'#F9E24D',inputBorder:'1px solid #F9E24D',inputBg:'rgba(255,255,255,0)',inputColor:'#F9E24D',placeholder:'#F9E24D',music:'#F9E24D',musicHover:'#fff',endSound:'Spongebobremixbeatringtone.mp3',endRepeat:1,endCutoff:1}),
+  T('spongebobbb','Bikini Bottom','static','THUMBSpongebobBB.png',{image:'spongebobBB.jpg',overlay:0.2,font:"'Slackey',sans-serif",btnBorder:'#F9E24D',accent:'#F9E24D',inputBorder:'1px solid #F9E24D',inputBg:'rgba(255,255,255,0)',inputColor:'#fff',placeholder:'#fff',music:'#F9E24D',musicHover:'#8c37fe',endSound:'Spongebobragtimeringtone.mp3',endRepeat:1,endCutoff:1}),
+  T('spiderman','Spider-Man','static','THUMBSpiderman.jpg',{image:'Spiderman.jpg',overlay:0.2,btnBorder:'#cb2309',accent:'#e03131'}),
+  T('zelda','Zelda','static','THUMBZeldaBoTW.jpg',{image:'ZeldaBoTW.jpg',overlay:0.3,btnBorder:'rgb(0,221,255)',accent:'rgb(0,221,255)',inputBorder:'1px solid rgb(0,221,255)',inputBg:'rgba(255,255,255,0)',inputColor:'#fff',placeholder:'#fff',endSound:'ZeldaRingtone_louder_150.mp3',endRepeat:1,endCutoff:1}),
+  T('neonblue','Neon Blue','static','THUMBNeonBlue.jpg',NEON('#00fbfc','#007f8a')),
+  T('neonpink','Neon Pink','static','THUMBNeonPink.jpg',NEON('#fa15ec','#a3008f')),
+  T('neonyellow','Neon Yellow','static','THUMBNeonYellow.jpg',NEON('#CFFF04','#5f7a00')),
+
+  /* ---------- Motion ---------- */
+  T('greenthing','Green Thing','motion','THUMBGreenThing.jpg',{accent:'#a0c94d',video:'GreenThing-uhd_3840_2160_30fps.mp4',overlay:0,timerShadow:'0 0 12px rgba(0,0,0,0.95), 0 0 3px #000'}),
+  T('traffic','Traffic','motion','THUMBTraffic.jpg',{accent:'#f2b84b',video:'Traffic-uhd.mp4',overlay:0.2,timerShadow:'0 0 12px rgba(0,0,0,0.95), 0 0 3px #000'}),
+  T('ocean','Ocean','motion','THUMBOcean.png',{accent:'#3f8be0',video:'OceanFish.mp4',overlay:0,btnBorder:'#fff',inputBorder:'1px solid #fff',inputBg:'rgba(255,255,255,0)',inputColor:'#fff',placeholder:'#fff',musicHover:'rgba(255,255,255,0.58)'}),
+  T('golf','Golf','motion','THUMBGolf.jpg',{video:'GolfCOMPRESS.mp4',overlay:0.3,btnBorder:'#FBF308',accent:'#FBF308',inputBorder:'1px solid #FBF308',inputBg:'rgba(255,255,255,0)',inputColor:'#fff',placeholder:'#fff',musicHover:'#FBF308',endSound:'OutdoorGolfClapping.mp3'}),
+  T('vinyl','Vinyl','motion','THUMBVinyl.jpg',{accent:'#e07a52',video:'Vinyl-uhd_3840_2160_24fps.mp4',overlay:0.2}),
+  T('clouds','Clouds','motion','THUMBClouds.jpg',{video:'Clouds-uhd_3840_2160_30fps.mp4',overlay:0,timerShadow:'0 0 24px rgb(29,97,157), 0 0 8px #1d629f',btnBorder:'#338bcc',btnColor:'#096abe',inputBorder:'2px solid #338bcc',inputBg:'rgba(255,255,255,0)',placeholder:'rgba(9,106,190,0.43)',music:'#096abe',musicHover:'#096abe',accent:'#338bcc'}),
+
+  /* ---------- Seasonal ---------- */
+  T('fallcats','Fall','seasonal','THUMBTimerMotionFallCats.png',{accent:'#e08a3a',video:'FallCats.mp4',overlay:0,presetsTop:'110px'}),
+  T('christmas','Christmas Paper','seasonal','THUMBChristmasPaper.jpg',{video:'christmas_motion_backgrounds_1_HD.mp4',overlay:0,font:"'Henny Penny',cursive",timerWeight:400,btnBorder:'#ffffff99',inputBorder:'2px solid #ffffff99',inputBg:'transparent',inputColor:'#fff',placeholder:'rgba(50,115,89,0.5)',accent:'#e03131',endSound:'Elf%20Movie%20Theme%20(Main%20Title)%20(Sped%20Up)%20-%20Mobiles24.mp3',endRepeat:1}),
+  T('winter','Winter','seasonal','THUMBWinter.jpg',{video:'WinterTownSnowman.mp4',overlay:0.12,btnBorder:'#b1cad3',btnShadow:'0 0 6px rgba(0,0,0,0.6)',accent:'#b1cad3',inputBorder:'1px solid #b1cad3',inputBg:'rgba(177,202,211,0.25)',inputColor:'#507583',placeholder:'#507583',endSound:'ringtone-flute-309104.mp3',endRepeat:1,endCutoff:0.48}),
+  T('hearts','Hearts','seasonal','THUMBHearts.jpg',{video:'Heartscompressed.mp4',overlay:0,btnBorder:'#ff1e41',accent:'#ff1e41',inputBg:'#fff'}),
+  T('spring','Spring','seasonal','THUMBSpring.jpg',{video:'SpringBackground1.mp4',overlay:0,text:'#000',bodyShadow:'0 0 8px #fff',btnBorder:'#ecb908',btnColor:'#000',btnHoverColor:'#ecb908',inputBorder:'1px solid #ecb908',inputColor:'#ecb908',music:'#000',musicHover:'#ecb908',logo:'BK',accent:'#bd737e',ring:'#000',endSound:'ringtone-good-day-293628.mp3',endCutoff:0.8}),
+  T('summer','Summer Break','seasonal','THUMBSummerBreak.jpg',{image:'SummerThisWay.jpg',overlay:0.2,timerShadow:'0 0 8px #ff2ea6, 0 0 18px #ff2ea6, 4px 4px 12px rgba(0,0,0,0.7)',glow1:'#ff2ea6',glow2:'#ff2ea6',btnBorder:'#00f0ff',btnBlur:'2px',btnHoverBg:'#ffe600b0',accent:'#00f0ff',inputBorder:'1px solid #00f0ff',inputBg:'rgba(255,46,166,0.25)',inputColor:'#fff',placeholder:'#fff',endSound:'Summertime.mp3',endRepeat:1,endCutoff:1,endVolume:0.7})
+];
+
+/* =====================================================================
+   Helpers
+   ===================================================================== */
+const $ = (s, r=document) => r.querySelector(s);
+const $$ = (s, r=document) => [...r.querySelectorAll(s)];
+const store = {
+  get(k, d){ try{ const v = localStorage.getItem('robsonTimers.'+k); return v == null ? d : JSON.parse(v); }catch(e){ return d; } },
+  set(k, v){ try{ localStorage.setItem('robsonTimers.'+k, JSON.stringify(v)); }catch(e){} }
+};
+function fmt(sec){
+  sec = Math.max(0, Math.round(sec));
+  const h = Math.floor(sec/3600), m = Math.floor((sec%3600)/60), s = String(sec%60).padStart(2,'0');
+  return h ? `${h}:${String(m).padStart(2,'0')}:${s}` : `${m}:${s}`;
+}
+const fmtMs = ms => fmt(Math.ceil(Math.max(0,ms)/1000));
+/* Accepts 5 (minutes), 5:00, :45, 1:02:00. Returns seconds or null. */
+function parseTime(str){
+  str = String(str||'').trim(); if(!str) return null;
+  if(/^\d+(\.\d+)?$/.test(str)) return Math.round(parseFloat(str)*60);
+  const m = str.match(/^(?:(\d+):)?(\d*):(\d{1,2})$/);
+  if(!m) return null;
+  const h = +(m[1]||0), mm = +(m[2]||0), ss = +m[3];
+  if(ss > 59) return null;
+  return h*3600 + mm*60 + ss;
+}
+function strictMMSS(str){ /* same rule as your original Set box */
+  const m = String(str).trim().match(/^(\d{1,2}):(\d{2})$/);
+  if(!m) return {err:'Enter time as MM:SS'};
+  if(+m[2] >= 60) return {err:'Seconds must be 00–59'};
+  return {sec: +m[1]*60 + +m[2]};
+}
+function flashErr(el, msg){ el.textContent = msg; clearTimeout(el._t); el._t = setTimeout(()=>el.textContent='', 2500); }
+function floatLabel(parent, text, cls){
+  const d = document.createElement('div'); d.className = 'float-label' + (cls ? ' '+cls : ''); d.textContent = text;
+  parent.appendChild(d); setTimeout(()=>d.remove(), 1000);
+}
+
+/* =====================================================================
+   Sound
+   ===================================================================== */
+const endS = $('#endSound'), warnS = $('#warnSound'), turnS = $('#turnSound'), finalS = $('#finalSound');
+turnS.src = AUD('TurnAlert.mp3'); finalS.src = AUD('ac-bel-105874.mp3');
+let audioUnlocked = false;
+function unlockAudio(){
+  if(audioUnlocked) return; audioUnlocked = true;
+  [endS, warnS, turnS, finalS, $('#alarmSound')].forEach(a=>{
+    if(!a.src) return; a.muted = true;
+    const p = a.play(); if(p) p.then(()=>{ a.pause(); a.currentTime = 0; a.muted = false; }).catch(()=>{ a.muted = false; });
+  });
+}
+document.addEventListener('pointerdown', unlockAudio, {once:true});
+document.addEventListener('keydown', unlockAudio, {once:true});
+function safePlay(a, vol){ try{ if(vol!=null) a.volume = vol; a.currentTime = 0; a.play().catch(()=>{}); }catch(e){} }
+let endToken = 0;
+/* Same as playSoundThreeTimes() in your timers, but uses the theme's repeat/cutoff. */
+function playThemeEnd(){
+  const t = theme, my = ++endToken; let count = 0; endS.volume = t.endVolume;
+  (function next(){
+    if(my !== endToken || count >= t.endRepeat) return;
+    endS.currentTime = 0;
+    endS.play().then(()=>{
+      const d = (isFinite(endS.duration) ? endS.duration : 2) * t.endCutoff;
+      setTimeout(()=>{ if(my !== endToken) return; endS.pause(); endS.currentTime = 0; count++; next(); }, d*1000);
+    }).catch(()=>{});
+  })();
+}
+function stopThemeSounds(){ endToken++; [endS, warnS].forEach(a=>{ try{ a.pause(); a.currentTime = 0; }catch(e){} }); }
+function stopAllSounds(){ stopThemeSounds(); [turnS, finalS].forEach(a=>{ try{ a.pause(); a.currentTime = 0; }catch(e){} }); }
+
+/* =====================================================================
+   Theme engine
+   ===================================================================== */
+let theme = null;
+/* Blur: the theme's button blur is applied to the buttons, the dock, and the corner button.
+   Written out as plain values (not a CSS variable) and with the -webkit- prefix, because
+   Safari and Mac WebKit previews ignore backdrop-filter without it. */
+const blurStyle = document.createElement('style'); document.head.appendChild(blurStyle);
+/* The dock's highlight uses the theme accent, unless that accent is too dark to see on the dark glass. */
+function isLightColor(c){
+  try{
+    const x = document.createElement('canvas').getContext('2d'); x.fillStyle = '#000'; x.fillStyle = c;
+    const v = x.fillStyle; if(v[0] !== '#') return false;
+    const ch = i => { const n = parseInt(v.slice(i,i+2),16)/255; return n <= .03928 ? n/12.92 : Math.pow((n+.055)/1.055,2.4); };
+    return (.2126*ch(1) + .7152*ch(3) + .0722*ch(5)) > .3;
+  }catch(e){ return true; }
+}
+function dockAccent(c){
+  try{
+    const x = document.createElement('canvas').getContext('2d'); x.fillStyle = '#fff'; x.fillStyle = c;
+    const v = x.fillStyle; let r, g, b;
+    if(v[0] === '#'){ r = parseInt(v.slice(1,3),16); g = parseInt(v.slice(3,5),16); b = parseInt(v.slice(5,7),16); }
+    else [r, g, b] = v.match(/[\d.]+/g).map(Number);
+    return (0.299*r + 0.587*g + 0.114*b)/255 < 0.4 ? '#ffffff' : v;
+  }catch(e){ return '#ffffff'; }
+}
+const root = document.documentElement;
+const bgImg = $('#bgImg'), bgVid = $('#bgVid'), bgPic = $('#bgPic');
+function setBgPicture(src){ if(src){ if(bgPic.getAttribute('src') !== src) bgPic.src = src; bgPic.hidden = false; } else { bgPic.hidden = true; bgPic.removeAttribute('src'); } }
+function applyTheme(id){
+  const def = THEMES.find(t=>t.id===id) || THEMES.find(t=>t.id===DEFAULT_THEME);
+  const t = Object.assign({}, BASE, def);
+  const prev = theme; theme = t;
+  const v = {
+    '--text':t.text, '--body-shadow':t.bodyShadow, '--timer-shadow':t.timerShadow || t.bodyShadow,
+    '--glow1':t.glow1, '--glow2':t.glow2, '--glow-op':t.glowOp,
+    '--btn-border':t.btnBorder, '--btn-color':t.btnColor, '--btn-hover-bg':t.btnHoverBg, '--btn-hover-color':t.btnHoverColor,
+    '--btn-blur':t.btnBlur, '--btn-shadow':t.btnShadow || t.bodyShadow,
+    '--input-bg':t.inputBg, '--input-color':t.inputColor, '--input-border':t.inputBorder, '--placeholder':t.placeholder,
+    '--music':t.music, '--music-hover':t.musicHover, '--accent':t.accent, '--ring':t.ring || t.text,
+    '--font':t.font, '--timer-weight':t.timerWeight, '--overlay':t.overlay, '--presets-top':t.presetsTop
+  };
+  for(const k in v) root.style.setProperty(k, v[k]);
+  const bl = `blur(${t.btnBlur})`;
+  blurStyle.textContent = `.btn,.r-circ,.r-mini,.vdock,.corner-btn,.mbar,.alist,.bars-wrap,.r-ring,.r-list{backdrop-filter:${bl};-webkit-backdrop-filter:${bl};}`;
+  root.style.setProperty('--dock-accent', dockAccent(t.accent));
+  /* Bar timer panel: dark glass on most themes, light glass where the button text is dark (black or deep blue) */
+  const lightBars = !isLightColor(t.btnColor);
+  const bars = lightBars
+    ? {'--bar-panel':'rgba(255,255,255,.55)','--bar-panel-edge':'rgba(0,0,0,.12)','--bar-track':'rgba(255,255,255,.7)','--bar-edge-in':'rgba(0,0,0,.35)','--bar-edge-out':'rgba(255,255,255,.6)','--bar-count-bg':'rgba(255,255,255,.5)'}
+    : {'--bar-panel':'rgba(10,10,12,.55)','--bar-panel-edge':'rgba(255,255,255,.12)','--bar-track':'rgba(0,0,0,.42)','--bar-edge-in':'rgba(255,255,255,.38)','--bar-edge-out':'rgba(0,0,0,.55)','--bar-count-bg':'rgba(0,0,0,.35)'};
+  for(const k in bars) root.style.setProperty(k, bars[k]);
+  /* Number on the active circle: black on light bar colors, white on dark ones */
+  root.style.setProperty('--bar-on-accent', isLightColor(t.accent) ? '#000' : '#fff');
+
+  // Background
+  bgImg.style.backgroundColor = t.bgColor;
+  if(t.video){
+    setBgPicture(null);
+    const src = IMG(t.video);
+    if(bgVid.getAttribute('src') !== src){ bgVid.setAttribute('src', src); bgVid.load(); }
+    bgVid.style.display = 'block'; bgVid.play().catch(()=>{});
+  } else {
+    bgVid.pause(); bgVid.style.display = 'none';
+    if(bgVid.getAttribute('src')){ bgVid.removeAttribute('src'); bgVid.load(); }
+    setBgPicture(t.image ? IMG(t.image) : null);
+  }
+
+  // Logos
+  const xl = $('#extraLogo');
+  if(t.extraLogo){ xl.src = IMG(t.extraLogo); xl.style.display = 'block'; } else { xl.style.display = 'none'; xl.removeAttribute('src'); }
+  updateLogo();
+
+  // Sounds (only swap if changed so nothing restarts)
+  if(!prev || prev.endSound !== t.endSound){ stopThemeSounds(); endS.src = AUD(t.endSound); }
+  if(!prev || prev.warnSound !== t.warnSound){ warnS.src = AUD(t.warnSound); }
+  const alS = $('#alarmSound'); if(alS && alS.paused) alS.src = AUD(t.endSound);   /* ready for the browser's sound unlock */
+
+  $$('.thumb').forEach(b=>b.setAttribute('aria-pressed', b.dataset.id === t.id));
+  store.set('theme', t.id); syncUrl();
+}
+function updateLogo(){
+  if(!theme) return;
+  /* Themes with dark text (Crumpled Paper, Neon, Spring) get the black logo */
+  const dark = theme.logo === 'BK';
+  root.style.setProperty('--logo-color', dark ? '#000' : '#fff');
+  root.style.setProperty('--logo-shadow', dark ? 'drop-shadow(0 0 6px rgba(255,255,255,.6))' : 'drop-shadow(0 2px 8px rgba(0,0,0,.55))');
+}
+
+/* ---------- Theme drawer ---------- */
+const drawer = $('#drawer'), grid = $('#themeGrid');
+let drawerCat = 'static';
+function renderGrid(){
+  grid.innerHTML = '';
+  THEMES.filter(t=>t.cat === drawerCat).forEach(t=>{
+    const b = document.createElement('button');
+    b.className = 'thumb'; b.dataset.id = t.id; b.setAttribute('aria-pressed', theme && theme.id === t.id);
+    const pic = document.createElement('span'); pic.className = 'pic';
+    const swatch = Object.assign({}, BASE, t);
+    pic.style.backgroundColor = swatch.bgColor !== '#000' ? swatch.bgColor : '#333';
+    const img = document.createElement('img'); img.loading = 'lazy'; img.alt = ''; img.src = IMG(t.thumb);
+    img.onerror = () => img.remove();
+    pic.appendChild(img);
+    const nm = document.createElement('span'); nm.className = 'nm'; nm.textContent = t.name;
+    b.append(pic, nm);
+    b.onclick = () => applyTheme(t.id);
+    grid.appendChild(b);
+  });
+  $$('#catBar button').forEach(b=>b.setAttribute('aria-selected', b.dataset.cat === drawerCat));
+}
+/* Themes takes over the dock (double width, two thumbnails across). The back arrow returns to the tools. */
+function openDrawer(open){
+  const isOpen = open == null ? !drawer.classList.contains('open') : open;
+  if(isOpen){ drawerCat = theme.cat; renderGrid(); openDock(); }
+  drawer.classList.toggle('open', isOpen); drawer.setAttribute('aria-hidden', !isOpen);
+  vdock.classList.toggle('themes', isOpen);
+  $('#themeBtn').setAttribute('aria-pressed', isOpen);
+  if(isOpen) setTimeout(()=>{ const sel = grid.querySelector('.thumb[aria-pressed="true"]'); if(sel) grid.scrollTop = sel.offsetTop - grid.clientHeight/2 + sel.offsetHeight/2; }, 50);
+}
+$$('#catBar button').forEach(b=>b.onclick = ()=>{ drawerCat = b.dataset.cat; renderGrid(); grid.scrollTop = 0; });
+$('#themeBtn').onclick = ()=>openDrawer();
+$('#themeBack').onclick = ()=>openDrawer(false);
+
+/* =====================================================================
+   TIMER › STANDARD  (logic from TimerRoad.html)
+   ===================================================================== */
+const Standard = (()=>{
+  const el = $('#stdTimer'), pane = $('#pane-standard');
+  let duration = store.get('std.duration', 300), remaining = duration, endTime = 0, running = false, iv = null, warned = false;
+  const upd = () => el.textContent = fmt(remaining);
+  function tick(){
+    if(!running) return;
+    remaining = Math.round((endTime - Date.now())/1000);
+    if(remaining <= theme.warnAt && remaining > 0 && !warned){ warned = true; safePlay(warnS, 0.5); }
+    if(remaining <= 0){
+      remaining = 0; upd(); clearInterval(iv); iv = null; running = false;
+      el.classList.remove('running'); el.classList.add('glow'); playThemeEnd();
+    } else upd();
+  }
+  function start(){ if(running) return; if(remaining <= 0) return; el.classList.add('running'); endTime = Date.now() + remaining*1000; running = true; warned = remaining <= theme.warnAt; iv = setInterval(tick, 250); }
+  function pause(){ if(!running) return; clearInterval(iv); iv = null; running = false; remaining = Math.round((endTime - Date.now())/1000); el.classList.remove('running'); }
+  function reset(){ clearInterval(iv); iv = null; running = false; remaining = duration; warned = false; upd(); el.classList.remove('running','glow'); stopThemeSounds(); }
+  function setTime(sec, autostart){
+    pause(); duration = sec; remaining = sec; warned = false; store.set('std.duration', sec);
+    upd(); el.classList.remove('glow'); stopThemeSounds(); if(autostart) start();
+  }
+  function add(){
+    remaining += 30; if(running) endTime += 30000;
+    if(remaining > theme.warnAt) warned = false;
+    el.classList.remove('glow'); upd();
+  }
+  pane.addEventListener('click', e=>{
+    const b = e.target.closest('button'); if(!b) return;
+    if(b.dataset.m != null) return setTime((+b.dataset.m)*60 + (+(b.dataset.s||0)), true); // presets start right away (as before)
+    const a = b.dataset.act;
+    if(a==='start') start(); else if(a==='pause') pause(); else if(a==='reset') reset(); else if(a==='add') add();
+    else if(a==='set'){ const r = strictMMSS($('#stdCustom').value); if(r.err) flashErr($('#stdErr'), r.err); else setTime(r.sec, false); }
+  });
+  $('#stdCustom').addEventListener('keydown', e=>{ if(e.key==='Enter') pane.querySelector('[data-act=set]').click(); });
+  upd();
+  return { start, pause, reset, toggle(){ running ? pause() : start(); }, running:()=>running };
+})();
+
+/* =====================================================================
+   TIMER › TURN  (logic from TurnTimer.html)
+   ===================================================================== */
+const Turn = (()=>{
+  const chipRow = $('#chipRow'), el = $('#turnTimer'), pane = $('#pane-turn');
+  const R = 68, C = 2*Math.PI*R;
+  let totalTurns = 4, currentTurn = 1, durationMs = store.get('turn.duration', 30)*1000, startTime = 0, elapsedBefore = 0, rafId = null, running = false;
+  const bars = () => $$('.ring-bar', chipRow), chips = () => $$('.turn-chip', chipRow);
+  function build(){
+    chipRow.innerHTML = '';
+    for(let i=1;i<=4;i++){
+      const wrap = document.createElement('div'); wrap.className = 'turn-wrapper';
+      wrap.style.display = i > totalTurns ? 'none' : 'grid';
+      const chip = document.createElement('div'); chip.className = 'turn-chip turn'+i; chip.textContent = i; chip.dataset.turn = i;
+      const svg = document.createElementNS('http://www.w3.org/2000/svg','svg');
+      svg.setAttribute('class','ring'); svg.setAttribute('viewBox','0 0 160 160'); svg.setAttribute('width','100%'); svg.setAttribute('height','100%');
+      ['ring-bg','ring-bar'].forEach(cls=>{
+        const c = document.createElementNS('http://www.w3.org/2000/svg','circle');
+        c.setAttribute('class',cls); c.setAttribute('cx','80'); c.setAttribute('cy','80'); c.setAttribute('r',R);
+        if(cls==='ring-bar'){ c.style.strokeDasharray = C; c.style.strokeDashoffset = C; }
+        svg.appendChild(c);
+      });
+      wrap.append(svg, chip); chipRow.appendChild(wrap);
+    }
+  }
+  const upd = ms => el.textContent = fmtMs(ms);
+  function setActive(turn){
+    currentTurn = turn; chips().forEach(c=>c.classList.remove('active')); bars().forEach(b=>b.style.strokeDashoffset = C);
+    const c = chips()[turn-1]; if(c){ c.classList.add('active'); c.classList.remove('dim'); }
+  }
+  function markDone(turn){ const c = chips()[turn-1]; if(c) c.classList.add('dim'); const b = bars()[turn-1]; if(b) b.style.strokeDashoffset = C; }
+  function tick(){
+    if(!running) return;
+    const elapsed = elapsedBefore + performance.now() - startTime;
+    upd(durationMs - elapsed);
+    const bar = bars()[currentTurn-1]; if(bar) bar.style.strokeDashoffset = C*(elapsed/durationMs);
+    if(elapsed >= durationMs){
+      if(currentTurn < totalTurns){
+        safePlay(turnS); markDone(currentTurn); setActive(currentTurn+1);
+        startTime = performance.now(); elapsedBefore = 0; rafId = requestAnimationFrame(tick);
+      } else {
+        if(bar) bar.style.strokeDashoffset = C;
+        safePlay(finalS); running = false; rafId = null;
+        el.classList.add('timer-pulsate');
+        chips().forEach((c,i)=>c.classList.add('chip-pulsate','chip'+(i+1)+'-pulse'));
+      }
+    } else rafId = requestAnimationFrame(tick);
+  }
+  function start(){
+    if(running) return;
+    if(el.classList.contains('timer-pulsate')) reset();
+    running = true; chips().forEach((c,i)=>{ if(i+1 !== currentTurn) c.classList.add('dim'); });
+    chips()[currentTurn-1].classList.add('active'); chips()[currentTurn-1].classList.remove('dim');
+    startTime = performance.now(); rafId = requestAnimationFrame(tick);
+  }
+  function pause(){ if(!running) return; running = false; cancelAnimationFrame(rafId); elapsedBefore += performance.now() - startTime; }
+  function reset(){
+    running = false; cancelAnimationFrame(rafId); stopAllSounds(); elapsedBefore = 0;
+    totalTurns = 4; currentTurn = 1; build(); el.classList.remove('timer-pulsate','flash-add'); upd(durationMs);
+  }
+  function setDuration(sec){ durationMs = sec*1000; store.set('turn.duration', sec); if(!running && elapsedBefore === 0) upd(durationMs); }
+  chipRow.addEventListener('click', e=>{
+    const chip = e.target.closest('.turn-chip'); if(!chip || running) return;
+    totalTurns = +chip.dataset.turn; currentTurn = 1; elapsedBefore = 0;
+    chips().forEach((c,i)=>{ c.parentElement.style.display = (i+1 > totalTurns) ? 'none' : 'grid'; c.classList.remove('dim','active','chip-pulsate','chip1-pulse','chip2-pulse','chip3-pulse','chip4-pulse'); });
+    bars().forEach(b=>b.style.strokeDashoffset = C); el.classList.remove('timer-pulsate'); upd(durationMs);
+    chip.classList.add('chip-flash'); setTimeout(()=>chip.classList.remove('chip-flash'), 600);
+    floatLabel(chipRow, `${totalTurns} turn${totalTurns>1?'s':''} selected`, 'sel');
+  });
+  pane.addEventListener('click', e=>{
+    const b = e.target.closest('button'); if(!b) return;
+    if(b.dataset.m != null) return setDuration((+b.dataset.m)*60 + (+b.dataset.s));
+    const a = b.dataset.act;
+    if(a==='start') start(); else if(a==='pause') pause(); else if(a==='reset') reset();
+    else if(a==='add'){
+      durationMs += 15000;
+      const elapsed = elapsedBefore + (running ? performance.now() - startTime : 0);
+      upd(durationMs - elapsed);
+      el.classList.add('flash-add'); setTimeout(()=>el.classList.remove('flash-add'), 600);
+      floatLabel($('#turnControls'), '+15s');
+      b.disabled = true; setTimeout(()=>b.disabled = false, 1000);
+    }
+    else if(a==='set'){ const r = strictMMSS($('#turnCustom').value); if(r.err) flashErr($('#turnErr'), r.err); else setDuration(r.sec); }
+  });
+  $('#turnCustom').addEventListener('keydown', e=>{ if(e.key==='Enter') pane.querySelector('[data-act=set]').click(); });
+  build(); upd(durationMs);
+  return { start, pause, reset, toggle(){ running ? pause() : start(); }, running:()=>running };
+})();
+
+/* =====================================================================
+   TIMER › BAR  (logic from BarTimer.html)
+   ===================================================================== */
+const Bar = (()=>{
+  const wrap = $('#barsWrap'), el = $('#barTimer'), pane = $('#pane-bar');
+  let totalBars = 6, currentTurn = 1, durationMs = store.get('bar.duration', 30)*1000, running = false, rafId = null, startTime = 0, elapsedBefore = 0;
+  const rows = () => $$('.bar-row', wrap), fills = () => $$('.bar-fill', wrap);
+  const upd = ms => el.textContent = fmtMs(ms);
+  function build(){
+    wrap.innerHTML = '';
+    for(let i=1;i<=6;i++){
+      const row = document.createElement('div'); row.className = 'bar-row';
+      const btn = document.createElement('button'); btn.className = 'count-btn'; btn.textContent = i; btn.dataset.value = i;
+      const shell = document.createElement('div'); shell.className = 'bar-shell';
+      const fill = document.createElement('div'); fill.className = 'bar-fill'; fill.style.width = '100%';
+      shell.appendChild(fill); row.append(btn, shell); wrap.appendChild(row);
+    }
+    paint();
+  }
+  function paint(){
+    rows().forEach((r,i)=>{
+      r.style.display = (i+1) <= totalBars ? 'grid' : 'none';
+      r.classList.remove('row-active','row-dim','row-done');
+      r.classList.add(i+1 === currentTurn ? 'row-active' : 'row-dim');
+    });
+    if(!running) fills().forEach((f,i)=>f.style.width = (i+1 < currentTurn) ? '0%' : '100%');
+  }
+  function tick(){
+    if(!running) return;
+    const elapsed = elapsedBefore + performance.now() - startTime;
+    upd(durationMs - elapsed);
+    const f = fills()[currentTurn-1];
+    if(f) f.style.width = `${Math.max(0, 100 - (elapsed/durationMs)*100)}%`;
+    if(elapsed >= durationMs){
+      const r = rows()[currentTurn-1];
+      if(r){ r.classList.remove('row-active'); r.classList.add('row-done','row-dim'); if(f) f.style.width = '0%'; }
+      if(currentTurn < totalBars){
+        safePlay(turnS); currentTurn++;
+        rows()[currentTurn-1].classList.replace('row-dim','row-active');
+        startTime = performance.now(); elapsedBefore = 0; rafId = requestAnimationFrame(tick);
+      } else { safePlay(finalS); running = false; el.classList.add('timer-pulsate'); rafId = null; }
+    } else rafId = requestAnimationFrame(tick);
+  }
+  function start(){
+    if(running) return;
+    if(el.classList.contains('timer-pulsate')) reset();
+    running = true; el.classList.remove('timer-pulsate');
+    rows().forEach((r,i)=>r.classList.toggle('row-active', i+1 === currentTurn));
+    startTime = performance.now(); rafId = requestAnimationFrame(tick);
+  }
+  function pause(){ if(!running) return; running = false; if(rafId){ cancelAnimationFrame(rafId); rafId = null; } elapsedBefore += performance.now() - startTime; }
+  function reset(){ if(rafId) cancelAnimationFrame(rafId); running = false; elapsedBefore = 0; totalBars = 6; currentTurn = 1; build(); upd(durationMs); el.classList.remove('timer-pulsate'); stopAllSounds(); }
+  function setDuration(sec){ durationMs = sec*1000; store.set('bar.duration', sec); if(!running && elapsedBefore === 0) upd(durationMs); }
+  wrap.addEventListener('click', e=>{
+    const b = e.target.closest('.count-btn'); if(!b || running) return;
+    totalBars = +b.dataset.value; currentTurn = 1; elapsedBefore = 0; el.classList.remove('timer-pulsate'); build(); upd(durationMs);
+  });
+  pane.addEventListener('click', e=>{
+    const b = e.target.closest('button'); if(!b || b.classList.contains('count-btn')) return;
+    if(b.dataset.m != null) return setDuration((+b.dataset.m)*60 + (+b.dataset.s));
+    const a = b.dataset.act;
+    if(a==='start') start(); else if(a==='pause') pause(); else if(a==='reset') reset();
+    else if(a==='add'){ durationMs += 15000; upd(durationMs - elapsedBefore - (running ? performance.now() - startTime : 0)); }
+    else if(a==='set'){ const r = strictMMSS($('#barCustom').value); if(r.err) flashErr($('#barErr'), r.err); else setDuration(r.sec); }
+  });
+  $('#barCustom').addEventListener('keydown', e=>{ if(e.key==='Enter') pane.querySelector('[data-act=set]').click(); });
+  build(); upd(durationMs);
+  return { start, pause, reset, toggle(){ running ? pause() : start(); }, running:()=>running };
+})();
+
+/* =====================================================================
+   ROUTINES — a chain of named timed steps
+   ===================================================================== */
+const STARTER_ROUTINES = {
+  'Lesson block': [['Warm-up',300],['Mini-lesson',600],['Work time',1200],['Clean up',180],['Exit ticket',300]],
+  'Four centers': [['Center 1',720],['Rotate',60],['Center 2',720],['Rotate',60],['Center 3',720],['Rotate',60],['Center 4',720]],
+  'Think-pair-share': [['Think',60],['Pair',120],['Share',180]],
+  'Morning routine': [['Unpack',300],['Bell work',600],['Morning meeting',900]],
+  'Focus sprints': [['Focus',1500],['Break',300]],
+  'Partner talk': [['Partner A talks',60],['Partner B talks',60]],
+  'Stations': [['Station',600],['Rotate',60]],
+  'PE circuit': [['Move',45],['Switch',15]]
+};
+/* Starters that repeat (everything else runs once) */
+const STARTER_REPEAT = {'Focus sprints':4, 'Partner talk':2, 'Stations':4, 'PE circuit':8};
+const Routines = (()=>{
+  const pane = $('#pane-routines'), elT = $('#rTimer'), elName = $('#rName'), elEnds = $('#rEnds'), prog = $('#rProg'), rowsEl = $('#rSteps');
+  const C = 2*Math.PI*92; prog.style.strokeDasharray = C;
+  const BELL = '<svg viewBox="0 0 24 24"><path d="M6 8a6 6 0 1 1 12 0c0 7 3 9 3 9H3s3-2 3-9M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg>';
+  const CHECK = '<svg viewBox="0 0 20 20"><path d="M4.5 10.5l3.5 3.5 7.5-8"/></svg>';
+  const toSteps = arr => arr.map(([name,sec])=>({name,sec}));
+  const hadSaved = !!store.get('routine.current', null);
+  let steps = store.get('routine.current', null) || toSteps(STARTER_ROUTINES['Lesson block']);
+  let rname = store.get('routine.name', hadSaved ? 'My routine' : 'Lesson block');
+  let saved = store.get('routine.saved', {});
+  let auto = store.get('routine.auto', true), repeat = store.get('routine.repeat', 1);
+  let idx = 0, round = 1, remaining = (steps[0]?.sec||0)*1000, endTime = 0, running = false, iv = null, done = false;
+  const clockAt = ms => { const d = new Date(Date.now() + ms); let h = d.getHours(); const ap = h >= 12 ? 'PM' : 'AM'; h = h % 12 || 12; return `${h}:${String(d.getMinutes()).padStart(2,'0')} ${ap}`; };
+  const total = () => steps.reduce((a,s)=>a + s.sec, 0);
+  const durTxt = sec => sec >= 3600 ? `${Math.floor(sec/3600)} hr ${Math.round(sec%3600/60)} min` : sec >= 60 ? `${Math.round(sec/60)} min` : `${sec} sec`;
+  function msLeftInRoutine(){
+    let ms = remaining;
+    for(let k = idx + 1; k < steps.length; k++) ms += steps[k].sec*1000;
+    return ms + (repeat - round) * total() * 1000;
+  }
+
+  /* ----- Ring + time (updated every tick) ----- */
+  function renderTime(){
+    const cur = steps[Math.min(idx, steps.length - 1)];
+    elT.textContent = fmtMs(remaining);
+    const frac = done || !cur ? 0 : Math.max(0, Math.min(1, remaining / (cur.sec*1000)));
+    prog.style.strokeDashoffset = C * (1 - frac);
+    const roundTxt = repeat > 1 ? ` · Round ${Math.min(round, repeat)} of ${repeat}` : '';
+    if(done) elEnds.textContent = 'Routine complete';
+    else if(running) elEnds.innerHTML = BELL + `<span>${clockAt(remaining)}${roundTxt}</span>`;
+    else if(cur && remaining < cur.sec*1000) elEnds.textContent = 'Paused' + roundTxt;
+    else elEnds.textContent = steps.length ? `Step ${idx + 1} of ${steps.length}${roundTxt}` : '';
+    $('#rFoot').innerHTML = steps.length
+      ? `<span>${running ? 'Routine ends ' + clockAt(msLeftInRoutine()) : (auto ? 'Auto-advance on' : 'Auto-advance off')}</span><span>${repeat > 1 ? `Round ${Math.min(round, repeat)} of ${repeat}` : ''}</span>` : '';
+  }
+  /* ----- Everything else (on step changes) ----- */
+  function render(){
+    if(!steps.length){
+      elName.textContent = 'Add a step to begin'; elT.textContent = '0:00'; prog.style.strokeDashoffset = C; elEnds.textContent = '';
+      rowsEl.innerHTML = '<div class="rl-empty">This routine has no steps. Press Edit to add some.</div>';
+      $('#rTitle').textContent = rname; $('#rSub').textContent = ''; $('#rFoot').innerHTML = ''; setGo(); return;
+    }
+    const cur = steps[Math.min(idx, steps.length - 1)];
+    elName.textContent = done ? 'All done' : cur.name;
+    $('#rTitle').textContent = rname;
+    $('#rSub').textContent = `${steps.length} step${steps.length > 1 ? 's' : ''} · ${durTxt(total())}` + (repeat > 1 ? ` · ${repeat} rounds` : '');
+    rowsEl.innerHTML = '';
+    steps.forEach((s,k)=>{
+      const r = document.createElement('div');
+      const isDone = done || k < idx, isCur = !done && k === idx;
+      r.className = 'rl-row' + (isDone ? ' done' : '') + (isCur ? ' cur' : '') + (isCur && running ? ' running' : '');
+      r.dataset.i = k; r.setAttribute('role','button'); r.tabIndex = 0;
+      r.innerHTML = `<span class="rl-dot">${isDone ? CHECK : ''}</span><span class="rl-name"></span><span class="rl-dur">${fmt(s.sec)}</span>`;
+      r.querySelector('.rl-name').textContent = s.name;
+      rowsEl.appendChild(r);
+    });
+    setGo(); renderTime();
+  }
+  function setGo(){
+    const b = $('#rGo'), cur = steps[idx];
+    b.classList.toggle('pause', running); b.classList.toggle('go', !running);
+    b.textContent = running ? 'Pause' : done ? 'Restart' : (cur && remaining < cur.sec*1000) ? 'Resume' : 'Start';
+  }
+
+  /* ----- Timing ----- */
+  function tick(){
+    if(!running) return;
+    remaining = endTime - Date.now();
+    if(remaining <= 0) stepDone(); else renderTime();
+  }
+  function stepDone(){
+    const more = idx < steps.length - 1 || round < repeat;
+    if(more){
+      if(idx < steps.length - 1) idx++; else { idx = 0; round++; }
+      safePlay(turnS); remaining = steps[idx].sec*1000;
+      elName.classList.remove('flash'); void elName.offsetWidth; elName.classList.add('flash');
+      if(auto) endTime = Date.now() + remaining;
+      else { running = false; clearInterval(iv); iv = null; }
+    } else {
+      running = false; clearInterval(iv); iv = null; remaining = 0; done = true;
+      elT.classList.add('glow'); playThemeEnd();
+    }
+    render();
+  }
+  function start(){
+    if(running || !steps.length) return;
+    if(done) reset();
+    running = true; endTime = Date.now() + remaining; elT.classList.remove('glow');
+    iv = setInterval(tick, 200); render();
+  }
+  function pause(){ if(!running) return; running = false; clearInterval(iv); iv = null; remaining = endTime - Date.now(); render(); }
+  function reset(){ running = false; clearInterval(iv); iv = null; idx = 0; round = 1; done = false; remaining = (steps[0]?.sec||0)*1000; elT.classList.remove('glow'); stopThemeSounds(); render(); }
+  function jump(k){
+    if(k < 0 || k >= steps.length) return;
+    const was = running; if(running){ running = false; clearInterval(iv); iv = null; }
+    done = false; elT.classList.remove('glow'); stopThemeSounds();
+    idx = k; remaining = steps[k].sec*1000; render(); if(was) start();
+  }
+  function add(){ if(done || !steps.length) return; remaining += 30000; if(running) endTime += 30000; renderTime(); }
+
+  pane.addEventListener('click', e=>{
+    const row = e.target.closest('.rl-row'); if(row) return jump(+row.dataset.i);
+    const b = e.target.closest('button[data-act]'); if(!b) return;
+    ({toggle:()=> running ? pause() : start(), reset, add, next:()=>jump(idx + 1), prev:()=>jump(idx - 1)})[b.dataset.act]?.();
+  });
+  rowsEl.addEventListener('keydown', e=>{ const row = e.target.closest('.rl-row'); if(row && (e.key === 'Enter' || e.key === ' ')){ e.preventDefault(); e.stopPropagation(); jump(+row.dataset.i); } });
+
+  /* ----- Edit Routine sheet ----- */
+  const wrap = $('#rSheetWrap'), msg = $('#rsMsg');
+  let draft = null;
+  function say(t, isErr){ msg.textContent = t; msg.classList.toggle('err', !!isErr); clearTimeout(say._t); if(t) say._t = setTimeout(()=>msg.textContent = '', 3500); }
+  function renderSheet(){
+    $('#rsName').value = draft.name;
+    $('#rsAuto').setAttribute('aria-checked', draft.auto);
+    $('#rsRepeat').value = String(draft.repeat);
+    const box = $('#rsSteps'); box.innerHTML = '';
+    draft.steps.forEach((st,k)=>{
+      const r = document.createElement('div'); r.className = 'rs-step';
+      r.innerHTML = `<button class="rs-del" type="button" aria-label="Delete step"></button>
+        <input class="rs-n" type="text" maxlength="40" aria-label="Step name">
+        <input class="rs-t" type="text" inputmode="numeric" aria-label="Step time">
+        <span class="rs-mv"><button type="button" data-mv="-1" aria-label="Move up">↑</button><button type="button" data-mv="1" aria-label="Move down">↓</button></span>`;
+      const [n, t] = $$('input', r);
+      n.value = st.name; t.value = fmt(st.sec);
+      n.oninput = () => { st.name = n.value; };
+      t.onchange = () => { const sec = parseTime(t.value); if(sec == null || sec <= 0){ say('Type a time like 5, 5:00, or :45.', true); t.value = fmt(st.sec); return; } st.sec = sec; t.value = fmt(sec); };
+      r.querySelector('.rs-del').onclick = () => { draft.steps.splice(k,1); renderSheet(); };
+      $$('[data-mv]', r).forEach(b=>b.onclick = ()=>{ const m = k + (+b.dataset.mv); if(m < 0 || m >= draft.steps.length) return; [draft.steps[k], draft.steps[m]] = [draft.steps[m], draft.steps[k]]; renderSheet(); });
+      box.appendChild(r);
+    });
+    const add = document.createElement('button'); add.type = 'button'; add.className = 'rs-add';
+    add.innerHTML = '<span class="plus"></span>Add Step';
+    add.onclick = () => { draft.steps.push({name:`Step ${draft.steps.length + 1}`, sec:300}); renderSheet(); const ins = $$('#rsSteps .rs-n'); const last = ins[ins.length - 1]; last.focus(); last.select(); };
+    box.appendChild(add);
+    /* Library: your routines, then starters */
+    const lib = $('#rsLib'); lib.innerHTML = '';
+    const row = (name, sub, onLoad, onDel) => {
+      const r = document.createElement('div'); r.className = 'as-row click rs-lib'; r.setAttribute('role','button'); r.tabIndex = 0;
+      r.innerHTML = `${onDel ? '<button class="rs-del" type="button" aria-label="Delete saved routine"></button>' : ''}<span class="grow1"><span class="nm"></span><small>${sub}</small></span><svg class="chev" viewBox="0 0 20 20"><path d="M8 5l5 5-5 5"/></svg>`;
+      r.querySelector('.nm').textContent = name;
+      r.onclick = e => { if(e.target.closest('.rs-del')) return; onLoad(); };
+      r.onkeydown = e => { if(e.key === 'Enter'){ e.preventDefault(); onLoad(); } };
+      if(onDel) r.querySelector('.rs-del').onclick = e => { e.stopPropagation(); onDel(); };
+      lib.appendChild(r);
+    };
+    Object.keys(saved).forEach(name=>{
+      const v = saved[name], st = Array.isArray(v) ? v : v.steps, rp = Array.isArray(v) ? 1 : (v.repeat || 1);
+      row(name, `My routine · ${st.length} steps${rp > 1 ? ` · ${rp} rounds` : ''}`,
+        () => { draft = {name, steps: st.map(x=>({...x})), auto: draft.auto, repeat: rp}; renderSheet(); say(`Loaded ${name}. Press Done to use it.`); },
+        () => { delete saved[name]; store.set('routine.saved', saved); renderSheet(); say(`Deleted ${name}.`); });
+    });
+    Object.keys(STARTER_ROUTINES).forEach(name=>{
+      const st = STARTER_ROUTINES[name], rp = STARTER_REPEAT[name] || 1;
+      row(name, `Starter · ${st.length} steps${rp > 1 ? ` · ${rp} rounds` : ''}`,
+        () => { draft = {name, steps: toSteps(st), auto: draft.auto, repeat: rp}; renderSheet(); say(`Loaded ${name}. Press Done to use it.`); });
+    });
+  }
+  function openSheet(){
+    draft = {name: rname, steps: steps.map(s=>({...s})), auto, repeat};
+    msg.textContent = ''; renderSheet(); wrap.classList.add('show');
+    setTimeout(()=>$('#rsName').focus({preventScroll:true}), 50);
+  }
+  function closeSheet(){ wrap.classList.remove('show'); draft = null; }
+  $('#rEditBtn').onclick = openSheet;
+  $('#rsCancel').onclick = closeSheet;
+  wrap.addEventListener('pointerdown', e=>{ if(e.target === wrap) closeSheet(); });
+  $('#rsName').oninput = e => { draft.name = e.target.value; };
+  $('#rsAuto').onclick = () => { draft.auto = !draft.auto; $('#rsAuto').setAttribute('aria-checked', draft.auto); };
+  $('#rsRepeat').onchange = e => { draft.repeat = +e.target.value; };
+  $('#rsSave').onclick = () => {
+    const name = draft.name.trim();
+    if(!name) return say('Give the routine a name first.', true);
+    if(!draft.steps.length) return say('Add at least one step first.', true);
+    saved[name] = {steps: draft.steps.map(x=>({name: x.name.trim() || 'Step', sec: x.sec})), repeat: draft.repeat};
+    store.set('routine.saved', saved); renderSheet(); say(`Saved ${name} to My Routines.`);
+  };
+  $('#rsDone').onclick = () => {
+    if(!draft.steps.length) return say('Add at least one step first.', true);
+    steps = draft.steps.map(x=>({name: x.name.trim() || 'Step', sec: x.sec}));
+    rname = draft.name.trim() || 'My routine'; auto = draft.auto; repeat = draft.repeat;
+    store.set('routine.current', steps); store.set('routine.name', rname); store.set('routine.auto', auto); store.set('routine.repeat', repeat);
+    closeSheet(); reset();
+  };
+
+  render();
+  return { start, pause, reset, toggle(){ running ? pause() : start(); }, running:()=>running,
+           sheetOpen:()=>wrap.classList.contains('show'), closeSheet };
+})();
+
+/* =====================================================================
+   ALARM — classroom clock + alarms, laid out like the iOS Clock app.
+   + adds an alarm (scroll-wheel time, repeat days, label, sound, snooze).
+   Tap an alarm to edit it; Edit shows delete buttons.
+   A ringing alarm shows a black box (28px blur) with Snooze and Stop.
+   ===================================================================== */
+const ALARM_SOUNDS = [
+  {id:'theme', name:'Theme sound', note:'Matches the current theme'},
+  {id:'ac-bel-105874.mp3', name:'Bell'},
+  {id:'TurnAlert.mp3', name:'Chime'},
+  {id:'ringtone-good-day-293628.mp3', name:'Good day'},
+  {id:'ringtone-flute-309104.mp3', name:'Flute'},
+  {id:'ringtone-019-365651.mp3', name:'Bright'},
+  {id:'ringtone-032-480574.mp3', name:'Pulse'},
+  {id:'Computer_Magic-Microsift-1901299923.mp3', name:'Computer magic'},
+  {id:'5SecondDing.mp3', name:'Ding'},
+  {id:'Tick%20Tock%20Clock.mp3', name:'Tick tock'}
+];
+const Alarm = (()=>{
+  const DAY_SHORT = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+  const alarmS = $('#alarmSound'), prevS = $('#alarmPreview');
+  const card = $('#aCard'), listEl = $('#aList'), overlay = $('#ringOverlay'), wrap = $('#aSheetWrap');
+  /* Older saved alarms rang every day; keep them that way */
+  let alarms = store.get('alarms', []).map((a,i)=>Object.assign({id:Date.now()+i, days:[0,1,2,3,4,5,6], sound:'theme', snooze:true, snoozeMin:5, label:'', on:true, last:'', snoozeAt:null}, a));
+  let ringing = null, autoStopT = null, editing = null, draft = null, editMode = false;
+  const save = () => store.set('alarms', alarms);
+  const todayKey = () => new Date().toDateString();
+  const to12parts = hhmm => { let [h,m] = hhmm.split(':').map(Number); const ap = h >= 12 ? 'PM' : 'AM'; h = h % 12 || 12; return [`${h}:${String(m).padStart(2,'0')}`, ap]; };
+  const to12 = hhmm => to12parts(hhmm).join(' ');
+  const soundSrc = id => AUD(id === 'theme' ? theme.endSound : id);
+  const soundName = id => (ALARM_SOUNDS.find(s=>s.id === id) || ALARM_SOUNDS[0]).name;
+  function repeatText(days){
+    const d = [...days].sort();
+    if(!d.length) return '';
+    if(d.length === 7) return 'every day';
+    if(d.join() === '1,2,3,4,5') return 'weekdays';
+    if(d.join() === '0,6') return 'weekends';
+    return 'every ' + d.map(i=>DAY_SHORT[i]).join(', ');
+  }
+  function fmtClock(ts){ const t = new Date(ts); return to12(`${t.getHours()}:${String(t.getMinutes()).padStart(2,'0')}`); }
+
+  /* ----- List ----- */
+  function renderList(){
+    listEl.innerHTML = '';
+    card.classList.toggle('editing', editMode && alarms.length > 0);
+    $('#aEdit').textContent = editMode && alarms.length ? 'Done' : 'Edit';
+    if(!alarms.length){ listEl.innerHTML = '<div class="al-empty">No alarms yet. Press + to add one.</div>'; return; }
+    alarms.slice().sort((a,b)=>a.time.localeCompare(b.time)).forEach(a=>{
+      const [t, ap] = to12parts(a.time);
+      const r = document.createElement('div'); r.className = 'al-row' + (a.on || a.snoozeAt ? '' : ' off');
+      r.innerHTML = `<button class="al-del" type="button" aria-label="Delete alarm"></button>
+        <div class="al-main"><div class="al-time">${t}<small>${ap}</small></div><div class="al-sub"></div></div>
+        <button class="switch" type="button" role="switch" aria-checked="${a.on}" aria-label="Alarm on"></button>
+        <svg class="al-chev" viewBox="0 0 20 20"><path d="M8 5l5 5-5 5"/></svg>`;
+      const sub = r.querySelector('.al-sub'), rep = repeatText(a.days);
+      sub.textContent = (a.label || 'Alarm') + (rep ? ', ' + rep : '');
+      if(a.snoozeAt){ const sn = document.createElement('span'); sn.className = 'snz'; sn.textContent = ' · Snoozed until ' + fmtClock(a.snoozeAt); sub.appendChild(sn); }
+      r.querySelector('.switch').onclick = e => { e.stopPropagation(); a.on = !a.on; if(!a.on) a.snoozeAt = null; else a.last = ''; save(); renderList(); updateNext(); };
+      r.querySelector('.al-del').onclick = e => { e.stopPropagation(); alarms = alarms.filter(x=>x!==a); save(); if(!alarms.length) editMode = false; renderList(); updateNext(); };
+      r.onclick = () => openSheet(a);
+      listEl.appendChild(r);
+    });
+  }
+  function minutesUntil(a, now){
+    const [h,m] = a.time.split(':').map(Number), nowM = now.getHours()*60 + now.getMinutes();
+    for(let d = 0; d <= 7; d++){
+      const day = (now.getDay() + d) % 7;
+      if(a.days.length && !a.days.includes(day)) continue;
+      const diff = d*1440 + h*60 + m - nowM;
+      if(diff > 0 || (diff === 0 && a.last !== todayKey())) return diff;
+    }
+    return null;
+  }
+  function updateNext(){
+    const now = new Date(); let best = null, bestDiff = Infinity;
+    alarms.forEach(a=>{
+      let d = a.on ? minutesUntil(a, now) : null;
+      if(a.snoozeAt){ const sd = Math.max(0, Math.ceil((a.snoozeAt - now)/60000)); if(d == null || sd < d) d = sd; }
+      if(d != null && d < bestDiff){ bestDiff = d; best = a; }
+    });
+    if(!best){ $('#aNext').textContent = alarms.length ? 'All alarms are off' : 'No alarms set'; return; }
+    const hrs = Math.floor(bestDiff/60), mm = bestDiff % 60, days = Math.floor(hrs/24);
+    const inTxt = bestDiff === 0 ? 'now' : days ? `in ${days} day${days>1?'s':''}` : 'in ' + (hrs ? `${hrs} hr ` : '') + (mm || !hrs ? `${mm} min` : '');
+    $('#aNext').textContent = `Next: ${best.label || 'Alarm'} at ${best.snoozeAt && bestDiff < (minutesUntil(best, now) ?? Infinity) ? fmtClock(best.snoozeAt) : to12(best.time)} · ${inTxt.trim()}`;
+  }
+
+  /* ----- Clock + firing ----- */
+  function tick(){
+    const d = new Date();
+    let h = d.getHours(); const ap = h >= 12 ? 'PM' : 'AM'; h = h % 12 || 12;
+    $('#aClock').innerHTML = `${h}:${String(d.getMinutes()).padStart(2,'0')}<span class="ampm">${ap}</span>`;
+    $('#aDate').textContent = d.toLocaleDateString(undefined, {weekday:'long', month:'long', day:'numeric'});
+    const hhmm = `${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
+    alarms.forEach(a=>{
+      if(a.snoozeAt && Date.now() >= a.snoozeAt){ a.snoozeAt = null; save(); ring(a); }
+      else if(a.on && a.time === hhmm && a.last !== todayKey() && (!a.days.length || a.days.includes(d.getDay()))){
+        a.last = todayKey(); if(!a.days.length) a.on = false;   /* one-time alarms switch off after ringing */
+        save(); ring(a);
+      }
+    });
+    if(d.getSeconds() === 0 || !tick._ran){ updateNext(); if(tick._ran) renderList(); tick._ran = true; }
+  }
+  function ring(a){
+    ringing = a;
+    $('#ringLabel').textContent = a.label || 'Alarm';
+    $('#ringTime').textContent = fmtClock(Date.now());
+    $('#ringSnooze').hidden = !a.snooze;
+    $('#ringSnooze').textContent = `Snooze ${a.snoozeMin} min`;
+    overlay.classList.add('show'); document.body.classList.remove('idle');
+    try{ alarmS.src = soundSrc(a.sound); alarmS.currentTime = 0; alarmS.volume = 1; alarmS.play().catch(()=>{}); }catch(e){}
+    clearTimeout(autoStopT); autoStopT = setTimeout(stop, 5*60*1000);   /* stops by itself after 5 minutes */
+    renderList(); updateNext();
+    setTimeout(()=>$(a.snooze ? '#ringSnooze' : '#ringStop').focus(), 50);
+  }
+  function silence(){ clearTimeout(autoStopT); try{ alarmS.pause(); alarmS.currentTime = 0; }catch(e){} overlay.classList.remove('show'); }
+  function stop(){ if(ringing){ ringing.snoozeAt = null; save(); } ringing = null; silence(); renderList(); updateNext(); }
+  function snooze(){
+    if(!ringing) return;
+    ringing.snoozeAt = Date.now() + ringing.snoozeMin*60000; save();
+    toast(`Snoozed until ${fmtClock(ringing.snoozeAt)}.`);
+    ringing = null; silence(); renderList(); updateNext();
+  }
+  $('#ringStop').onclick = stop;
+  $('#ringSnooze').onclick = snooze;
+
+  /* ----- Scroll-wheel time picker ----- */
+  const ROW = 36;
+  const cols = {h:$('#wH'), m:$('#wM'), p:$('#wP')};
+  const values = {h:[...Array(12)].map((_,i)=>String(i+1)), m:[...Array(60)].map((_,i)=>String(i).padStart(2,'0')), p:['AM','PM']};
+  for(const k in cols){
+    const col = cols[k];
+    values[k].forEach((v,i)=>{ const d = document.createElement('div'); d.textContent = v; d.setAttribute('role','option'); d.onclick = () => setIdx(k, i, true); col.appendChild(d); });
+    let t; col.addEventListener('scroll', ()=>{ clearTimeout(t); t = setTimeout(()=>mark(k), 60); }, {passive:true});
+    col.addEventListener('keydown', e=>{
+      if(e.key === 'ArrowUp' || e.key === 'ArrowDown'){ e.preventDefault(); setIdx(k, getIdx(k) + (e.key === 'ArrowDown' ? 1 : -1), true); }
+    });
+  }
+  function getIdx(k){ return Math.max(0, Math.min(values[k].length - 1, Math.round(cols[k].scrollTop / ROW))); }
+  function setIdx(k, i, smooth){
+    i = Math.max(0, Math.min(values[k].length - 1, i));
+    cols[k].scrollTo({top:i*ROW, behavior: smooth ? 'smooth' : 'auto'});
+    if(!smooth) mark(k, i);
+  }
+  function mark(k, i = getIdx(k)){ [...cols[k].children].forEach((d,j)=>{ d.classList.toggle('sel', j === i); d.setAttribute('aria-selected', j === i); }); }
+  function wheelTime(){
+    let h = getIdx('h') + 1; const m = getIdx('m'), pm = getIdx('p') === 1;
+    if(h === 12) h = 0; if(pm) h += 12;
+    return `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}`;
+  }
+
+  /* ----- Add / edit sheet ----- */
+  function renderDraft(){
+    $$('#asDays button').forEach(b=>b.setAttribute('aria-pressed', draft.days.includes(+b.dataset.d)));
+    $('#asSoundVal').textContent = soundName(draft.sound);
+    $('#asSnooze').setAttribute('aria-checked', draft.snooze);
+    $('#asSnoozeMin').value = String(draft.snoozeMin); $('#asSnoozeMin').disabled = !draft.snooze; $('#asSnoozeMin').style.opacity = draft.snooze ? 1 : .4;
+    const box = $('#asSounds'); box.innerHTML = '';
+    ALARM_SOUNDS.forEach(sd=>{
+      const r = document.createElement('div'); r.className = 'as-snd'; r.setAttribute('role','button'); r.tabIndex = 0;
+      r.innerHTML = `<span class="ck">${sd.id === draft.sound ? '<svg viewBox="0 0 20 20"><path d="M4.5 10.5l3.5 3.5 7.5-8"/></svg>' : ''}</span><span><span class="nm"></span>${sd.note ? `<small>${sd.note}</small>` : ''}</span>`;
+      r.querySelector('.nm').textContent = sd.name;
+      r.onclick = () => { draft.sound = sd.id; renderDraft(); previewSound(sd.id); };
+      r.onkeydown = e => { if(e.key === 'Enter' || e.key === ' '){ e.preventDefault(); r.click(); } };
+      box.appendChild(r);
+    });
+  }
+  function previewSound(id){
+    clearTimeout(previewSound._t);
+    try{ prevS.src = soundSrc(id); prevS.currentTime = 0; prevS.volume = 1; prevS.play().catch(()=>{}); }catch(e){}
+    previewSound._t = setTimeout(()=>{ try{ prevS.pause(); }catch(e){} }, 4000);
+  }
+  function openSheet(a){
+    editing = a || null;
+    const now = new Date();
+    draft = a ? {time:a.time, days:[...a.days], label:a.label, sound:a.sound, snooze:a.snooze, snoozeMin:a.snoozeMin}
+              : {time:`${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`, days:[], label:'', sound:'theme', snooze:true, snoozeMin:5};
+    $('#asTitle').textContent = a ? 'Edit Alarm' : 'Add Alarm';
+    $('#asLabel').value = draft.label; $('#asDelete').hidden = !a; $('#asErr').textContent = '';
+    $('#asSounds').hidden = true; $('#asSoundRow').setAttribute('aria-expanded', false);
+    renderDraft();
+    wrap.classList.add('show');
+    requestAnimationFrame(()=>{
+      const [H, M] = draft.time.split(':').map(Number);
+      setIdx('h', (H % 12 || 12) - 1, false); setIdx('m', M, false); setIdx('p', H >= 12 ? 1 : 0, false);
+      cols.h.focus({preventScroll:true});
+    });
+  }
+  function closeSheet(){ wrap.classList.remove('show'); editing = null; draft = null; try{ prevS.pause(); }catch(e){} }
+  $('#aAddBtn').onclick = () => openSheet(null);
+  $('#aEdit').onclick = () => { editMode = !editMode; renderList(); };
+  $('#asCancel').onclick = closeSheet;
+  wrap.addEventListener('pointerdown', e=>{ if(e.target === wrap) closeSheet(); });
+  $$('#asDays button').forEach(b=>b.onclick = ()=>{ const d = +b.dataset.d; draft.days = draft.days.includes(d) ? draft.days.filter(x=>x!==d) : [...draft.days, d]; renderDraft(); });
+  $$('.qdays button').forEach(b=>b.onclick = ()=>{ draft.days = {none:[], weekdays:[1,2,3,4,5], all:[0,1,2,3,4,5,6]}[b.dataset.q]; renderDraft(); });
+  $('#asSoundRow').onclick = () => { const box = $('#asSounds'); box.hidden = !box.hidden; $('#asSoundRow').setAttribute('aria-expanded', !box.hidden); };
+  $('#asSoundRow').onkeydown = e => { if(e.key === 'Enter' || e.key === ' '){ e.preventDefault(); $('#asSoundRow').click(); } };
+  $('#asSnooze').onclick = () => { draft.snooze = !draft.snooze; renderDraft(); };
+  $('#asSnoozeMin').onchange = e => { draft.snoozeMin = +e.target.value; };
+  $('#asLabel').addEventListener('keydown', e=>{ if(e.key === 'Enter') $('#asSave').click(); });
+  $('#asSave').onclick = () => {
+    const time = wheelTime(), label = $('#asLabel').value.trim();
+    if(editing){
+      if(editing.time !== time || String(editing.days) !== String(draft.days)) editing.last = '';
+      Object.assign(editing, {time, label, days:[...draft.days], sound:draft.sound, snooze:draft.snooze, snoozeMin:draft.snoozeMin, on:true, snoozeAt:null});
+    } else {
+      alarms.push({id:Date.now(), time, label, days:[...draft.days], sound:draft.sound, snooze:draft.snooze, snoozeMin:draft.snoozeMin, on:true, last:'', snoozeAt:null});
+    }
+    save(); closeSheet(); renderList(); updateNext();
+  };
+  $('#asDelete').onclick = () => { if(!editing) return; alarms = alarms.filter(x=>x!==editing); save(); closeSheet(); renderList(); updateNext(); };
+
+  renderList(); tick(); setInterval(tick, 1000);
+  return { dismiss: stop, stop, snooze, ringing:()=>!!ringing, sheetOpen:()=>wrap.classList.contains('show'), closeSheet, running:()=>false, _ring:ring, _all:()=>alarms };
+})();
+
+/* =====================================================================
+   STOPWATCH
+   ===================================================================== */
+const Stopwatch = (()=>{
+  const el = $('#swTimer'), pane = $('#pane-stopwatch'), lapsEl = $('#swLaps');
+  let acc = 0, startAt = 0, running = false, iv = null, laps = [];
+  const now = () => acc + (running ? performance.now() - startAt : 0);
+  const f = ms => { const t = Math.floor(ms/100), d = t % 10, s = Math.floor(t/10); return fmt(s) + '.' + d; };
+  const upd = () => el.textContent = f(now());
+  function start(){ if(running) return; running = true; startAt = performance.now(); el.classList.add('running'); iv = setInterval(upd, 50); }
+  function pause(){ if(!running) return; acc = now(); running = false; clearInterval(iv); el.classList.remove('running'); upd(); }
+  function reset(){ pause(); acc = 0; laps = []; renderLaps(); upd(); }
+  function lap(){ const t = now(); if(!t) return; const prev = laps.length ? laps[laps.length-1].total : 0; laps.push({total:t, split:t-prev}); renderLaps(); }
+  function renderLaps(){
+    lapsEl.hidden = !laps.length; lapsEl.innerHTML = '';
+    laps.slice().reverse().forEach((l,i)=>{
+      const r = document.createElement('div'); r.className = 'lap';
+      r.innerHTML = `<span>Lap ${laps.length - i}</span><span>${f(l.split)}</span><span class="tot">${f(l.total)}</span>`;
+      lapsEl.appendChild(r);
+    });
+  }
+  pane.addEventListener('click', e=>{
+    const b = e.target.closest('button[data-act]'); if(!b) return;
+    ({start, pause, reset, lap})[b.dataset.act]?.();
+  });
+  upd();
+  return { start, pause, reset, toggle(){ running ? pause() : start(); }, running:()=>running };
+})();
+
+
+/* =====================================================================
+   Option bar, URL + memory, keyboard, idle, fullscreen, music
+   ===================================================================== */
+const MODES = ['timer','routines','alarm','stopwatch'];
+const TYPES = ['standard','turn','bar'];
+const CTRL = {standard:Standard, turn:Turn, bar:Bar, routines:Routines, alarm:Alarm, stopwatch:Stopwatch};
+const state = {mode:'timer', type:'standard'};
+const paneKey = () => state.mode === 'timer' ? state.type : state.mode;
+const active = () => CTRL[paneKey()];
+
+function syncUrl(){
+  try{
+    const p = new URLSearchParams();
+    p.set('mode', state.mode); if(state.mode === 'timer') p.set('type', state.type);
+    if(theme) p.set('theme', theme.id);
+    history.replaceState(null, '', location.pathname + '?' + p.toString());
+  }catch(e){}
+}
+function show(){
+  $$('.pane').forEach(p=>p.classList.toggle('active', p.id === 'pane-' + paneKey()));
+  /* Dock buttons: Timer / Turn / Bar set the timer type; the rest are tools */
+  const btnKey = b => b.dataset.type || b.dataset.mode;
+  $$('.js-mode').forEach(b=>b.setAttribute('aria-pressed', btnKey(b) === paneKey()));
+  store.set('mode', state.mode); store.set('type', state.type);
+  const mb = $$('.js-mode').find(b=>btnKey(b) === paneKey());
+  $('#cornerBtn').title = 'Tools · ' + (mb ? mb.textContent.trim() : 'Timer');
+  updateLogo(); syncUrl(); liveDots();
+}
+$$('.js-mode').forEach(b=>b.onclick = ()=>{ state.mode = b.dataset.mode; if(b.dataset.type) state.type = b.dataset.type; show(); });
+
+/* Green dot on any tab whose timer is still running in the background */
+function liveDots(){
+  $$('.js-mode').forEach(b=>{
+    const k = b.dataset.type || b.dataset.mode;
+    b.classList.toggle('live', CTRL[k].running() && k !== paneKey());
+  });
+  $('#cornerBtn').classList.toggle('has-live', Object.entries(CTRL).some(([k,c])=>k !== paneKey() && c.running()));
+}
+setInterval(liveDots, 500);
+
+/* Keyboard: Space start/pause · R reset · T themes · F full screen · Esc close */
+document.addEventListener('keydown', e=>{
+  if(Tour.active()){ Tour.key(e); return; }
+  if(Alarm.sheetOpen()){ if(e.key === 'Escape') Alarm.closeSheet(); return; }
+  if(Routines.sheetOpen()){ if(e.key === 'Escape') Routines.closeSheet(); return; }
+  if(Alarm.ringing()){ if(e.key === 'Escape') Alarm.stop(); return; }
+  if(e.target.closest('input,textarea,select')) return;
+  if(e.ctrlKey || e.metaKey || e.altKey) return;
+  const k = e.key.toLowerCase();
+  if(e.key === 'Escape'){ if(Alarm.ringing()) Alarm.dismiss(); closeTools(); closeMbPops(); return; }
+  if(k === ' '){ e.preventDefault(); active().toggle?.(); }
+  else if(k === 'r') active().reset?.();
+  else if(k === 't') openDrawer();
+  else if(k === 'd') toggleTools();
+  else if(/^[1-6]$/.test(k)){ const b = $$('#vdock .js-mode')[+k - 1]; if(b){ b.click(); peekDock(); } }
+  else if(k === 'f') toggleFs();
+  else if(e.key === '?') Tour.start();
+  else if(k === 'm') setMusic(!mbar.classList.contains('open'));
+});
+/* Buttons let go of focus after a click so Space never "re-clicks" them */
+document.addEventListener('click', e=>{ const b = e.target.closest('button'); if(b) b.blur(); });
+
+/* Projector mode: hide the option bar and tool buttons while something runs and the mouse is still */
+let idleT = null;
+function wake(){
+  document.body.classList.remove('idle'); clearTimeout(idleT);
+  idleT = setTimeout(()=>{
+    const busy = Object.values(CTRL).some(c=>c.running()) || state.mode === 'alarm';
+    if(busy && !vdock.classList.contains('open') && !document.querySelector('.glass:focus-within')) document.body.classList.add('idle');
+    else wake();
+  }, 4000);
+}
+['pointermove','pointerdown','keydown','touchstart'].forEach(ev=>document.addEventListener(ev, wake, {passive:true}));
+
+function toggleFs(){
+  try{
+    if(!document.fullscreenElement) document.documentElement.requestFullscreen().catch(()=>{});
+    else document.exitFullscreen().catch(()=>{});
+  }catch(e){}
+}
+$('#fsBtn').onclick = toggleFs;
+
+/* =====================================================================
+   MUSIC MINI BAR — YouTube, using the IFrame Player API.
+   Built-in playlist: "Classroom" (Allen Robson), from your timer pages.
+   Teachers can add their own playlist or video links (saved per device).
+   YouTube's rules: the player must be visible and at least 200 x 200 while it
+   plays, so it drops down under the bar while playing and folds up on pause.
+   Hiding the bar pauses the music.
+   ===================================================================== */
+const MUSIC_BUILTIN = [{kind:'list', id:'PLYc7EoK5SagCCVbZdbGfKghM9VaGLRyKM', name:'Classroom', by:'Allen Robson', builtin:true}];
+const ICON_PLAY = '<svg viewBox="0 0 20 20"><path d="M6 4l10 6-10 6z"/></svg>';
+const ICON_PAUSE = '<svg viewBox="0 0 20 20"><path d="M5.5 4h3v12h-3zM11.5 4h3v12h-3z"/></svg>';
+const mbar = $('#musicBar');
+let userLists = store.get('musicLists', []);
+let curKey = store.get('musicCur', 'list:' + MUSIC_BUILTIN[0].id);
+let mVol = store.get('musicVol', 60);
+let yt = null, ytReady = false, ytLoading = false, mPlaying = false, wantPlay = false, startT = null;
+const keyOf = l => l.kind + ':' + l.id;
+const allLists = () => [...MUSIC_BUILTIN, ...userLists];
+const curList = () => allLists().find(l => keyOf(l) === curKey) || MUSIC_BUILTIN[0];
+
+function ytParse(link){
+  try{
+    const u = new URL(String(link).trim());
+    if(!/(^|\.)(youtube\.com|youtu\.be|youtube-nocookie\.com)$/.test(u.hostname)) return null;
+    const list = u.searchParams.get('list');
+    if(list) return {kind:'list', id:list};
+    let v = u.searchParams.get('v');
+    const parts = u.pathname.split('/').filter(Boolean);
+    if(!v && u.hostname.endsWith('youtu.be')) v = parts[0];
+    if(!v && ['embed','shorts','live'].includes(parts[0])) v = parts[1];
+    return v ? {kind:'video', id:v} : null;
+  }catch(e){ return null; }
+}
+function mbMsg(t, ms = 4000){ $('#mbMsg').textContent = t; clearTimeout(mbMsg._t); if(t && ms) mbMsg._t = setTimeout(()=>$('#mbMsg').textContent = '', ms); }
+function setDrop(open){ mbar.classList.toggle('dropped', open); }
+function renderBar(){
+  const l = curList();
+  $('#mbPlay').innerHTML = mPlaying ? ICON_PAUSE : ICON_PLAY;
+  $('#mbPlay').title = mPlaying ? 'Pause' : 'Play'; $('#mbPlay').setAttribute('aria-label', $('#mbPlay').title);
+  mbar.classList.toggle('playing', mPlaying);
+  let song = l.name, sub = (l.kind === 'list' ? 'YouTube playlist' : 'YouTube video') + (l.by ? ' · ' + l.by : '');
+  if(yt && ytReady){
+    try{
+      const d = yt.getVideoData() || {};
+      if(d.title) song = d.title;
+      const pl = yt.getPlaylist && yt.getPlaylist();
+      if(l.kind === 'list') sub = l.name + (pl && pl.length ? ` · ${yt.getPlaylistIndex() + 1} of ${pl.length}` : '');
+      if(d.video_id){ const img = $('#mbThumb'); img.src = `https://i.ytimg.com/vi/${d.video_id}/mqdefault.jpg`; img.hidden = false; }
+    }catch(e){}
+  }
+  $('#mbSong').textContent = song; $('#mbSub').textContent = sub;
+}
+function loadYT(cb){
+  if(window.YT && YT.Player) return cb();
+  const prev = window.onYouTubeIframeAPIReady;
+  window.onYouTubeIframeAPIReady = () => { if(prev) prev(); cb(); };
+  if(ytLoading) return; ytLoading = true;
+  const sc = document.createElement('script'); sc.src = 'https://www.youtube.com/iframe_api';
+  sc.onerror = () => { ytLoading = false; wantPlay = false; setDrop(false); mbMsg('YouTube could not load. Check the internet connection.', 6000); };
+  document.head.appendChild(sc);
+}
+function makePlayer(){
+  const l = curList();
+  const vars = {playsinline:1, rel:0};
+  if(l.kind === 'list'){ vars.listType = 'playlist'; vars.list = l.id; }
+  yt = new YT.Player('ytHost', {
+    host:'https://www.youtube-nocookie.com', width:'100%', height:'100%',
+    videoId: l.kind === 'video' ? l.id : undefined, playerVars: vars,
+    events:{
+      onReady: () => { ytReady = true; yt.setVolume(mVol); renderBar(); if(wantPlay) yt.playVideo(); },
+      onStateChange: e => {
+        if(e.data === 1){ mPlaying = true; wantPlay = false; setDrop(true); clearTimeout(startT); mbMsg(''); }
+        else if(e.data === 2 || e.data === 0){ mPlaying = false; if(!wantPlay) setDrop(false); }
+        renderBar();
+      },
+      onError: () => { mPlaying = false; wantPlay = false; renderBar(); mbMsg('That video or playlist can’t be played here. Try another link.', 6000); }
+    }
+  });
+}
+function musicPlay(){
+  wantPlay = true; setDrop(true);
+  clearTimeout(startT);
+  /* Some browsers (iPad Safari) need the first press inside the video itself */
+  startT = setTimeout(()=>{ if(!mPlaying && wantPlay) mbMsg('Press play in the video to start.', 0); }, 3000);
+  if(!yt) loadYT(makePlayer);
+  else if(ytReady) yt.playVideo();
+}
+function musicPause(){
+  wantPlay = false; clearTimeout(startT); mbMsg('');
+  if(yt && ytReady) yt.pauseVideo();
+  mPlaying = false; setDrop(false); renderBar();
+}
+function switchList(key){
+  curKey = key; store.set('musicCur', key);
+  const l = curList(), go = mPlaying || wantPlay;
+  if(yt && ytReady){
+    if(l.kind === 'list') yt[go ? 'loadPlaylist' : 'cuePlaylist']({list:l.id, listType:'playlist'});
+    else yt[go ? 'loadVideoById' : 'cueVideoById'](l.id);
+  }
+  $('#mbThumb').hidden = true; renderBar(); setTimeout(renderBar, 1200);
+}
+function setMusic(open){
+  if(!open && (mPlaying || wantPlay)) musicPause();
+  mbar.classList.toggle('open', open); mbar.setAttribute('aria-hidden', !open);
+  $('#musicBtn').setAttribute('aria-pressed', open);
+  if(!open) closeMbPops();
+}
+function closeMbPops(){ ['#mbVolPop','#mbListPop'].forEach(s=>$(s).hidden = true); $('#mbVolB').setAttribute('aria-expanded', false); $('#mbListB').setAttribute('aria-expanded', false); $('#mbForm').hidden = true; }
+function togglePop(which){
+  const pop = $(which === 'vol' ? '#mbVolPop' : '#mbListPop'), btn = $(which === 'vol' ? '#mbVolB' : '#mbListB');
+  const show = pop.hidden; closeMbPops(); pop.hidden = !show; btn.setAttribute('aria-expanded', show);
+  if(show && which === 'list') renderRows();
+}
+function renderRows(){
+  const box = $('#mbRows'); box.innerHTML = '';
+  allLists().forEach(l=>{
+    const r = document.createElement('div'); r.className = 'mb-row'; r.setAttribute('role','button'); r.tabIndex = 0;
+    const on = keyOf(l) === curKey;
+    r.innerHTML = `<span class="chk">${on ? '<svg viewBox="0 0 20 20"><path d="M4.5 10.5l3.5 3.5 7.5-8"/></svg>' : '<svg viewBox="0 0 20 20"></svg>'}</span>
+      <span class="nm"><b></b><small>${l.builtin ? 'Built in' : (l.kind === 'list' ? 'Your playlist' : 'Your video')}</small></span>`;
+    r.querySelector('b').textContent = l.name;
+    if(!l.builtin){
+      const x = document.createElement('button'); x.className = 'mb-x'; x.type = 'button'; x.title = 'Remove'; x.setAttribute('aria-label','Remove ' + l.name);
+      x.innerHTML = '<svg viewBox="0 0 20 20"><path d="M6 6l8 8M14 6l-8 8"/></svg>';
+      x.onclick = ev => { ev.stopPropagation(); userLists = userLists.filter(u => u !== l); store.set('musicLists', userLists); if(on) switchList(keyOf(MUSIC_BUILTIN[0])); renderRows(); };
+      r.appendChild(x);
+    }
+    r.onclick = () => { switchList(keyOf(l)); renderRows(); };
+    r.onkeydown = e => { if(e.key === 'Enter') r.click(); };
+    box.appendChild(r);
+  });
+}
+$('#musicBtn').onclick = () => setMusic(!mbar.classList.contains('open'));
+$('#mbClose').onclick = () => setMusic(false);
+$('#mbPlay').onclick = () => (mPlaying || wantPlay) ? musicPause() : musicPlay();
+$('#mbPrev').onclick = () => { if(yt && ytReady) yt.previousVideo(); };
+$('#mbNext').onclick = () => { if(yt && ytReady) yt.nextVideo(); };
+$('#mbVolB').onclick = () => togglePop('vol');
+$('#mbListB').onclick = () => togglePop('list');
+$('#mbVol').value = mVol; $('#mbVolOut').textContent = mVol;
+$('#mbVol').oninput = e => { mVol = Math.round(+e.target.value); $('#mbVolOut').textContent = mVol; store.set('musicVol', mVol); if(yt && ytReady) yt.setVolume(mVol); };
+$('#mbAddRow').onclick = () => { const f = $('#mbForm'); f.hidden = !f.hidden; if(!f.hidden) $('#mbUrl').focus(); };
+$('#mbAddRow').onkeydown = e => { if(e.key === 'Enter') $('#mbAddRow').click(); };
+$('#mbForm').addEventListener('submit', e=>{
+  e.preventDefault();
+  const p = ytParse($('#mbUrl').value);
+  if(!p){ mbMsg('Paste a YouTube link, like youtube.com/playlist?list=… or youtu.be/…'); return; }
+  if(allLists().some(l => keyOf(l) === keyOf(p))){ switchList(keyOf(p)); renderRows(); $('#mbForm').hidden = true; return; }
+  const name = $('#mbName').value.trim() || (p.kind === 'list' ? 'My playlist' : 'My video');
+  userLists.push({kind:p.kind, id:p.id, name}); store.set('musicLists', userLists);
+  $('#mbUrl').value = ''; $('#mbName').value = ''; $('#mbForm').hidden = true;
+  switchList(keyOf(p)); renderRows(); mbMsg(`Added ${name}.`, 2500);
+});
+document.addEventListener('pointerdown', e=>{ if(!e.target.closest('.mb-pop,#mbVolB,#mbListB')) closeMbPops(); });
+renderBar();
+
+/* =====================================================================
+   DOCK — opened from the stacks button in the top-right corner.
+   Mouse: point at the button and the dock drops down; it tucks away when
+          you move off it. Touch: tap the button. Pin keeps it open.
+   Themes takes over the dock at double width. D toggles the dock.
+   ===================================================================== */
+const vdock = $('#vdock'), corner = $('#cornerBtn');
+let dockPinned = store.get('dockPinned', false), dockT = null;
+
+let dockOpenedAt = 0;
+function setDock(open){
+  if(open && !vdock.classList.contains('open')) dockOpenedAt = Date.now();
+  clearTimeout(dockT); dockT = null;
+  vdock.classList.toggle('open', open);
+  document.body.classList.toggle('dock-open', open);
+  corner.classList.toggle('active', open); corner.setAttribute('aria-expanded', open);
+  if(!open) openDrawer(false);
+}
+function openDock(){ if(!vdock.classList.contains('open')) setDock(true); else { clearTimeout(dockT); dockT = null; } }
+function hideDockSoon(ms = 1200){
+  if(dockPinned || dockT || Tour.active()) return;
+  dockT = setTimeout(()=>{
+    dockT = null;
+    const keep = vdock.matches(':hover') || corner.matches(':hover') ||
+      (vdock.contains(document.activeElement) && document.activeElement.matches(':focus-visible'));
+    if(keep) hideDockSoon(800); else if(!dockPinned) setDock(false);
+  }, ms);
+}
+function peekDock(ms = 1800){ openDock(); hideDockSoon(ms); }
+function setPinned(v){
+  dockPinned = v; store.set('dockPinned', v);
+  const b = $('#pinBtn'); b.setAttribute('aria-pressed', v);
+  b.title = v ? 'Let the dock hide' : 'Keep the dock open'; b.setAttribute('aria-label', b.title);
+  if(v) openDock(); else hideDockSoon(1000);
+}
+function closeTools(){ if(dockPinned) openDrawer(false); else setDock(false); }
+function toggleTools(){
+  if(dockPinned) setPinned(false);
+  else if(vdock.classList.contains('open')) setDock(false);
+  else { openDock(); hideDockSoon(5000); }
+}
+$('#pinBtn').onclick = () => setPinned(!dockPinned);
+
+corner.addEventListener('pointerenter', e=>{ if(e.pointerType === 'mouse') openDock(); });
+corner.addEventListener('pointerleave', e=>{ if(e.pointerType === 'mouse') hideDockSoon(); });
+vdock.addEventListener('pointerleave', e=>{ if(e.pointerType === 'mouse') hideDockSoon(drawer.classList.contains('open') ? 1800 : 1200); });
+vdock.addEventListener('pointerenter', ()=>{ clearTimeout(dockT); dockT = null; });
+/* Click the stack button: opens the dock, or closes it when it's already open.
+   (A click right after pointing at the button keeps the dock open, since pointing opened it.) */
+corner.addEventListener('click', ()=>{
+  const touch = matchMedia('(hover: none)').matches;
+  if(vdock.classList.contains('open') && (touch || Date.now() - dockOpenedAt > 600)){
+    if(dockPinned){ dockPinned = false; store.set('dockPinned', false); $('#pinBtn').setAttribute('aria-pressed', false); }
+    return setDock(false);
+  }
+  openDock(); if(touch) hideDockSoon(5000);
+});
+/* Clicking or tapping anywhere else closes the dock */
+document.addEventListener('pointerdown', e=>{
+  if(e.target.closest('#cornerBtn,#vdock,#tour')) return;
+  if(vdock.classList.contains('open')) closeTools();
+});
+/* Touch: picking a tool tucks the dock away after a moment (not while choosing a theme) */
+vdock.addEventListener('click', e=>{
+  if(!e.target.closest('button') || dockPinned || e.target.closest('#drawer,#themeBtn')) return;
+  if(matchMedia('(hover: none)').matches){ clearTimeout(dockT); dockT = null; hideDockSoon(2000); }
+});
+$('#pinBtn').setAttribute('aria-pressed', dockPinned);
+
+/* =====================================================================
+   BACKGROUND PREVIEW — drag any image or video file onto the page to see the
+   current theme's styling over it. Nothing is saved; pick a theme to go back.
+   ===================================================================== */
+let previewURL = null;
+function toast(msg, ms = 3500){ const t = $('#toast'); t.textContent = msg; t.classList.add('show'); clearTimeout(toast._t); toast._t = setTimeout(()=>t.classList.remove('show'), ms); }
+function previewBackground(file){
+  if(!file || !/^(image|video)\//.test(file.type)) return toast('Drop an image or video file.');
+  if(previewURL) URL.revokeObjectURL(previewURL);
+  previewURL = URL.createObjectURL(file);
+  if(file.type.startsWith('video/')){
+    setBgPicture(null);
+    bgVid.setAttribute('src', previewURL); bgVid.style.display = 'block'; bgVid.load(); bgVid.play().catch(()=>{});
+  } else {
+    bgVid.pause(); bgVid.style.display = 'none'; bgVid.removeAttribute('src');
+    setBgPicture(previewURL);
+  }
+  toast(`Previewing ${file.name} with the ${theme.name} theme. Pick any theme to go back.`, 5000);
+}
+const hasFiles = e => e.dataTransfer && [...e.dataTransfer.types].includes('Files');
+document.addEventListener('dragover', e=>{ if(hasFiles(e)){ e.preventDefault(); document.body.classList.add('dropping'); } });
+document.addEventListener('dragleave', e=>{ if(!e.relatedTarget) document.body.classList.remove('dropping'); });
+document.addEventListener('drop', e=>{
+  if(!hasFiles(e)) return; e.preventDefault(); document.body.classList.remove('dropping');
+  previewBackground(e.dataTransfer.files[0]);
+});
+
+/* Test one known file; if the local images/ folder is missing, switch to the live site */
+function checkAssetFolder(){
+  if(assetBase === SITE_BASE) return;
+  const probe = new Image();
+  probe.onerror = () => {
+    assetBase = SITE_BASE;
+    endS.src = AUD(theme.endSound); warnS.src = AUD(theme.warnSound);
+    turnS.src = AUD('TurnAlert.mp3'); finalS.src = AUD('ac-bel-105874.mp3');
+    $('#alarmSound').src = AUD(theme.endSound);
+    const id = theme.id; theme = null; applyTheme(id);
+    if(drawer.classList.contains('open')) renderGrid();
+  };
+  probe.src = IMG('TIMEr%20Wh%20Logo.png');
+}
+
+/* =====================================================================
+   GUIDED WALKTHROUGH — runs once on a teacher's first visit, and any time
+   from the ? button in the dock (or the ? key). Skip or Esc ends it.
+   ===================================================================== */
+const Tour = (()=>{
+  const el = $('#tour'), spot = $('#tourSpot'), tip = $('#tourTip');
+  const toStandard = () => { if(paneKey() !== 'standard'){ state.mode = 'timer'; state.type = 'standard'; show(); } };
+  const toolsOnly = () => { openDrawer(false); if(!dockPinned) setDock(false); };
+  const STEPS = [
+    {title:'Start a timer in one tap', text:'Tap a number to start a timer right away. The numbers are minutes; :15 and :30 are seconds.',
+     target:'#stdPresets', before(){ toStandard(); toolsOnly(); }},
+    {title:'Need more time?', text:'+30 sec adds 30 seconds, even while the timer is running.',
+     target:'#pane-standard [data-act=add]', before(){ toStandard(); toolsOnly(); }},
+    {title:'Reset', text:'Stops the alarm sound and puts the time back.',
+     target:'#pane-standard [data-act=reset]', before(){ toStandard(); toolsOnly(); }},
+    {title:'Any time you want', text:'Type a time like 7:30 in the box, then press Set.',
+     target:()=>$('#stdCustom').parentElement, before(){ toStandard(); toolsOnly(); }},
+    {title:'All your timers live here', text:'The stack button in the corner opens this dock: Turn, Bar, Routines, Alarm, and Stopwatch. Click the stack again to close it.',
+     target:()=>[$('#cornerBtn'), $('#vdock')], side:'left', before(){ openDrawer(false); openDock(); }},
+    {title:'Pick a theme', text:'Themes change the background, colors, and sounds. Tap any picture to try it.',
+     target:'#vdock', before(){ openDock(); openDrawer(true); }},
+    {title:'Music', text:'Play the Classroom playlist, or add your own YouTube playlist link.',
+     target:'#musicBtn', side:'left', when:()=>!matchMedia('(max-width:600px)').matches, before(){ openDrawer(false); openDock(); }}
+  ];
+  let i = -1, on = false, t = null;
+  function rectOf(step){
+    let nodes = typeof step.target === 'function' ? step.target() : $(step.target);
+    nodes = (Array.isArray(nodes) ? nodes : [nodes]).filter(Boolean);
+    if(!nodes.length) return null;
+    const rs = nodes.map(n=>n.getBoundingClientRect());
+    const left = Math.min(...rs.map(r=>r.left)), top = Math.min(...rs.map(r=>r.top)),
+          right = Math.max(...rs.map(r=>r.right)), bottom = Math.max(...rs.map(r=>r.bottom));
+    return {left, top, right, bottom, width:right-left, height:bottom-top};
+  }
+  function place(){
+    if(!on) return;
+    const r = rectOf(STEPS[i]); if(!r) return;
+    const pad = 8, vw = innerWidth, vh = innerHeight;
+    Object.assign(spot.style, {left:(r.left - pad)+'px', top:(r.top - pad)+'px', width:(r.width + pad*2)+'px', height:(r.height + pad*2)+'px'});
+    const tw = tip.offsetWidth, th = tip.offsetHeight, gap = 16;
+    let left, top;
+    if(STEPS[i].side === 'left' && r.left - gap - tw > 8){ left = r.left - gap - tw; top = r.top + r.height/2 - th/2; } /* left of the dock */
+    else if(r.bottom + gap + th < vh - 8){ top = r.bottom + gap; left = r.left + r.width/2 - tw/2; }       /* below */
+    else if(r.top - gap - th > 8){ top = r.top - gap - th; left = r.left + r.width/2 - tw/2; }         /* above */
+    else { left = r.left - gap - tw; top = r.top + r.height/2 - th/2; if(left < 8) left = r.right + gap; } /* beside */
+    left = Math.max(12, Math.min(vw - tw - 12, left)); top = Math.max(12, Math.min(vh - th - 12, top));
+    tip.style.left = left + 'px'; tip.style.top = top + 'px';
+  }
+  function go(n){
+    if(n < 0) return;
+    if(n >= STEPS.length) return end(true);
+    const dir = n >= i ? 1 : -1;
+    i = n; const st = STEPS[i];
+    st.before && st.before();
+    /* Skip a step that doesn't apply on this screen (Music is hidden on phones) */
+    if(st.when && !st.when()){ return (n + dir < 0) ? go(n + 1) : go(n + dir); }
+    $('#tourTitle').textContent = st.title; $('#tourText').textContent = st.text;
+    const visible = STEPS.map(x=>!x.when || x.when());
+    const pos = visible.slice(0, i + 1).filter(Boolean).length, count = visible.filter(Boolean).length;
+    $('#tourCount').textContent = `${pos} of ${count}`;
+    $('#tourBack').hidden = i === 0;
+    $('#tourNext').textContent = pos === count ? 'Done' : 'Next';
+    clearTimeout(t);
+    requestAnimationFrame(()=>requestAnimationFrame(()=>{ place(); t = setTimeout(place, 120); }));
+    $('#tourNext').focus({preventScroll:true});
+  }
+  function start(){
+    if(on) return;
+    if(Alarm.sheetOpen()) Alarm.closeSheet();
+    on = true; document.body.classList.add('touring');
+    spot.classList.add('jump'); tip.classList.add('jump');           /* first spot appears in place */
+    setTimeout(()=>{ spot.classList.remove('jump'); tip.classList.remove('jump'); }, 120);
+    el.classList.add('on'); el.setAttribute('aria-hidden', false);
+    document.body.classList.remove('idle');
+    go(0);
+  }
+  function end(finished){
+    on = false; clearTimeout(t); el.classList.remove('on'); el.setAttribute('aria-hidden', true);
+    document.body.classList.remove('touring');
+    store.set('tourDone', true);
+    openDrawer(false); if(!dockPinned) setDock(false);
+    if(finished) toast('You can take the tour again from the ? button in the stack.', 4000);
+  }
+  $('#tourNext').onclick = () => go(i + 1);
+  $('#tourBack').onclick = () => go(i - 1);
+  $('#tourSkip').onclick = () => end(false);
+  $('#tourBtn').onclick = () => start();
+  addEventListener('resize', ()=>place());
+  function key(e){
+    if(e.key === 'Escape'){ e.preventDefault(); end(false); }
+    else if(e.key === 'ArrowRight' || (e.key === 'Enter' && !e.target.closest('#tourBack,#tourSkip'))){ e.preventDefault(); go(i + 1); }
+    else if(e.key === 'ArrowLeft'){ e.preventDefault(); go(i - 1); }
+  }
+  return { start, end, key, active:()=>on };
+})();
+
+/* =====================================================================
+   Start up: URL first (?mode=timer&type=bar&theme=road), then last used
+   ===================================================================== */
+(function init(){
+  const p = new URLSearchParams(location.search);
+  const m = p.get('mode'), t = p.get('type'), th = p.get('theme');
+  state.mode = MODES.includes(m) ? m : (MODES.includes(store.get('mode')) ? store.get('mode') : 'timer');
+  state.type = TYPES.includes(t) ? t : (TYPES.includes(store.get('type')) ? store.get('type') : 'standard');
+  const themeId = THEMES.some(x=>x.id === th) ? th : (THEMES.some(x=>x.id === store.get('theme')) ? store.get('theme') : DEFAULT_THEME);
+  applyTheme(themeId);
+  checkAssetFolder();
+  show();
+  const firstVisit = !store.get('tourDone', false);
+  if(dockPinned) setPinned(true);
+  else if(!firstVisit) peekDock(2500);
+  /* Links that open a specific tool (?mode=…) skip the automatic tour; it runs on the next plain visit */
+  if(firstVisit && !p.has('notour') && !p.has('mode')) setTimeout(()=>{ if(!Object.values(CTRL).some(c=>c.running())) Tour.start(); }, 700);
+  wake();
+})();
+</script>
+</body>
+</html>
