@@ -340,7 +340,7 @@ body.idle{cursor:none;}
 @media (max-height:780px){ #pane-bar .btn.sm.round{width:48px;height:48px;font-size:.85rem;} #pane-bar .btn.sm{padding:6px 14px;} }
 
 /* ---------- ROUTINES (iOS Clock style: progress ring, round buttons, step list) ---------- */
-.r-wrap{display:flex;align-items:center;justify-content:center;gap:clamp(24px,4.5vw,64px);width:min(1100px,100%);flex-wrap:wrap;}
+.r-wrap{display:flex;align-items:center;justify-content:center;gap:clamp(24px,3vw,64px);width:min(1100px,100%);flex-wrap:wrap;}
 .r-main{display:flex;flex-direction:column;align-items:center;gap:clamp(16px,3vh,28px);}
 .r-ring{
   position:relative;width:min(clamp(240px,46vh,390px),78vw);aspect-ratio:1;border-radius:50%;
@@ -374,7 +374,7 @@ body.idle{cursor:none;}
 .r-mini svg{width:20px;height:20px;fill:currentColor;}
 /* Step list card */
 .r-list{
-  width:min(380px,100%);border-radius:22px;overflow:hidden;background:rgba(16,16,18,.74);border:1px solid var(--dock-line);
+  width:min(290px,100%);border-radius:22px;overflow:hidden;background:rgba(16,16,18,.74);border:1px solid var(--dock-line);
   box-shadow:0 20px 60px rgba(0,0,0,.4);backdrop-filter:blur(5px);-webkit-backdrop-filter:blur(5px);
   font-family:'Inter',sans-serif;color:#f3f5f9;text-shadow:none;
 }
@@ -562,7 +562,7 @@ body.idle{cursor:none;}
    A 256 x 88 bar. While music plays, the YouTube player drops down under it
    (YouTube requires its player to be visible and at least 200 x 200). */
 .mbar{
-  position:fixed;top:20px;right:80px;z-index:47;width:256px;padding:10px;border-radius:18px;
+  position:fixed;top:80px;right:20px;z-index:47;width:256px;padding:10px;border-radius:18px;
   background:rgba(16,16,18,.74);border:1px solid var(--dock-line);
   box-shadow:0 20px 60px rgba(0,0,0,.45),inset 0 1px 0 rgba(255,255,255,.08);
   backdrop-filter:blur(5px);-webkit-backdrop-filter:blur(5px);
@@ -581,7 +581,11 @@ body.idle{cursor:none;}
 .mbar:hover .mb-close,.mbar:focus-within .mb-close{opacity:1;transform:none;}
 .mb-close:hover{background:#ff453a;border-color:#ff453a;}
 @media (hover:none){ .mb-close{opacity:1;transform:none;} }
+/* Sits under the menu button; slides left when the menu panel (or the wider Themes panel) opens */
 body.dock-open .mbar{right:126px;}
+body.dock-open.themes-open .mbar{right:228px;}
+#pane-bar .bars-wrap{margin-left:auto;margin-right:auto;transition:max-width .35s var(--ease);}
+body.music-video #pane-bar .bars-wrap{max-width:calc(100vw - 580px);}
 .mbar svg{fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round;flex:none;}
 .mb-top{display:flex;gap:10px;height:68px;}
 .mb-thumb{position:relative;width:68px;height:68px;border-radius:10px;overflow:hidden;flex:none;background:#3a3427;display:grid;place-items:center;color:#e8dcb5;}
@@ -604,17 +608,6 @@ body.dock-open .mbar{right:126px;}
 .mb-b.main svg{fill:currentColor;stroke:none;}
 .mb-drop{height:0;overflow:hidden;transition:height .35s var(--ease),margin .35s var(--ease);}
 .mbar.dropped .mb-drop{height:200px;margin-top:10px;}
-/* Every tool except the main Timer: the player sits in the bottom-right corner, video above the bar */
-.mbar.at-bottom{top:auto;bottom:20px;right:20px;display:flex;flex-direction:column-reverse;}
-.mbar.at-bottom.dropped .mb-drop{margin-top:0;margin-bottom:10px;}
-body.dock-open .mbar.at-bottom{right:126px;}
-.mbar.at-bottom .mb-pop{top:auto;bottom:calc(100% + 6px);}
-/* While the video shows, a tool that would sit under it shifts left (the Bar timer also scales a little) */
-#stage{transition:padding .35s var(--ease);}
-.pane{transition:transform .35s var(--ease);}
-body.music-room #stage{padding-right:290px;}
-body.music-room #pane-bar{transform:scale(.9);}
-#stage.measuring,#stage.measuring .pane{transition:none !important;}
 .btn .ic-play{width:1em;height:1em;display:inline-block;vertical-align:-.14em;fill:currentColor;}
 .mb-player{width:236px;height:200px;border-radius:12px;overflow:hidden;background:#000;}
 .mb-player iframe{width:100%;height:100%;border:0;display:block;}
@@ -1283,6 +1276,7 @@ function openDrawer(open){
   if(isOpen){ drawerCat = theme.cat; renderGrid(); openDock(); }
   drawer.classList.toggle('open', isOpen); drawer.setAttribute('aria-hidden', !isOpen);
   vdock.classList.toggle('themes', isOpen);
+  document.body.classList.toggle('themes-open', isOpen);
   $('#themeBtn').setAttribute('aria-pressed', isOpen);
   if(isOpen) setTimeout(()=>{ const sel = grid.querySelector('.thumb[aria-pressed="true"]'); if(sel) grid.scrollTop = sel.offsetTop - grid.clientHeight/2 + sel.offsetHeight/2; }, 50);
 }
@@ -1965,7 +1959,6 @@ function show(){
   const mb = $$('.js-mode').find(b=>btnKey(b) === paneKey());
   $('#cornerBtn').title = 'Tools · ' + (mb ? mb.textContent.trim() : 'Timer');
   updateLogo(); syncUrl(); liveDots();
-  if(typeof placeMusic === 'function') placeMusic();
 }
 $$('.js-mode').forEach(b=>b.onclick = ()=>{ state.mode = b.dataset.mode; if(b.dataset.type) state.type = b.dataset.type; show(); });
 
@@ -2055,29 +2048,9 @@ function ytParse(link){
   }catch(e){ return null; }
 }
 function mbMsg(t, ms = 4000){ $('#mbMsg').textContent = t; clearTimeout(mbMsg._t); if(t && ms) mbMsg._t = setTimeout(()=>$('#mbMsg').textContent = '', ms); }
-function setDrop(open){ mbar.classList.toggle('dropped', open); layoutRoom(); }
-/* Where the player sits: top right on the main Timer (its presets fill the bottom), bottom right everywhere else */
-function placeMusic(){ mbar.classList.toggle('at-bottom', paneKey() !== 'standard'); layoutRoom(); }
-/* Make room only while the video is showing, and only if something in the current tool would sit under it */
-function layoutRoom(){
-  const stage = $('#stage'), body = document.body;
-  const showing = mbar.classList.contains('open') && mbar.classList.contains('dropped');
-  if(!showing){ body.classList.remove('music-room'); return; }
-  if(paneKey() === 'bar'){ body.classList.add('music-room'); return; }
-  stage.classList.add('measuring'); const had = body.classList.contains('music-room'); body.classList.remove('music-room');
-  const r = mbar.getBoundingClientRect(), h = $('.mb-top').offsetHeight + 232;
-  const P = {l:r.left - 14, r:r.right + 14, t:(mbar.classList.contains('at-bottom') ? r.bottom - h : r.top) - 14, b:(mbar.classList.contains('at-bottom') ? r.bottom : r.top + h) + 14};
-  const pane = $('.pane.active');
-  const hit = pane && [...pane.querySelectorAll('*')].some(e=>{
-    if(e.children.length) return false;
-    const q = e.getBoundingClientRect();
-    return q.width && q.height && q.left < P.r && q.right > P.l && q.top < P.b && q.bottom > P.t;
-  });
-  if(had) body.classList.add('music-room');
-  void stage.offsetWidth; stage.classList.remove('measuring');
-  body.classList.toggle('music-room', !!hit);
-}
-let roomT; window.addEventListener('resize', ()=>{ clearTimeout(roomT); roomT = setTimeout(layoutRoom, 150); });
+function setDrop(open){ mbar.classList.toggle('dropped', open); syncVideoRoom(); }
+/* While the video shows, the Bar timer's bars narrow (centered) so they stop short of the player */
+function syncVideoRoom(){ document.body.classList.toggle('music-video', mbar.classList.contains('open') && mbar.classList.contains('dropped')); }
 function renderBar(){
   const l = curList();
   $('#mbPlay').innerHTML = mPlaying ? ICON_PAUSE : ICON_PLAY;
@@ -2151,7 +2124,7 @@ function setMusic(open){
   mbar.classList.toggle('open', open); mbar.setAttribute('aria-hidden', !open);
   $('#musicBtn').setAttribute('aria-pressed', open);
   if(!open) closeMbPops();
-  layoutRoom();
+  syncVideoRoom();
 }
 function closeMbPops(){ ['#mbVolPop','#mbListPop'].forEach(s=>$(s).hidden = true); $('#mbVolB').setAttribute('aria-expanded', false); $('#mbListB').setAttribute('aria-expanded', false); $('#mbForm').hidden = true; }
 function togglePop(which){
