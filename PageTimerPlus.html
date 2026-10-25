@@ -2158,7 +2158,9 @@ function renderRows(){
 /* One tap: opening Music from the dock starts the last playlist used (the built-in Classroom list the first time) */
 /* Start loading YouTube as soon as the pointer reaches the Music button, so playback starts sooner */
 $('#musicBtn').addEventListener('pointerenter', ()=>{ if(!window.YT) loadYT(()=>{}); });
-$('#musicBtn').onclick = () => { const open = !mbar.classList.contains('open'); setMusic(open); if(open && !mPlaying) musicPlay(); };
+/* Opening Music gets the last playlist used (Classroom the first time) loaded and ready, without playing it,
+   so the teacher can switch playlists first; pressing Play then starts right away */
+$('#musicBtn').onclick = () => { const open = !mbar.classList.contains('open'); setMusic(open); if(open && !yt) loadYT(makePlayer); };
 $('#mbClose').onclick = () => setMusic(false);
 $('#mbPlay').onclick = () => (mPlaying || wantPlay) ? musicPause() : musicPlay();
 $('#mbPrev').onclick = () => { if(yt && ytReady) yt.previousVideo(); };
