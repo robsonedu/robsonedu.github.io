@@ -615,6 +615,9 @@ body.music-video #pane-bar .bars-wrap{max-width:calc(100vw - 580px);}
   background:rgba(16,16,18,.94);border:1px solid var(--dock-line);box-shadow:0 16px 40px rgba(0,0,0,.45);font:500 12.5px 'Inter',sans-serif;}
 .mb-pop[hidden]{display:none;}
 .mb-vol{display:flex;align-items:center;gap:10px;padding:4px 6px;}
+.mb-vol svg{width:18px;height:18px;flex:none;}
+/* Volume opens beside the bar (to its left), so it never lands on or below the video */
+#mbVolPop{left:auto;right:calc(100% + 8px);top:10px;width:220px;}
 .mb-vol input{flex:1;accent-color:var(--dock-accent);}
 .mb-vol output{width:28px;text-align:right;font-variant-numeric:tabular-nums;color:var(--dock-muted);}
 .mb-row{display:flex;align-items:center;gap:8px;padding:7px 8px;border-radius:9px;cursor:pointer;}
@@ -2152,7 +2155,10 @@ function renderRows(){
     box.appendChild(r);
   });
 }
-$('#musicBtn').onclick = () => setMusic(!mbar.classList.contains('open'));
+/* One tap: opening Music from the dock starts the last playlist used (the built-in Classroom list the first time) */
+/* Start loading YouTube as soon as the pointer reaches the Music button, so playback starts sooner */
+$('#musicBtn').addEventListener('pointerenter', ()=>{ if(!window.YT) loadYT(()=>{}); });
+$('#musicBtn').onclick = () => { const open = !mbar.classList.contains('open'); setMusic(open); if(open && !mPlaying) musicPlay(); };
 $('#mbClose').onclick = () => setMusic(false);
 $('#mbPlay').onclick = () => (mPlaying || wantPlay) ? musicPause() : musicPlay();
 $('#mbPrev').onclick = () => { if(yt && ytReady) yt.previousVideo(); };
