@@ -3,7 +3,7 @@
   "name": "RobsonEDU Selectors",
   "short_name": "Selectors",
   "start_url": "/PageSelectors.html",
-  "scope": "/PageSelectors.html",
+  "scope": "/",
   "display": "standalone",
   "background_color": "#000000",
   "theme_color": "#002744",

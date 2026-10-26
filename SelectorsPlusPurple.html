@@ -2059,20 +2059,29 @@ $('#btnAllHere').addEventListener('click', () => {
 });
 
 // Task Spinner beside Numbers, Who's First and Colors. Returns the width to keep clear on each side.
-function placeAltTask(r, w, h) {
+// Task Spinner for every view except Wheel: the same top corner the Wheel view uses
+// (top right, or top left when the timer has the top-right corner). Returns the width to keep clear on each side.
+function placeCornerTask(r, w, h) {
   const tw = $('#taskWrap');
   tw.hidden = !settings.task;
   if (!settings.task) return 0;
   const narrow = w < 760;
-  const task = Math.floor(narrow ? 110 : clamp(Math.min(h * 0.34, w * 0.18, 230), 130, 230));
+  const task = Math.floor(narrow ? 110 : clamp(Math.min(h * 0.36, w * 0.2, 240), 120, 240));
   const onLeft = !!settings.timerShown;
   tw.style.transform = ''; tw.style.right = tw.style.bottom = 'auto';
-  tw.style.top = (narrow ? 0 : Math.round(r.height / 2 - (task + 22) / 2)) + 'px';
+  tw.style.top = '0px';
   tw.style.left = (onLeft ? 24 : r.width - 24 - task) + 'px';
   const ti = $('#taskInner'); ti.style.width = ti.style.height = task + 'px';
   taskWheel.resize(task);
-  return narrow ? 0 : task + 40;
+  if (narrow) return 0;
+  const g = Math.max(16, w * 0.025);
+  let side = task + 24 + g;
+  // The open timer sits in the other top corner, so keep clear of it too
+  const tp = $('#timerPanel');
+  if (onLeft && !tp.hidden) { const b = tp.getBoundingClientRect(); side = Math.max(side, window.innerWidth - b.left + g - (window.innerWidth - r.right)); }
+  return side;
 }
+const placeAltTask = placeCornerTask;
 function layoutStage() {
   const st = $('#stage'), r = st.getBoundingClientRect();
   const w = r.width - 32, h = r.height;
@@ -2113,6 +2122,7 @@ function layoutStage() {
     return;
   }
   const isWheel = settings.mode === 'wheel';
+  const rv = $('#reveal'); rv.style.width = '';
   // Wheel: large, centered left to right, top half in view with the rest tucked below the dock.
   // Drum: fully in view, 90% of the space, centered.
   let main = isWheel
@@ -2134,15 +2144,20 @@ function layoutStage() {
     }
     tw.style.left = (onLeft ? 24 : r.width - 24 - task) + 'px'; tw.style.top = '0px';
     tw.style.right = tw.style.bottom = 'auto'; tw.style.transform = '';
+    // Narrow the result card so it doesn't cover the corner Task Spinner
+    const clear = 2 * (r.width / 2 - 24 - task - gap);
+    if (clear < Math.min(r.width * 0.8, 660) && clear >= 340) rv.style.width = Math.floor(clear) + 'px';
   } else if (settings.task) {
-    const side = (r.width - main) / 2 - gap - 16;   // room to the right of the centered wheel
-    task = Math.floor(Math.min(main * 0.46, side, h - 22));
-    if (task >= 120) {
-      tw.style.left = (settings.timerShown ? r.width / 2 - main / 2 - gap - task : r.width / 2 + main / 2 + gap) + 'px';
-      tw.style.top = (r.height / 2 - (task + 22) / 2) + 'px';
-      tw.style.right = tw.style.bottom = 'auto'; tw.style.transform = '';
+    // Drum: Task Spinner in the same corner as the Wheel view. Shrink the drum and result card to stay clear of it.
+    const side = placeCornerTask(r, w, h);
+    task = parseInt($('#taskInner').style.width, 10) || 0;
+    const avail = r.width - 2 * side;
+    if (side && avail >= 300) {
+      main = Math.min(main, Math.floor(avail));
+      const cardW = Math.min(r.width * 0.8, 660);
+      if (avail < cardW) rv.style.width = Math.floor(avail) + 'px';
     } else {
-      // Not enough room beside it: shrink the main wheel and tuck the task wheel underneath, still centered.
+      // Too narrow to sit beside it: shrink the drum and tuck the Task Spinner underneath, still centered.
       task = Math.floor(Math.max(110, Math.min(w * 0.4, h * 0.3)));
       main = Math.floor(Math.max(180, Math.min(w, h - task - 22 - gap) * 0.9));
       tw.style.left = '50%'; tw.style.transform = 'translateX(-50%)';

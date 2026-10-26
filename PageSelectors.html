@@ -5,7 +5,7 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
   <meta name="rating" content="child">
-  <meta name="description" content="RobsonEDU is an ad-free classroom tool for teachers and students.">
+  <meta name="description" content="SELECTr PLUS: a free, ad-free classroom selector with a wheel, drum, numbers, Who's First, colors, and random groups.">
   <link rel="stylesheet" href="assets/css/main.css" />
   <noscript><link rel="stylesheet" href="assets/css/noscript.css" /></noscript>
 
@@ -17,53 +17,92 @@
   <link rel="apple-touch-icon" href="images/IconCircleS%20(512%20x%20512%20px).png">
 
   <style>
-  /* Grid layout for thumbnails */
-  .thumb-grid {
+  /* ---------- SELECTr PLUS hero ---------- */
+  .tp-hero {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-    gap: 16px;
-    margin: 20px 0;
+    grid-template-columns: minmax(0, 1.45fr) minmax(0, 1fr);
+    gap: 36px;
+    align-items: center;
+    margin: 8px 0 40px;
   }
-  .thumb-grid a {
-    display: block;
-    text-align: center;
-    text-decoration: none; /* removes link underline */
-    border-bottom: none;   /* removes theme’s default underline line */
+  .tp-hero-pic { display: block; border-bottom: none; text-decoration: none; }
+  /* Slideshow: six screenshots fade through themes and tools, no script needed */
+  .tp-slides {
+    position: relative; aspect-ratio: 16/9; overflow: hidden; border-radius: 12px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.28); background: #0b0a12;
+    transition: transform 0.25s ease, box-shadow 0.25s ease;
   }
-  .thumb-grid img {
-    width: 100%;
-    aspect-ratio: 16/9;   /* or 4/3 if you prefer squarer thumbs */
-    object-fit: fill;     /* forces squish/stretch instead of crop */
-    border-radius: 6px;
-    box-shadow: 0 2px 6px rgba(0,0,0,0.25);
-    transition: transform 0.2s ease;
+  .tp-hero-pic:hover .tp-slides { transform: scale(1.015); box-shadow: 0 14px 36px rgba(0,0,0,0.32); }
+  .tp-slides img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; display: block; }
+  .tp-slides img + img { opacity: 0; animation: tpShow 18s infinite; }
+  .tp-slides img:nth-child(2) { animation-delay: 3s; }
+  .tp-slides img:nth-child(3) { animation-delay: 6s; }
+  .tp-slides img:nth-child(4) { animation-delay: 9s; }
+  .tp-slides img:nth-child(5) { animation-delay: 12s; }
+  .tp-slides img:nth-child(6) { animation-delay: 15s; animation-name: tpShowLast; }
+  @keyframes tpShow { 0% { opacity: 0; } 3.33% { opacity: 1; } 19.9% { opacity: 1; } 20%, 100% { opacity: 0; } }
+  @keyframes tpShowLast { 0% { opacity: 0; } 3.33% { opacity: 1; } 16.67% { opacity: 1; } 20%, 100% { opacity: 0; } }
+  @media (prefers-reduced-motion: reduce) { .tp-slides img + img { animation: none; } }
+  .tp-badge {
+    display: inline-block; font-size: 0.7em; font-weight: 900; letter-spacing: 0.12em; line-height: 1.6;
+    text-transform: uppercase; background: #f2849e; color: #fff; padding: 0.1em 0.8em; border-radius: 99px; margin-bottom: 0.8em;
   }
-  .thumb-grid img:hover {
-    transform: scale(1.05);
-  }
+  .tp-hero h2 { margin-bottom: 0.4em; }
+  .tp-hero ul.actions { margin-bottom: 1em; }
+  .tp-note { font-size: 0.85em; }
 
-  .tool-card h2 {
-    margin-bottom: 0.75em;
-    font-size: 10px;
+  /* ---------- Jump straight to a tool ---------- */
+  .tool-row {
+    display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 12px; margin: 16px 0 48px;
   }
+  .tool-link {
+    display: flex; flex-direction: column; align-items: center; text-align: center; gap: 2px;
+    padding: 18px 8px 14px; border: solid 2px #c9c9c9; border-radius: 12px;
+    border-bottom: solid 2px #c9c9c9; color: inherit; text-decoration: none;
+    transition: border-color 0.2s ease, transform 0.2s ease, color 0.2s ease;
+  }
+  .tool-link:hover { border-color: #f2849e !important; color: #f2849e !important; transform: translateY(-2px); }
+  .tool-link .icon { font-size: 1.5em; margin-bottom: 6px; border-bottom: none; }
+  .tool-link strong { font-size: 1.05em; }
+  .tool-link small { font-size: 0.75em; line-height: 1.3; opacity: 0.8; }
 
-  #original-selectors {
-    padding-top: 1.5em;
-    margin-bottom: 0.25em;
+  /* ---------- Theme gallery ---------- */
+  .gallery-intro { margin-bottom: 0.5em; }
+  h3 { margin: 1.6em 0 0.6em; }
+  .theme-grid {
+    display: grid; grid-template-columns: repeat(auto-fill, minmax(170px, 1fr)); gap: 16px;
   }
+  .theme-card {
+    display: block; text-align: center; text-decoration: none; border-bottom: none; color: inherit; font-size: 0.85em;
+  }
+  .theme-card img {
+    display: block; width: 100%; aspect-ratio: 16/9; object-fit: cover; border-radius: 6px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.25); transition: transform 0.2s ease; margin-bottom: 6px;
+  }
+  .theme-card:hover img { transform: scale(1.05); }
 
-  #selector-plus > h2 {
-    margin-bottom: 0.25em;
+  @media screen and (max-width: 980px) {
+    .tool-row { grid-template-columns: repeat(3, minmax(0, 1fr)); }
   }
-    /* Bigger cards for the Selector PLUS grid only */
-#selector-plus .thumb-grid {
-  grid-template-columns: repeat(auto-fill, minmax(min(400px, 100%), 1fr));
-}
-#selector-plus .tool-card h2 {
-  font-size: 20px;
-}
+  @media screen and (max-width: 800px) {
+    .tp-hero { grid-template-columns: 1fr; gap: 20px; }
+  }
+  @media screen and (max-width: 480px) {
+    .tool-row { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .theme-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  }
+  .theme-grid.big { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+  @media screen and (max-width: 800px) { .theme-grid.big { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+
+  /* ---------- Original selectors (unchanged look) ---------- */
+  .thumb-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 16px; margin: 20px 0; }
+  .thumb-grid a { display: block; text-align: center; text-decoration: none; border-bottom: none; }
+  .thumb-grid img { width: 100%; aspect-ratio: 16/9; object-fit: fill; border-radius: 6px; box-shadow: 0 2px 6px rgba(0,0,0,0.25); transition: transform 0.2s ease; }
+  .thumb-grid img:hover { transform: scale(1.05); }
+  .tool-card h2 { margin-bottom: 0.75em; font-size: 10px; }
+  #original-selectors { padding-top: 1.5em; margin-bottom: 0.25em; }
+
   </style>
-
 </head>
 <body class="is-preload">
   <div id="wrapper">
@@ -99,48 +138,51 @@
     <div id="main">
       <div class="inner">
         <h1 class="tight-heading">Selectors</h1>
-
-        <!-- Jump Links -->
-        <p><strong>Quick Jump:</strong>
-          <a href="#selector-plus">Selector PLUS</a> |
-          <a href="#number">Number</a> |
-          <a href="#name-selector">Name</a> |
-          <a href="#color">Color</a> |
-          <a href="#color6">6-Color</a> |
-          <a href="#who-goes-first">Who Goes First?</a>
-        </p>
-
-        <p><strong>Tip:</strong> We recommend opening the tool in a new window on desktop. <strong>Right-click and select "Open Link in New Window."</strong> This makes the tool easier to manage and keeps it visible alongside other tabs or apps.</p>
-        <p>For even more usability, <a href="https://docs.google.com/document/d/1Zbu1rMa0OyI_rcKiobL84ipw7_EOrRrDA1KUxoiLY4I/edit?usp=sharing" target="_blank"><strong>follow these instructions</strong></a> to save this page as an <strong>app</strong> on your device.</p>
         <p><strong>Selectors</strong> can randomly pick students for whole class, table teams, small groups, or even pairs—just press GO! Using randomized selectors keeps everyone on their toes and can boost participation and engagement. It's like digital popsicle sticks!</p>
 
-        <!-- Selector PLUS -->
-        <section id="selector-plus">
-          <h2>NEW Selector PLUS - All in One Tool</h2>
-          <p>All your selectors in one place! Selector PLUS brings together five tools to call on students by name, number, letter, or seat color. Save your class lists, build random groups, and use the built-in timer, all without leaving the page.</p>
-
-          <div class="thumb-grid">
-            <section class="tool-card">
-              <h2>Purple Dark</h2>
-              <a href="SelectorsPlusPurpleLANDING.html"><img src="images/THUMBSelectrPlus.png" alt="Selector PLUS Purple"></a>
-            </section>
-
-            <section class="tool-card">
-              <h2>Neon Dark</h2>
-              <a href="SelectorsPlusNeonLANDING.html"><img src="images/THUMBSelectrPlusNEON.png" alt="Page 2 Title"></a>
-            </section>
-
-            <section class="tool-card">
-              <h2>Blue Light</h2>
-              <a href="SelectorsPlusBlueLANDING.html"><img src="images/THUMBSelectrPlusBlue.png" alt="Page 3 Title"></a>
-            </section>
-
-            <section class="tool-card">
-              <h2>Sketchbook</h2>
-              <a href="SelectorsPlusSketchLANDING.html"><img src="images/THUMBSelectrPlusSKETCH.png" alt="Page 4 Title"></a>
-            </section>
+        <!-- SELECTr PLUS -->
+        <section class="tp-hero" id="selector-plus">
+          <a class="tp-hero-pic" href="SelectorsPlusLANDING.html" aria-label="Open SELECTr PLUS">
+            <div class="tp-slides">
+              <img src="images/SelectrPlusHero1.jpg" alt="SELECTr PLUS: Wheel on the Purple theme">
+              <img src="images/SelectrPlusHero2.jpg" alt="SELECTr PLUS: Drum on the Neon theme" loading="lazy">
+              <img src="images/SelectrPlusHero3.jpg" alt="SELECTr PLUS: Numbers on the Light Blue theme" loading="lazy">
+              <img src="images/SelectrPlusHero4.jpg" alt="SELECTr PLUS: Who's First on the Sketchbook theme" loading="lazy">
+              <img src="images/SelectrPlusHero5.jpg" alt="SELECTr PLUS: Colors on the Neon theme" loading="lazy">
+              <img src="images/SelectrPlusHero6.jpg" alt="SELECTr PLUS: Random Groups on the Purple theme" loading="lazy">
+            </div>
+          </a>
+          <div>
+            <span class="tp-badge">New</span>
+            <h2 class="tp-title">SELECTr PLUS: All in One Tool</h2>
+            <p>Every RobsonEDU selector, now in one place. Call on students with a spinning wheel, a flip drum, numbers, fun Who's First prompts, or seat colors, and make random groups in one click, with four themes and a built-in timer. Your classes and settings are saved on your device.</p>
+            <ul class="actions">
+              <li><a href="SelectorsPlusLANDING.html" class="button primary">Open SELECTr PLUS</a></li>
+            </ul>
+            <p class="tp-note">New here? A quick tour runs the first time you open SELECTr PLUS, and you can replay it from Settings. For even more usability, <a href="https://docs.google.com/document/d/1Zbu1rMa0OyI_rcKiobL84ipw7_EOrRrDA1KUxoiLY4I/edit?usp=sharing" target="_blank" rel="noopener noreferrer"><strong>follow these instructions</strong></a> to save it as an <strong>app</strong> on your device.</p>
           </div>
         </section>
+
+        <!-- Jump to a tool -->
+        <h2 id="tools">Jump Straight to a Tool</h2>
+        <div class="tool-row">
+          <a class="tool-link" href="SelectorsPlus.html?tool=wheel"><span class="icon solid fa-dharmachakra" aria-hidden="true"></span><strong>Wheel</strong><small>Spin for a name</small></a>
+          <a class="tool-link" href="SelectorsPlus.html?tool=drum"><span class="icon solid fa-bars" aria-hidden="true"></span><strong>Drum</strong><small>Flip through names</small></a>
+          <a class="tool-link" href="SelectorsPlus.html?tool=numbers"><span class="icon solid fa-hashtag" aria-hidden="true"></span><strong>Numbers</strong><small>Teams, letters, or desks</small></a>
+          <a class="tool-link" href="SelectorsPlus.html?tool=first"><span class="icon solid fa-question" aria-hidden="true"></span><strong>Who's First</strong><small>Fun prompts decide</small></a>
+          <a class="tool-link" href="SelectorsPlus.html?tool=colors"><span class="icon solid fa-palette" aria-hidden="true"></span><strong>Colors</strong><small>Pick a seat color</small></a>
+          <a class="tool-link" href="SelectorsPlus.html?tool=groups"><span class="icon solid fa-users" aria-hidden="true"></span><strong>Random Groups</strong><small>Groups in one click</small></a>
+        </div>
+
+        <!-- Themes -->
+        <h2 id="themes">Pick a Theme</h2>
+        <p class="gallery-intro">Pick a theme below to open SELECTr PLUS with that look. You can switch themes anytime with the palette button in the dock.</p>
+        <div class="theme-grid big">
+          <a class="theme-card" href="SelectorsPlus.html?theme=purple"><img src="images/THUMBSelectrPlus.png" alt="Purple theme" loading="lazy"><span>Purple</span></a>
+          <a class="theme-card" href="SelectorsPlus.html?theme=neon"><img src="images/THUMBSelectrPlusNEON.png" alt="Neon theme" loading="lazy"><span>Neon</span></a>
+          <a class="theme-card" href="SelectorsPlus.html?theme=blue"><img src="images/THUMBSelectrPlusBlue.png" alt="Light Blue theme" loading="lazy"><span>Light Blue</span></a>
+          <a class="theme-card" href="SelectorsPlus.html?theme=sketch"><img src="images/THUMBSelectrPlusSKETCH.png" alt="Sketchbook theme" loading="lazy"><span>Sketchbook</span></a>
+        </div>
 
         <!-- Original Selectors -->
         <h2 id="original-selectors">Original Selectors</h2>
