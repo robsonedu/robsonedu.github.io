@@ -116,6 +116,8 @@ textarea{min-height:110px;font-family:var(--f-mono);font-size:13px;resize:vertic
 .siderail-logo{width:40px;height:40px;display:grid;place-items:center;margin-bottom:10px;border-radius:10px;background:rgba(255,255,255,.06)}
 .siderail-logo .mark{width:22px;height:22px}
 .siderail-spacer{flex:1}
+.siderail-sep{flex:none;width:40px;height:1px;margin:8px 0;background:rgba(255,255,255,.18)}
+@media (max-width:720px){.siderail-sep{width:1px;height:28px;margin:0 2px;align-self:center}}
 .siderail-item{width:70px;text-align:center;display:flex;flex-direction:column;align-items:center;gap:3px;padding:6px 0 7px;border:0;background:none;border-radius:10px;color:var(--rail-muted);font-size:11px;font-weight:700;letter-spacing:.01em;cursor:pointer;line-height:1.1}
 .siderail-item .ic{width:38px;height:34px;border-radius:10px;display:grid;place-items:center;transition:background .15s,color .15s}
 .siderail-item svg{width:21px;height:21px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
@@ -1530,8 +1532,8 @@ const svg=k=>`<svg viewBox="0 0 24 24" aria-hidden="true">${IC[k]}</svg>`;
 function railHTML(){
   const item=(k,l)=>`<button class="siderail-item" data-act="tab" data-arg="${k}"${ui.tab===k?' aria-current="page"':''}><span class="ic">${svg(k)}</span>${l}</button>`;
   return`<nav class="siderail" aria-label="Sections"><a class="siderail-logo" href="https://www.robsonedu.com/PageGrouping.html" target="_top" title="Back to RobsonEDU Grouping" aria-label="Back to RobsonEDU Grouping"><span class="gmark"><i></i><i></i><i></i><i></i></span></a>
-  ${item('arrange','Seating Chart')}${item('groups','Groups')}${item('stations','Stations')}${item('roster','Roster')}${item('room','Room')}${item('manage','Manage')}
-  <div class="siderail-spacer"></div>${item('settings','Settings')}</nav>`;
+  ${item('arrange','Seating Chart')}${item('groups','Groups')}${item('stations','Stations')}<div class="siderail-sep" role="separator" aria-hidden="true"></div>${item('roster','Roster')}${item('room','Room')}
+  <div class="siderail-spacer"></div>${item('manage','Manage')}${item('settings','Settings')}</nav>`;
 }
 function topHTML(cls){
   return`<header class="top"><div class="top-in">
