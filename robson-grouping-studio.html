@@ -240,6 +240,19 @@ button.nc-row:hover{background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.08)}
 .room.edit .seat.tagseat.done{background:#8c52ff;border-style:solid}
 .room.edit .seat.tagseat.done .stag{color:#fff}
 .panel-toggle{padding:0}
+/* table close-up (Seating Chart) */
+.room.seat-mode .tlabel.tzbtn{pointer-events:auto;cursor:zoom-in;border:0;background:none;padding:0 0 1px;font-family:inherit;color:var(--muted);border-radius:4px;z-index:4}
+.room.seat-mode .tlabel.tzbtn:hover,.room.seat-mode .tlabel.tzbtn:focus-visible{color:var(--ink);text-decoration:underline;text-decoration-color:rgba(140,82,255,.6);text-underline-offset:2px;outline:none}
+.tzwrap{position:fixed;inset:0;z-index:300;display:grid;place-items:center;padding:24px}
+.tzbg{position:absolute;inset:0;background:rgba(29,29,31,.28);-webkit-backdrop-filter:blur(3px);backdrop-filter:blur(3px)}
+.tzpop{position:relative;width:min(720px,100%);max-height:calc(100vh - 48px);overflow:auto;box-sizing:border-box;padding:22px 24px 20px;border-radius:24px;background:rgba(250,250,252,.97);box-shadow:0 24px 60px rgba(0,0,0,.25);display:grid;gap:14px}
+.tzhead{display:flex;align-items:center;justify-content:space-between;gap:12px}.tzhead h3{margin:0;font-size:22px}.tzhead>div{display:flex;align-items:baseline;gap:10px}
+.tzgrid{display:grid;gap:10px}.tzgrid+.tzgrid{padding-top:12px;border-top:1px dashed rgba(60,60,67,.2)}
+.tzpop .seat{position:relative;min-height:74px;height:100%;box-sizing:border-box;padding:12px 16px 12px 18px;border-radius:16px}
+.tzpop .seat .nm{font-size:24px;letter-spacing:-.01em;white-space:normal}
+.tzpop .seat .nm::before{display:inline-block}
+.tzpop .seat .sub{font-size:14px;white-space:normal}
+
 /* furniture shapes */
 .furn.sh-circle,.lm.sh-circle{border-radius:50%!important}
 .lm.lmtri{background:transparent!important;box-shadow:none!important;border-color:transparent!important;overflow:visible}
@@ -991,6 +1004,22 @@ function fmtDate(t){return new Date(t).toLocaleDateString(undefined,{weekday:'sh
 /* ---------- room geometry ---------- */
 function base(it){const f=FURN[it.type];return{w:+it.w||f.w,h:+it.h||f.h}}
 function angOf(it){const a=it.ang!=null?+it.ang:(it.rot?90:0);return((a%360)+360)%360}
+/* On a table turned to an odd angle, keep each name card level: find the widest card that still clears the table's other seats */
+function levelSeats(it,pts,bs,A,cw,ch,odd){const r=A-90*Math.round(A/90);if(Math.abs(r)<.5)return null;
+  const a0=cw*bs.w,a1=ch*bs.h,w0=Math.max(a0,a1),h0=Math.min(a0,a1),C=pts.map(p=>rotPt((p[0]-.5)*bs.w,(p[1]-.5)*bs.h,A)),G=.35;
+  if(C.length<2)return{W:w0*1.15,H:h0};let best=null;
+  for(let b=1;b>=.6-1e-9;b-=.05){const H=h0*b;let W=w0*1.35;
+    for(let i=0;i<C.length;i++)for(let j=i+1;j<C.length;j++){const dx=Math.abs(C[i][0]-C[j][0]),dy=Math.abs(C[i][1]-C[j][1]);if(dy<H+G)W=Math.min(W,dx-G)}
+    if(!best||W>best.W*1.04)best={W,H}}
+  if(best.W<w0*.6)best={W:w0*.6,H:h0*.7};return best}
+function tzHTML(cls,room,L,cur,qm,iss){if(ui.tblZoom==null)return'';const g=L.groups[ui.tblZoom];if(!g){ui.tblZoom=null;return''}
+  const cardOf=(key,k)=>{const id=cur&&cur.seats[key],s=id&&stud(cls,id);if(!s)return`<div class="seat empty${ui.selSeat===key?' picked':''}" data-seat="${key}" tabindex="0" role="button" aria-label="Empty seat"></div>`;
+    const q=qm.get(s.id)||0,sub=[],sl=showList(cls);for(const c of showCols(cls)){if(!sl.includes(c.id))continue;if(c.id==='__g'){if(s.g)sub.push(s.g)}else if(hasVal(s,c)){const t=String(s.v[c.id]).trim();sub.push(esc(ABBR[t.toLowerCase()]||t))}}
+    const tip=s.notes||'';return`<div class="seat filled q${q}${iss.flag.has(key)?' flag':''}${ui.selSeat===key?' picked':''}" data-seat="${key}" data-sid="${s.id}" tabindex="0" role="button" aria-label="${esc(s.name)}"${tip?` data-ntip="${esc(tip)}"`:''}><span class="nm">${esc(dname(s))}</span>${s.notes?'<span class="note-dot" aria-hidden="true"></span>':''}${sub.length?`<span class="sub">${sub.join('\u2009·\u2009')}</span>`:''}</div>`};
+  const n=g.seats.filter(si=>cur&&cur.seats[L.seats[si].key]).length;
+  const blocks=g.items.map(it=>{const f=FURN[it.type],P=seatPts(it),xs=[...new Set(P.map(p=>p[0].toFixed(3)))].sort((a,b)=>a-b),ys=[...new Set(P.map(p=>p[1].toFixed(3)))].sort((a,b)=>a-b);
+    return`<div class="tzgrid" style="grid-template-columns:repeat(${xs.length},minmax(0,1fr))">${P.map((p,k)=>`<div style="grid-column:${xs.indexOf(p[0].toFixed(3))+1};grid-row:${ys.indexOf(p[1].toFixed(3))+1}">${cardOf(it.id+':'+k,k)}</div>`).join('')}</div>`}).join('');
+  return`<div class="tzwrap"><div class="tzbg" data-act="tzClose"></div><div class="tzpop" role="dialog" aria-label="${esc(g.label)} up close"><div class="tzhead"><div><h3>${esc(g.label)}</h3><span class="muted">${n} student${n===1?'':'s'}${g.linked?' · linked table':''}</span></div><button class="iconbtn" data-act="tzClose" aria-label="Close">${svg('x')}</button></div>${blocks}<p class="muted small" style="margin:0">Drag a name onto another seat to swap, or tap one and then the other. Press Esc or click outside to close.</p></div></div>`}
 function rotPt(x,y,a){const r=a*Math.PI/180,c=Math.cos(r),s=Math.sin(r);return[x*c-y*s,x*s+y*c]}
 function dims(it){const b=base(it),r=angOf(it)*Math.PI/180,c=Math.abs(Math.cos(r)),s=Math.abs(Math.sin(r));return{w:Math.round((b.w*c+b.h*s)*1000)/1000,h:Math.round((b.w*s+b.h*c)*1000)/1000}}
 /* find an open spot for new furniture: nearest to the middle of the room that doesn't overlap anything */
@@ -1434,8 +1463,10 @@ function renderNow(){
 }
 function backupNoticeHTML(){if(!S||!S.classes.length||ui.tab==='settings')return'';const st=S.settings,now=Date.now(),D=864e5;if(st.lastBackup&&now-st.lastBackup<30*D)return'';if(st.backupSnooze&&now-st.backupSnooze<7*D)return'';
   return`<div class="bk-note" role="status"><span class="bk-ic" aria-hidden="true">!</span><div class="bk-t"><b>${st.lastBackup?'It’s been a while since your last backup.':'Your work is saved only in this browser.'}</b> It’s lost if you clear your browsing data, use a different browser or computer, or open the tool from a different web address. Download a backup about once a month.</div><button class="btn small primary" data-act="downloadBackup">Download backup</button><button class="btn small" data-act="backupLater">Remind me later</button></div>`}
-function fitNames(root){(root||document).querySelectorAll('.room').forEach(room=>{room.querySelectorAll('.furn').forEach(t=>{const ns=[...t.querySelectorAll('.seat.filled .nm')];if(!ns.length)return;ns.forEach(n=>{n.style.fontSize='';n.style.textOverflow='clip'});const base=parseFloat(getComputedStyle(ns[0]).fontSize);let k=1;ns.forEach(n=>{const w=n.clientWidth,sw=n.scrollWidth;if(w&&sw>w+1)k=Math.min(k,w/sw*.97)});k=Math.max(k,.62);
-  ns.forEach(n=>{if(k<1)n.style.fontSize=base*k+'px';n.style.textOverflow=n.scrollWidth>n.clientWidth+1?'ellipsis':''})})})}
+function fitNames(root){(root||document).querySelectorAll('.room').forEach(room=>{const ns=[...room.querySelectorAll('.furn .seat.filled .nm')];if(!ns.length)return;
+  /* one size for the whole room: the size that lets the longest name fit, never below 62% */
+  ns.forEach(n=>{n.style.fontSize='';n.style.textOverflow='clip'});const base=parseFloat(getComputedStyle(ns[0]).fontSize);let k=1;ns.forEach(n=>{const w=n.clientWidth,sw=n.scrollWidth;if(w&&sw>w+1)k=Math.min(k,w/sw*.97)});k=Math.max(k,.62);
+  ns.forEach(n=>{if(k<1)n.style.fontSize=base*k+'px'});ns.forEach(n=>{n.style.textOverflow=n.scrollWidth>n.clientWidth+1?'ellipsis':''})})}
 function fitSeatRoom(){const r=document.querySelector('.roomscroll .room.edit');if(!r)return;r.style.maxWidth='';const top=r.getBoundingClientRect().top+(window.scrollY||0),avail=window.innerHeight-Math.min(top,window.innerHeight*.45)-20;r.style.maxWidth=Math.max(620,avail*100/70)+'px';r.style.marginInline='auto'}
 if(HAS_DOM)addEventListener('resize',()=>{try{fitSeatRoom();fitNames(document)}catch(e){}});
 const IC={
@@ -1499,13 +1530,14 @@ function roomHTML(room,L,o){
     if(f.lm){const lab=it.label||(it.type==='board'&&mode==='present'?'Front of room':f.blank?'':f.text||f.label);const shp=it.shape&&it.shape!=='rect'&&it.shape!=='square'?' sh-'+it.shape:'';h+=it.shape==='triangle'?`<div class="lm lmtri${sel}" data-item="${it.id}" style="${st}"><div class="lm lm-${it.type} lmtri-in"><span>${esc(lab)}</span></div>${rz}</div>`:`<div class="lm lm-${it.type}${shp}${sel}" data-item="${it.id}" style="${st}"><span>${esc(lab)}</span>${rz}</div>`;continue}
     const g=gOf.get(it.id);
     h+=`<div class="furn f-${it.type}${it.shape==='circle'||it.shape==='triangle'?' sh-'+it.shape:''}${sel}${linkCls}" data-item="${it.id}" style="${st}${mode==='present'?`;--tc:var(--t${g.index%8+1});--gl:var(--gl${g.index%6+1})`:''}${ZM?`;--dx:${((it.x-ZA.get(it.id).x)/ROOM_W*100).toFixed(3)}cqw;--dy:${((it.y-ZA.get(it.id).y)/ROOM_W*100).toFixed(3)}cqw`:''}">`;
-    if(first.has(it.id))labels+=`<span class="tlabel" style="${mode==='present'?`left:${(ZA.get(it.id).x/ROOM_W*100).toFixed(3)}%;top:calc(${(ZA.get(it.id).y/ROOM_H*100).toFixed(3)}% + var(--pz,1) * ${((ZA.get(it.id).top-ZA.get(it.id).y)/ROOM_H*100).toFixed(3)}%)`:mode==='seat'?`left:calc(${(ZA.get(it.id).x/ROOM_W*100).toFixed(3)}% + var(--pz,1) * ${((it.x-d.w/2-ZA.get(it.id).x)/ROOM_W*100).toFixed(3)}%);top:calc(${(ZA.get(it.id).y/ROOM_H*100).toFixed(3)}% + var(--pz,1) * ${((it.y-d.h/2-ZA.get(it.id).y)/ROOM_H*100).toFixed(3)}%)`:`left:${pct((it.x-d.w/2)/ROOM_W)};top:${pct((it.y-d.h/2)/ROOM_H)}`}">${mode==='present'&&rot?'Group '+letter(g.index)+' · ':''}${esc(g.label)}${mode==='edit'&&g.linked?' · linked':''}</span>`;
+    if(first.has(it.id))labels+=`<${mode==='seat'?`button type="button" class="tlabel tzbtn" data-act="tblZoom" data-arg="${g.index}" title="See ${esc(g.label)} up close"`:'span class="tlabel"'} style="${mode==='present'?`left:${(ZA.get(it.id).x/ROOM_W*100).toFixed(3)}%;top:calc(${(ZA.get(it.id).y/ROOM_H*100).toFixed(3)}% + var(--pz,1) * ${((ZA.get(it.id).top-ZA.get(it.id).y)/ROOM_H*100).toFixed(3)}%)`:mode==='seat'?`left:calc(${(ZA.get(it.id).x/ROOM_W*100).toFixed(3)}% + var(--pz,1) * ${((it.x-d.w/2-ZA.get(it.id).x)/ROOM_W*100).toFixed(3)}%);top:calc(${(ZA.get(it.id).y/ROOM_H*100).toFixed(3)}% + var(--pz,1) * ${((it.y-d.h/2-ZA.get(it.id).y)/ROOM_H*100).toFixed(3)}%)`:`left:${pct((it.x-d.w/2)/ROOM_W)};top:${pct((it.y-d.h/2)/ROOM_H)}`}">${mode==='present'&&rot?'Group '+letter(g.index)+' · ':''}${esc(g.label)}${mode==='edit'&&g.linked?' · linked':''}</${mode==='seat'?'button':'span'}>`;
     const pts=seatPts(it),P0=f.seats,sk=seatK(it);
     const xs=new Set(P0.map(p=>p[0].toFixed(2))).size,ys=new Set(P0.map(p=>p[1].toFixed(2))).size;
     const cw=.9/xs*sk,ch=.84/ys*sk,ow=odd?ch*bs.h/bs.w:cw,oh=odd?cw*bs.w/bs.h:ch,crs=qt?`;--cr:${-90*qt}deg;transform:rotate(var(--cr))`:'';
+    const LV=(mode==='seat'||mode==='present')?levelSeats(it,pts,bs,A,cw,ch,odd):null;
     pts.forEach((p,k)=>{
       const key=it.id+':'+k;
-      const ss=`left:${pct(p[0]-ow/2)};top:${pct(p[1]-oh/2)};width:${pct(ow)};height:${pct(oh)}${crs}`;
+      const ss=LV?`left:${pct(p[0]-LV.W/bs.w/2)};top:${pct(p[1]-LV.H/bs.h/2)};width:${pct(LV.W/bs.w)};height:${pct(LV.H/bs.h)};--cr:${(-A).toFixed(2)}deg;transform:rotate(var(--cr))`:`left:${pct(p[0]-ow/2)};top:${pct(p[1]-oh/2)};width:${pct(ow)};height:${pct(oh)}${crs}`;
       const SL=L.seatByKey.get(key),tg=SL&&SL.tag;
       if(mode==='edit'){const tagging=ui.tagGk&&SL&&SL.gk===ui.tagGk;
         if(ui.teamMode&&SL){const gs=L.groups[SL.gi],seq=ui.teamGk===SL.gk?ui.teamSeq:null,pos=seq?seq.indexOf(key):-1,n=gs.seats.length;
@@ -1548,7 +1580,7 @@ function arrangeHTML(cls){
   <section class="stage">
     ${chartDetailsHTML(cls)}
     ${hasSeats&&rp.list.length?`<div class="repeat-note${v.repeats?' open':''}"><button class="rn-head" data-act="toggleRepeats" aria-expanded="${!!v.repeats}"><span class="rn-ic" aria-hidden="true">↺</span><span><b>${rp.list.length} pair${rp.list.length===1?' has':'s have'}</b> been ${rp.type?'in '+TYPE_NAME[rp.type]+' groups':'grouped'} together before</span><span class="rn-link">${v.repeats?'Hide':'Show'}</span></button>${v.repeats?`<div class="rn-list">${rp.byG.map(([gi,ps])=>`<div class="rn-row"><b class="rn-t">${esc(L.groups[gi].label)}</b><span>${ps.map(p=>`<span class="rn-pair tipbtn" tabindex="0" data-tip="Together in ${esc(p.charts.join(', '))}">${esc(nameOf(cls,p.a))} + ${esc(nameOf(cls,p.b))}${p.charts.length>1?` <b>×${p.charts.length}</b>`:''}</span>`).join('')}</span></div>`).join('')}<small class="rn-hint">Hover a pair to see which chart they shared. Drag students to split them up.</small></div>`:''}</div>`:''}
-    <div class="szwrap">${(()=>{ui.sZoomMax=zoomMax(room);if((ui.sZoom||1)>ui.sZoomMax)ui.sZoom=ui.sZoomMax;return''})()}${ui.sZoomMax>1?`<div class="s-zoom" aria-label="Seat size"><button class="sz-b" id="sZoomMinus" data-act="sZoomStep" data-arg="-0.1" aria-label="Smaller seats" title="Smaller seats"${(ui.sZoom||1)<=1?' disabled':''}>−</button><button class="sz-fit" id="sZoomVal" data-act="sZoomFit" title="Back to 100%">${Math.round((ui.sZoom||1)*100)}%</button><button class="sz-b" id="sZoomPlus" data-act="sZoomStep" data-arg="0.1" aria-label="Bigger seats" title="Bigger seats"${(ui.sZoom||1)>=ui.sZoomMax?' disabled':''}>+</button></div>`:''}<div class="roomscroll">${roomHTML(room,L,{mode:'seat',cls,cur,qm,flag:iss.flag,animate:ui.animate})}</div></div>
+    ${tzHTML(cls,room,L,cur,qm,iss)}<div class="szwrap">${(()=>{ui.sZoomMax=zoomMax(room);if((ui.sZoom||1)>ui.sZoomMax)ui.sZoom=ui.sZoomMax;return''})()}${ui.sZoomMax>1?`<div class="s-zoom" aria-label="Seat size"><button class="sz-b" id="sZoomMinus" data-act="sZoomStep" data-arg="-0.1" aria-label="Smaller seats" title="Smaller seats"${(ui.sZoom||1)<=1?' disabled':''}>−</button><button class="sz-fit" id="sZoomVal" data-act="sZoomFit" title="Back to 100%">${Math.round((ui.sZoom||1)*100)}%</button><button class="sz-b" id="sZoomPlus" data-act="sZoomStep" data-arg="0.1" aria-label="Bigger seats" title="Bigger seats"${(ui.sZoom||1)>=ui.sZoomMax?' disabled':''}>+</button></div>`:''}<div class="roomscroll">${roomHTML(room,L,{mode:'seat',cls,cur,qm,flag:iss.flag,animate:ui.animate})}</div></div>
     ${unseated.length&&hasSeats?`<div class="tray"><span class="section-label" style="color:var(--danger)">Not seated</span>${unseated.map(s=>`<div class="seat filled q${qm.get(s.id)||0}${ui.selSeat==='u:'+s.id?' picked':''}" data-seat="u:${s.id}" data-sid="${s.id}" tabindex="0" role="button"><span class="nm">${esc(dname(s))}</span></div>`).join('')}</div>`:''}
     <p class="hint">${hasSeats?'Drag a student onto another seat to swap them. On a touch screen, tap one student, then tap where they should go. Hover a name to see your notes.':'Choose how to group on the right, then press Create chart.'}</p>
     ${hasSeats?`<div class="issues">${iss.list.length?iss.list.map(i=>`<div class="issue ${i.lvl}"><b>${i.lvl==='bad'?'Fix':i.lvl==='note'?'Note':'Check'}</b><span>${esc(i.t)}</span></div>`).join(''):`<div class="issue ok"><b>OK</b><span>Every seating rule is met.</span></div>`}</div>`:''}
@@ -2172,7 +2204,7 @@ const ACT={
     else if(k==='chart'){const c=S.classes.find(z=>z.id===x);if(!c)return;c.history=c.history.filter(h=>h.id!==y);if(c.chartId===y){const nx=c.history.slice().sort((p,q)=>q.date-p.date)[0];if(nx){c.chartId=nx.id;c.current={seats:Object.assign({},nx.seats),roles:{},meta:nx.meta,date:Date.now()}}else{c.chartId=null;c.current={seats:{},roles:{},meta:null}}}}
     else if(k==='set'){const c=S.classes.find(z=>z.id===x);if(!c)return;const was=c.quick.setId===y;c.groupSets=c.groupSets.filter(g=>g.id!==y);if(was)afterSetGone(c)}
     save();render();toast('Deleted. Undo to bring it back.')},
-  tab:(b,a)=>{ui.tab=a;ui.colMenu=null;ui.addMenu=false;ui.flagMenu=null;ui.selSeat=null;setSel([]);ui.qswap=null;ui.qpick=null;if(a==='groups')ui.qAnim=true;render();scrollTo(0,0)},
+  tab:(b,a)=>{ui.tab=a;ui.tblZoom=null;ui.colMenu=null;ui.addMenu=false;ui.flagMenu=null;ui.selSeat=null;setSel([]);ui.qswap=null;ui.qpick=null;if(a==='groups')ui.qAnim=true;render();scrollTo(0,0)},
   present:()=>enterPresent(ui.tab==='groups'?'quick':ui.tab==='stations'?'stations':'chart'),
   startSample:()=>startSession(sampleState()),
   startBlank:()=>startSession(starterState()),
@@ -2256,6 +2288,8 @@ const ACT={
     if(k==='square'){const m=Math.min(70,Math.max(bs.w,bs.h));it.w=m;it.h=m}
     else if((k==='rect')&&bs.w===bs.h){if(f.w!==f.h){it.w=f.w;it.h=f.h}else{it.w=bs.w;it.h=Math.max(1,Math.round(bs.w*.75*2)/2)}}
     if(k==='rect')delete it.shape;else it.shape=k;clampItem(it);save();render()},
+  tblZoom:(b,i)=>{ui.tblZoom=+i;ui.selSeat=null;render()},
+  tzClose:()=>{ui.tblZoom=null;ui.selSeat=null;render()},
   toggleDetails:()=>{ui.showDetails=!ui.showDetails;render()},
   sZoomStep:(b,d)=>setSZoom((ui.sZoom||1)+(+d)),
   sZoomFit:()=>setSZoom(1),
@@ -2479,7 +2513,7 @@ document.addEventListener('keydown',e=>{
   if(e.target.id==='chartNameIn'){if(e.key==='Enter'){e.preventDefault();ACT.chartOK();return}if(e.key==='Escape'){e.preventDefault();ACT.chartCancel();return}}
   if(!S)return;
   if((e.metaKey||e.ctrlKey)&&!e.altKey&&(e.key==='z'||e.key==='Z'||e.key==='y'||e.key==='Y')&&!(ui.present&&!ui.pwin)){const tg=e.target;if(tg&&(/INPUT|TEXTAREA|SELECT/.test(tg.tagName)||tg.isContentEditable)&&tg.type!=='checkbox')return;e.preventDefault();if(e.key==='y'||e.key==='Y'||e.shiftKey)redo();else undo();return}
-  if(e.key==='Escape'){if(ui.colMenu||ui.addMenu||ui.flagMenu){ui.colMenu=null;ui.addMenu=false;ui.flagMenu=null;render();return}if(ui.present&&!ui.pwin){exitPresent();return}if(ui.selSeat){ui.selSeat=null;render()}if(ui.qswap||ui.qpick){ui.qswap=null;ui.qpick=null;render()}if($('#modal-root').innerHTML)$('#modal-root').innerHTML='';return}
+  if(e.key==='Escape'){if(ui.tblZoom!=null&&!ui.present){ui.tblZoom=null;ui.selSeat=null;render();return}if(ui.colMenu||ui.addMenu||ui.flagMenu){ui.colMenu=null;ui.addMenu=false;ui.flagMenu=null;render();return}if(ui.present&&!ui.pwin){exitPresent();return}if(ui.selSeat){ui.selSeat=null;render()}if(ui.qswap||ui.qpick){ui.qswap=null;ui.qpick=null;render()}if($('#modal-root').innerHTML)$('#modal-root').innerHTML='';return}
   const t=e.target;
   if((e.key==='Enter'||e.key===' ')&&t.matches&&t.matches('[data-seat]')){e.preventDefault();const k=t.dataset.seat;tapSeat(k,!!t.dataset.sid);setTimeout(()=>{const n=document.querySelector(`[data-seat="${CSS.escape(k)}"]`);n&&n.focus()},0);return}
   if(ui.tab==='room'&&ui.selIds.length&&!/INPUT|TEXTAREA|SELECT/.test(t.tagName)){
@@ -2500,7 +2534,7 @@ document.addEventListener('pointerdown',e=>{
   if(gr){drag={k:'crit',from:+gr.dataset.grip,tgt:gr.dataset.tgt,y:e.clientY,moved:false};e.preventDefault();return}
   const cb=e.target.closest('.colbtn');
   if(cb){drag={k:'col',id:cb.dataset.arg,x:e.clientX,y:e.clientY,moved:false};return}
-  const seat=e.target.closest('.seat-mode [data-seat], .tray [data-seat]');
+  const seat=e.target.closest('.seat-mode [data-seat], .tray [data-seat], .tzpop [data-seat]');
   if(seat){drag={k:'seat',key:seat.dataset.seat,has:!!seat.dataset.sid,el:seat,x:e.clientX,y:e.clientY,moved:false};return}
   const tmx=e.target.closest('.room.edit [data-teamseat]');
   if(tmx&&ui.teamMode){e.preventDefault();e.stopPropagation();const k=tmx.dataset.teamseat,room=editRoom(),L=layoutInfo(room),SLk=L.seatByKey.get(k),g=SLk&&L.groups[SLk.gi];if(!g)return;
