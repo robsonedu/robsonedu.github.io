@@ -241,6 +241,15 @@ button.nc-row:hover{background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.08)}
 .room.edit .seat.tagseat.done{background:#8c52ff;border-style:solid}
 .room.edit .seat.tagseat.done .stag{color:#fff}
 .panel-toggle{padding:0}
+.lapop{width:min(640px,100%)}
+.lagrid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
+.latile{display:flex;flex-direction:column;align-items:center;gap:6px;padding:16px 8px 14px;border-radius:16px;border:1px solid rgba(60,60,67,.12);background:#fff;font:inherit;cursor:pointer;box-shadow:0 1px 3px rgba(0,0,0,.06);transition:border-color .15s,box-shadow .15s}
+.latile:hover,.latile:focus-visible{border-color:#8c52ff;box-shadow:0 0 0 3px rgba(140,82,255,.18);outline:none}
+.latile .ficon{width:52px!important;height:36px!important}
+.latile b{font-size:14px}.latile span{font-size:12px;color:var(--muted)}
+.linkbtn{all:unset;color:#8c52ff;font-weight:600;cursor:pointer;text-decoration:underline;text-underline-offset:2px}
+@media (max-width:600px){.lagrid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+
 /* table close-up (Seating Chart) */
 .room.seat-mode .tlabel.tzbtn{pointer-events:auto;cursor:zoom-in;border:0;background:none;padding:0 0 1px;font-family:inherit;color:var(--muted);border-radius:4px;z-index:4}
 .room.seat-mode .tlabel.tzbtn:hover,.room.seat-mode .tlabel.tzbtn:focus-visible{color:var(--ink);text-decoration:underline;text-decoration-color:rgba(140,82,255,.6);text-underline-offset:2px;outline:none}
@@ -1077,6 +1086,20 @@ function layoutInfo(room){
   if(door)flag(door,'door');else seats.forEach(s=>s.door=false);
   return{seats,groups,seatByKey:new Map(seats.map(s=>[s.key,s]))};
 }
+/* a room sized to the class: tables in a tidy grid below the board */
+const LAYOUTS=[['pods4','Pods of 4','pod4'],['pods6','Pods of 6','pod6'],['pairs','Pair tables','pair'],['desks','Individual desks','desk']];
+function genLayout(kind,N){const it=[];const add=(type,x,y,extra)=>it.push(Object.assign({id:uid(),type,x,y,ang:0,label:'',cluster:''},extra||{}));
+  add('board',50,3);add('door',6,68.5);add('teacher',88,63);
+  const t={pods4:'pod4',pods6:'pod6',pairs:'pair',desks:'desk'}[kind]||'pod4',f=FURN[t],per=f.seats.length,n=Math.max(1,Math.ceil(Math.max(N,1)/per));
+  const gx=t==='desk'?3:6,gy=t==='desk'?3:(f.seats?6.5:4),maxC=Math.max(1,Math.floor((88+gx)/(f.w+gx)));let cols=Math.min(maxC,Math.max(1,Math.ceil(Math.sqrt(n*(t==='pair'||t==='desk'?2:1.4)))));const rows=Math.ceil(n/cols);cols=Math.ceil(n/rows);
+  const x0=6,x1=94,y0=10,y1=56,sx=cols>1?(x1-x0-f.w)/(cols-1):0,sy=rows>1?Math.min(f.h+gy+4,(y1-y0-f.h)/(rows-1)):0,top=y0+2.5+(rows>1?0:(y1-y0-f.h)/3);
+  let k=0;for(let r=0;r<rows;r++){const inRow=Math.min(cols,n-k),off=(cols-inRow)*sx/2;for(let c=0;c<inRow;c++){add(t,cols>1?x0+f.w/2+off+c*sx:50,top+f.h/2+r*sy);k++}}
+  let m=1;it.forEach(i=>{if(FURN[i.type].seats)i.num=m++});it.forEach(clampItem);return it}
+function layoutAskHTML(cls){const room=roomOf(cls),N=cls.students.filter(s=>!s.absent).length;
+  return`<div class="tzwrap"><div class="tzbg"></div><div class="tzpop lapop" role="dialog" aria-label="Set up your room"><div class="tzhead"><div><h3>Set up your room first?</h3></div></div>
+    <p class="muted" style="margin:0">Charts seat students at the tables in a room layout. Pick the setup closest to your room and we'll make one for ${N} student${N===1?'':'s'}. You can move tables around later on the Room page.</p>
+    <div class="lagrid">${LAYOUTS.map(([k,l,t])=>{const per=FURN[t].seats.length,n=Math.ceil(Math.max(N,1)/per);return`<button class="latile" data-act="layoutPick" data-arg="${k}">${furnIcon(t)}<b>${l}</b><span>${n} ${t==='desk'?'desk':'table'}${n===1?'':'s'} · ${n*per} seats</span></button>`}).join('')}</div>
+    <div class="row" style="justify-content:space-between"><button class="btn" data-act="layoutBuild">Build my own on the Room page</button><button class="btn" data-act="layoutKeep">Keep “${esc(room.name)}”</button></div></div></div>`}
 function preset(kind){
   const it=[];const add=(type,x,y,extra)=>it.push(Object.assign({id:uid(),type,x,y,ang:0,label:'',cluster:''},extra||{}));
   if(kind==='horseshoe'){
@@ -1098,6 +1121,7 @@ function newClass(name,roomId){return{id:uid(),name,roomId,columns:[],students:[
 function migrate(st){
   const b=blankState();st.settings=Object.assign(b.settings,st.settings||{});if([OLD_Q,PREV_Q].some(q=>JSON.stringify(st.settings.qColors)===JSON.stringify(q)))st.settings.qColors=QDEF.slice();
   st.rooms=st.rooms||[];st.classes=st.classes||[];
+  st.rooms.forEach(r=>{if(r.confirmed===undefined)r.confirmed=r.name!=='My classroom'});
   /* repair: charts and group sets made while no criteria were picked were stored as Random even though their name says Mixed or Similar */
   st.classes.forEach(c=>{if(!c.columns||!c.columns.length)return;const want=()=>{const q=c.quick&&c.quick.opts&&validCrit(c,c.quick.opts.crit);if(q&&q.length)return q;const c0=c.columns.find(x=>x.id===(c.opts||{}).by)||c.columns[0];return[c0.id,(c.students||[]).some(s=>s.g)?'__g':null].filter(Boolean)};
     const typeOf=n=>{const m=/·\s*(Mixed|Similar)\s*·/.exec(n||'');return m?m[1].toLowerCase():null};
@@ -1415,7 +1439,7 @@ function sampleState(){
 }
 const SAMPLE_G={Amara:'F',Ben:'M',Chloe:'F',Dante:'M',Elena:'F',Felix:'M',Grace:'F',Hector:'M',Imani:'F',Jonah:'M',Kira:'F',Liam:'M',Maya:'F',Nico:'M',Olivia:'F',Parker:'M',Rosa:'F',Talia:'F',Uriel:'M',Vera:'F',Wes:'M',Xander:'M',Aiden:'M',Bella:'F',Caleb:'M',Daisy:'F',Ethan:'M',Fiona:'F',Gabe:'M',Hazel:'F',Isaac:'M',Jade:'F',Lena:'F',Miles:'M',Nora:'F',Owen:'M',Piper:'F',Reid:'M',Sofia:'F',Theo:'M',Uma:'F',Violet:'F',Wyatt:'M'};
 function sampleGenders(c){c.students.forEach(s=>{if(s.g===undefined)s.g=SAMPLE_G[String(s.name).split(' ')[0]]||''})}
-function starterState(){const st=blankState();const r={id:uid(),name:'My classroom',items:preset('pods4')};st.rooms.push(r);const c=newClass('1st period',r.id);c.columns=[{id:uid(),name:'Summative',dir:1,type:'score'},{id:uid(),name:'Behavior',dir:1,type:'rating'}];c.opts.by=c.columns[0].id;st.classes.push(c);st.activeClass=c.id;return st}
+function starterState(){const st=blankState();const r={id:uid(),name:'My classroom',items:preset('pods4'),confirmed:false};st.rooms.push(r);const c=newClass('1st period',r.id);c.columns=[{id:uid(),name:'Summative',dir:1,type:'score'},{id:uid(),name:'Behavior',dir:1,type:'rating'}];c.opts.by=c.columns[0].id;st.classes.push(c);st.activeClass=c.id;return st}
 
 if(typeof module!=='undefined')module.exports={layoutInfo,preset,runGrouping,checkIssues,sampleState,rankNorm,setS:v=>{S=v},getS:()=>S,curOf,roomOf,groupsOf,subText};
 
@@ -1433,7 +1457,7 @@ function undo(){if(!S)return;if(saveT){clearTimeout(saveT);saveT=null;track()}if
 function redo(){if(!S)return;if(!hist.redo.length){toast('Nothing to redo');return}hist.undo.push(JSON.stringify(S));applySnap(hist.redo.pop());toast('Redone')}
 function saveLabel(){return !storageOK?'Can’t save in this browser':ui.saveState==='saving'?'Saving…':'Saved'}
 function updateSaveUI(){if(typeof document==='undefined')return;const el=document.getElementById('saveState');if(el){el.textContent=saveLabel();el.className='savestate '+(!storageOK?'err':ui.saveState==='saving'?'busy':'ok')}const u=document.getElementById('btnUndo'),r=document.getElementById('btnRedo');if(u)u.disabled=!hist.undo.length&&!saveT;if(r)r.disabled=!hist.redo.length}
-function save(){NAMEC=null;try{syncCharts()}catch(e){}clearTimeout(saveT);ui.saveState='saving';saveT=setTimeout(doSave,300);updateSaveUI()}
+function save(){NAMEC=null;try{if(ui.tab==='room'&&S){const r=editRoom();if(r)r.confirmed=true}}catch(e){}try{syncCharts()}catch(e){}clearTimeout(saveT);ui.saveState='saving';saveT=setTimeout(doSave,300);updateSaveUI()}
 function doSave(){clearTimeout(saveT);saveT=null;if(S){track();writeData()}ui.saveState='saved';updateSaveUI()}
 function parseBackup(t){t=String(t||'').trim();if(!t)throw new Error('Paste a backup or choose a file first.');if(t.startsWith('RGS-BACKUP-1:'))throw new Error('That backup is from the passphrase version and can\u2019t be opened here.');let d;try{d=JSON.parse(t)}catch(e){throw new Error('That doesn\u2019t look like a backup from this tool.')}if(!d||!Array.isArray(d.classes))throw new Error('That doesn\u2019t look like a backup from this tool.');return d}
 
@@ -1452,7 +1476,7 @@ function applyColors(){const q=(S&&S.settings.qColors)||QDEF;q.forEach((c,i)=>do
 function placePop(){const p=document.getElementById('pop');if(!p)return;const a=document.querySelector(p.dataset.anchor);if(!a){p.remove();return}const r=a.getBoundingClientRect(),w=p.offsetWidth,h=p.offsetHeight;let x=Math.min(r.left,innerWidth-w-12),y=r.bottom+8;if(y+h>innerHeight-12&&r.top-h-8>12)y=r.top-h-8;p.style.left=Math.max(12,x)+'px';p.style.top=Math.max(12,y)+'px'}
 if(HAS_DOM){addEventListener('resize',placePop);addEventListener('scroll',placePop,true)}
 /* keep the Groups page in step with the class: its room follows the class's room layout, and Mixed/Similar always start with a criterion */
-function syncQuick(c){const o=c&&c.quick&&c.quick.opts;if(!o)return;if(o.seenRoom!==c.roomId){o.roomId=c.roomId;o.seenRoom=c.roomId}
+function syncQuick(c){const o=c&&c.quick&&c.quick.opts;if(!o)return;if(o.mode!=='random'&&!critOptions(c).length)o.mode='random';if(o.seenRoom!==c.roomId){o.roomId=c.roomId;o.seenRoom=c.roomId}
   if(o.mode!=='random'&&!validCrit(c,o.crit).length){const c0=c.columns.find(x=>x.id===c.opts.by)||c.columns[0];const cr=[c0&&c0.id,c.students.some(s=>s.g)?'__g':null].filter(Boolean);if(cr.length)o.crit=cr}}
 function render(){NAMEC=null;try{const ac=S&&activeClass&&activeClass();if(ac)syncQuick(ac)}catch(e){}try{renderNow()}catch(e){setTimeout(()=>{try{renderNow()}catch(x){}},0)}}
 function renderNow(){
@@ -1581,7 +1605,7 @@ function arrangeHTML(cls){
   const by=cls.columns.find(c=>c.id===o.by);
   const help=(isCat(by)&&by.options?{mixed:'Every table gets a mix of colors.',similar:'Students with the same color sit together.'}:isCat(by)?{mixed:`Every table gets a mix of ${by.name.toLowerCase()}.`,similar:`Students with the same ${by.name.toLowerCase()} sit together.`}:{mixed:'Every table gets a spread of high, middle and low.',similar:'Students are grouped in bands: highs together, lows together.'})[o.mode]||'A fresh shuffle that still follows your rules.';
   const panelOpen=true; /* Options toggle removed for now; S.settings.seatPanel kept for later */
-  return`    <div class="seat-head"><div class="sh-left">${chartBarHTML(cls)}<p class="muted">${esc(room.name)} · ${here.length} students · ${L.seats.length} seats in ${L.groups.length} groups${hasSeats?' · '+esc(metaText(cls,cur.meta)):''}</p></div>${v.colors&&by?`<div class="legend" aria-label="Color key">${isCat(by)&&by.options?by.options.map((o,i)=>`<span><i style="background:var(--q${5+i})"></i>${esc(o)}</span>`).join(''):isCat(by)?catList(cls,by).map((c,i)=>`<span><i style="background:var(--q${i<4?i+1:0})"></i>${esc(i<4?c.name:'Other')}</span>`).slice(0,5).join(''):[1,2,3,4].map(q=>`<span class="tipbtn" tabindex="0" data-tip="${QFULL[q-1]}" aria-label="${QFULL[q-1]}"><i style="background:var(--q${q})"></i>${QABBR[q-1]}</span>`).join('')}</div>`:''}</div>
+  return`${!openChart(cls)&&!cls.history.length&&cls.students.length&&roomOf(cls).confirmed===false&&!ui.layoutAsked?layoutAskHTML(cls):''}    <div class="seat-head"><div class="sh-left">${chartBarHTML(cls)}<p class="muted">${esc(room.name)} · ${here.length} students · ${L.seats.length} seats in ${L.groups.length} groups${hasSeats?' · '+esc(metaText(cls,cur.meta)):''}</p></div>${v.colors&&by?`<div class="legend" aria-label="Color key">${isCat(by)&&by.options?by.options.map((o,i)=>`<span><i style="background:var(--q${5+i})"></i>${esc(o)}</span>`).join(''):isCat(by)?catList(cls,by).map((c,i)=>`<span><i style="background:var(--q${i<4?i+1:0})"></i>${esc(i<4?c.name:'Other')}</span>`).slice(0,5).join(''):[1,2,3,4].map(q=>`<span class="tipbtn" tabindex="0" data-tip="${QFULL[q-1]}" aria-label="${QFULL[q-1]}"><i style="background:var(--q${q})"></i>${QABBR[q-1]}</span>`).join('')}</div>`:''}</div>
   <div class="layout railright${panelOpen?'':' solo'}">
 
   <section class="stage">
@@ -1596,7 +1620,7 @@ function arrangeHTML(cls){
   ${panelOpen?`<aside class="rail">
     ${ui.mkOpen||!openChart(cls)?(()=>{const first=!openChart(cls);const o=cls.quick.opts,help=o.mode==='random'?'A fair shuffle. Seating rules still apply.':o.mode==='similar'?'Students are grouped in bands: highs together, lows together.':'Every table gets a spread of high, middle and low.';const saved=!!ui.mkSet,sets=cls.groupSets.slice().reverse(),setSel=saved?(sets.find(x=>x.id===ui.mkSet)||null):null,setMode=setSel&&setSel.meta&&TYPE_NAME[setSel.meta.mode]?setSel.meta.mode:(saved&&!setSel&&cls.quick.meta&&TYPE_NAME[cls.quick.meta.mode]?cls.quick.meta.mode:null);
     const nm=ui.mkName!=null?ui.mkName:saved?defaultChartName(cls,setMode?{mode:setMode}:null):defaultChartName(cls,{mode:o.mode});return`<section class="panel mkpanel"><div class="chart-head"><h3>${cls.history.length?'Make New Chart':'Make your first chart'}</h3>${first?'':`<button class="iconbtn" data-act="mkClose" aria-label="Close">${svg('x')}</button>`}</div>${first&&!cls.history.length?`<small class="muted">Pick how to group, choose your criteria, then press Create chart. Students are seated at the tables in your room layout.</small>`:''}
-      <div class="seg four" role="group" aria-label="Grouping type">${[['mixed','Mixed'],['similar','Similar'],['random','Random']].map(([k,l])=>`<button data-act="qGmode" data-arg="${k}" aria-pressed="${!saved&&o.mode===k}">${l}</button>`).join('')}<button data-act="mkSaved" aria-pressed="${saved}">Saved</button></div>
+      <div class="seg four" role="group" aria-label="Grouping type">${[['mixed','Mixed'],['similar','Similar'],['random','Random']].map(([k,l])=>{const off=k!=='random'&&!critOptions(cls).length;return`<button data-act="qGmode" data-arg="${k}" aria-pressed="${!saved&&o.mode===k}"${off?' disabled title="Add data on the Roster first"':''}>${l}</button>`}).join('')}<button data-act="mkSaved" aria-pressed="${saved}">Saved</button></div>${critOptions(cls).length?'':`<small class="muted">Mixed and Similar need something to group by. Add a score, level or category on the <button class="linkbtn" data-act="tab" data-arg="roster">Roster</button> (or genders), and they'll turn on. Until then, charts are a fair random shuffle.</small>`}
       ${saved?`<label class="field"><span>Saved groups</span><select data-ch="mkSet"><option value="__cur"${ui.mkSet==='__cur'?' selected':''}>(Current) ${cls.quick.name?esc(cls.quick.name):'Groups page'}</option>${sets.map(x=>`<option value="${x.id}"${setSel&&x.id===setSel.id?' selected':''}>${esc(x.name)}</option>`).join('')}</select></label>`:''}
       ${saved?`<small class="muted">Seats these exact groups, including any swaps you made by hand.</small>`:`      <small class="muted">${help}</small>
       ${critListHTML(cls,o,'q')}
@@ -2244,7 +2268,7 @@ const ACT={
   mkSrc:(b,a)=>{ui.mkSrc=a;ui.mkName=null;render()},
   mkOpen:()=>{const cls=need(),lr=lastRecipe(cls);ui.mkRoom=null;ui.mkSet=null;if(lr&&lr.r){cls.quick.opts.mode=lr.r.mode;const c=validCrit(cls,lr.r.crit);if(c.length)cls.quick.opts.crit=c}ui.mkOpen=true;ui.mkName=null;render()},
   mkClose:()=>{ui.mkOpen=false;render()},
-  mkCreate:()=>{const cls=need();if(ui.mkRoom&&S.rooms.some(r=>r.id===ui.mkRoom))cls.roomId=ui.mkRoom;if(ui.mkSet){const r=mkSeatSaved(cls),nm=(($('#mkName')||{}).value||'').trim()||defaultChartName(cls,r.rec);ui.mkOpen=false;ui.mkName=null;ui.mkRoom=null;ui.mkSet=null;createChart(cls,nm,r.rec);chartDone(cls,r.left,nm);return}const o=cls.quick.opts,r={mode:o.mode,crit:o.mode==='random'?[]:validCrit(cls,o.crit)},nm=(($('#mkName')||{}).value||'').trim()||defaultChartName(cls,r),res=buildFromRecipe(cls,r);if(res.error){toast(res.error);return}ui.mkOpen=false;ui.mkName=null;ui.mkRoom=null;createChart(cls,nm,r);chartDone(cls,(res.unseated||[]).length,nm)},
+  mkCreate:()=>{const cls=need();if(ui.mkRoom&&S.rooms.some(r=>r.id===ui.mkRoom))cls.roomId=ui.mkRoom;if(ui.mkSet){const r=mkSeatSaved(cls),nm=(($('#mkName')||{}).value||'').trim()||defaultChartName(cls,r.rec);ui.mkOpen=false;ui.mkName=null;ui.mkRoom=null;ui.mkSet=null;createChart(cls,nm,r.rec);chartDone(cls,r.left,nm);return}const o=cls.quick.opts,r={mode:o.mode,crit:o.mode==='random'?[]:validCrit(cls,o.crit)};if(r.mode!=='random'&&!r.crit.length)r.mode='random';const typed=(($('#mkName')||{}).value||'').trim(),nm=(!typed||typed===defaultChartName(cls,{mode:o.mode}))?defaultChartName(cls,r):typed,res=buildFromRecipe(cls,r);if(res.error){toast(res.error);return}ui.mkOpen=false;ui.mkName=null;ui.mkRoom=null;createChart(cls,nm,r);chartDone(cls,(res.unseated||[]).length,nm)},
   reshuffle:()=>{const cls=need(),h=openChart(cls);if(h&&!(ui.shufOk||{})[h.id]){ui.shufAsk=true;render();setTimeout(()=>{const i=$('#shName');if(i){i.focus();i.select()}},30);return}ACT.shThis()},
   shCancel:(b,a,ev)=>{if(b&&b.classList.contains('modal-back')&&ev&&ev.target!==b)return;ui.shufAsk=false;render()},
   shNew:()=>{const cls=need(),lr=lastRecipe(cls),r=lr?lr.r:{mode:'random',crit:[]},nm=(($('#shName')||{}).value||'').trim()||defaultChartName(cls,r),res=buildFromRecipe(cls,r);if(res.error){toast(res.error);return}ui.shufAsk=false;const h=createChart(cls,nm,r);ui.shufOk=ui.shufOk||{};ui.shufOk[h.id]=true;chartDone(cls,(res.unseated||[]).length,nm)},
@@ -2297,6 +2321,9 @@ const ACT={
     if(k==='rect')delete it.shape;else it.shape=k;clampItem(it);save();render()},
   tblZoom:(b,i)=>{ui.tblZoom=+i;ui.selSeat=null;render()},
   tzClose:()=>{ui.tblZoom=null;ui.selSeat=null;render()},
+  layoutPick:(b,k)=>{const cls=need(),N=cls.students.filter(s=>!s.absent).length,L=LAYOUTS.find(x=>x[0]===k);const r={id:uid(),name:cls.name+' · '+(L?L[1]:'Room'),items:genLayout(k,N),confirmed:true};S.rooms.push(r);cls.roomId=r.id;ui.layoutAsked=true;save();render();toast('Room layout made: '+r.name)},
+  layoutKeep:()=>{const cls=need();roomOf(cls).confirmed=true;ui.layoutAsked=true;save();render()},
+  layoutBuild:()=>{const cls=need(),r=roomOf(cls);r.confirmed=true;ui.layoutAsked=true;ui.roomId=r.id;ui.tab='room';save();render();scrollTo(0,0)},
   toggleDetails:()=>{ui.showDetails=!ui.showDetails;render()},
   sZoomStep:(b,d)=>setSZoom((ui.sZoom||1)+(+d)),
   sZoomFit:()=>setSZoom(1),
