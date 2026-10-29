@@ -802,6 +802,7 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--violet);
 .nameorder{white-space:nowrap;display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:600;color:var(--muted)}
 .nameorder select{min-height:30px;padding:3px 26px 3px 10px;font-size:12px;border-radius:999px}
 .fm-pref{margin:6px 0 2px}.fm-pref input{min-height:34px}.fm-shows{display:block;margin-bottom:6px}.fm-sep{height:1px;background:rgba(60,60,67,.12);margin:4px 0 6px}
+.gsrow{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:10px}.gsbtn svg{color:#1e8e3e}.gsinfo{display:flex;align-items:center;gap:8px;flex-wrap:wrap;min-width:0}.gsinfo .gsfile{font-weight:700;font-size:13px;max-width:240px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.gsrow .gsinfo select{width:auto;max-width:180px;flex:none;min-height:32px;font-size:13px;padding-top:0;padding-bottom:0}.gsinfo{flex-direction:row}.gsinfo>*{flex:none}
 .pasteprev{display:grid;gap:8px;padding:10px 12px;border-radius:12px;background:rgba(140,82,255,.07);border:1px solid rgba(140,82,255,.18)}
 .pp-row{display:flex;align-items:center;gap:10px;flex-wrap:wrap;font-size:13px}.pp-row select{min-height:32px;padding:4px 28px 4px 10px;font-size:13px;width:auto}
 .pp-ex{display:flex;flex-wrap:wrap;gap:6px;align-items:center;font-size:12px}.pp-ex span{background:#fff;border-radius:999px;padding:3px 9px;font-weight:600;box-shadow:0 1px 2px rgba(0,0,0,.06)}.pp-ex small,.pp-ex em{color:var(--muted);font-style:normal}
@@ -1503,6 +1504,7 @@ function fitNames(root){(root||document).querySelectorAll('.room').forEach(room=
 function fitSeatRoom(){const r=document.querySelector('.roomscroll .room.edit');if(!r)return;r.style.maxWidth='';const top=r.getBoundingClientRect().top+(window.scrollY||0),avail=window.innerHeight-Math.min(top,window.innerHeight*.45)-20;r.style.maxWidth=Math.max(620,avail*100/70)+'px';r.style.marginInline='auto'}
 if(HAS_DOM)addEventListener('resize',()=>{try{fitSeatRoom();fitNames(document)}catch(e){}});
 const IC={
+  sheet:'<rect x="4" y="3" width="16" height="18" rx="2.5"/><path d="M4 9h16M4 15h16M10 9v12"/>',
   arrange:'<rect x="3" y="4" width="7.5" height="6" rx="1.5"/><rect x="13.5" y="4" width="7.5" height="6" rx="1.5"/><rect x="3" y="14" width="7.5" height="6" rx="1.5"/><rect x="13.5" y="14" width="7.5" height="6" rx="1.5"/>',
   groups:'<path d="M3 7h3.5c2 0 3.2 1 4.3 2.8l2.4 4.4C14.3 16 15.5 17 17.5 17H21"/><path d="M3 17h3.5c1.4 0 2.4-.5 3.2-1.4"/><path d="M14.3 8.4C15.1 7.5 16.1 7 17.5 7H21"/><path d="M18 4l3 3-3 3"/><path d="M18 14l3 3-3 3"/>',
   roster:'<circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c.6-3.6 3.3-5.5 6.5-5.5s5.9 1.9 6.5 5.5"/><path d="M16 4.7a3.5 3.5 0 010 6.6"/><path d="M18 14.8c1.9.8 3.2 2.5 3.5 5.2"/>',
@@ -1682,7 +1684,8 @@ function rosterHTML(cls){
   <p class="hint">Criteria are what you group by: a summative score, a Lexile or reading level, a behavior rating, or a category such as personality type. Click a criterion's name to rename it, change its type or remove it.</p>
   <div class="two">
     <section class="panel"><h3>Paste from a spreadsheet</h3>
-      <p class="muted small">Copy rows from Google Sheets, your gradebook export or a CSV, including the header row. Names can be one column in any order (Jordan Davis or Davis, Jordan) or separate first and last name columns; check the preview before importing. Email, ID, phone and birthday columns are skipped. Students who already exist get their values updated, so you can paste in a new test score column any time. Gender (M or F) and Notes columns fill those fields.</p>
+      <p class="muted small">${gsOn()?'Import a sheet from your Google Drive, or copy':'Copy'} rows from Google Sheets, your gradebook export or a CSV, including the header row. Names can be one column in any order (Jordan Davis or Davis, Jordan) or separate first and last name columns; check the preview before importing. Email, ID, phone and birthday columns are skipped. Students who already exist get their values updated, so you can paste in a new test score column any time. Gender (M or F) and Notes columns fill those fields.</p>
+      ${gsOn()?`<div class="gsrow"><button class="btn gsbtn" data-act="gsImport">${svg('sheet')}Import from Google Sheets</button><div id="gsInfo" class="gsinfo"></div></div>`:''}
       <textarea id="pasteBox" placeholder="Name&#9;Summative&#9;Behavior&#10;Jordan Lee&#9;84&#9;3"></textarea>
       <div id="pastePrev" class="pasteprev" hidden></div>
       <div class="row"><label class="check"><input type="radio" name="pmode" value="add" checked> Add and update</label><label class="check"><input type="radio" name="pmode" value="replace"> Replace roster</label></div>
@@ -2220,6 +2223,7 @@ function tapSeat(key,has){
 /* ---------- actions ---------- */
 const need=()=>activeClass();
 const ACT={
+  gsImport:()=>{gsImport()},
   mgTab:(b,a)=>{ui.mgTab=a;render()},
   mgEye:(b,k)=>{ui.mgShow=ui.mgShow||{};ui.mgShow[k]=!ui.mgShow[k];render()},
   mgExp:(b,id)=>{ui.mgExp=ui.mgExp||{};ui.mgExp[id]=!ui.mgExp[id];render()},
@@ -2422,6 +2426,37 @@ const ACT={
   restore:()=>{const e=$('#restoreErr');try{const d=parseBackup(ui.restoreData||'');ui.restoreData=null;ui.restoreName=null;S=migrate(d);doSave();render();toast('Backup restored')}catch(x){if(e)e.textContent=x.message}},
   closeModal:(b,a,ev)=>{if(b.classList.contains('modal-back')&&ev.target!==b)return;$('#modal-root').innerHTML=''},
 };
+/* ---------- Google Sheets import (Drive picker) ---------- */
+/* Fill these three in from Google Cloud console to turn the button on. */
+const GS_CLIENT_ID='76519159612-9er78m3g5idcl300n8jp3usvtvlugq87.apps.googleusercontent.com';   // OAuth 2.0 Client ID (Web application), e.g. 1234-abc.apps.googleusercontent.com
+const GS_API_KEY='AIzaSyCrMEzVQJ2P07_mdNHmzU67QRAncqXEeP4';     // API key, restricted to the Google Picker API and robsonedu.com
+const GS_APP_ID='76519159612';      // Project number (digits only)
+const GS_SCOPE='https://www.googleapis.com/auth/drive.file';
+const gsOn=()=>!!(GS_CLIENT_ID&&GS_API_KEY&&GS_APP_ID);
+const GS={tok:null,exp:0,file:null,tabs:[],busy:false,loads:{}};
+function gsLoad(src){return GS.loads[src]||(GS.loads[src]=new Promise((ok,no)=>{const s=document.createElement('script');s.src=src;s.async=true;s.onload=()=>ok();s.onerror=()=>{delete GS.loads[src];no(new Error('load'))};document.head.appendChild(s)}))}
+function gsPreload(){if(!gsOn()||!HAS_DOM||location.protocol==='file:')return Promise.resolve();return Promise.all([gsLoad('https://accounts.google.com/gsi/client'),gsLoad('https://apis.google.com/js/api.js').then(()=>new Promise(ok=>gapi.load('picker',ok)))])}
+function gsStatus(html){const el=$('#gsInfo');if(el)el.innerHTML=html||''}
+function gsToken(){return new Promise((ok,no)=>{if(GS.tok&&Date.now()<GS.exp-60000)return ok(GS.tok);
+  const tc=google.accounts.oauth2.initTokenClient({client_id:GS_CLIENT_ID,scope:GS_SCOPE,callback:r=>{if(r&&r.access_token){GS.tok=r.access_token;GS.exp=Date.now()+(+r.expires_in||3600)*1000;ok(GS.tok)}else no(new Error((r&&r.error)||'denied'))},error_callback:e=>no(new Error((e&&e.type)||'closed'))});
+  tc.requestAccessToken({prompt:GS.tok?'':'select_account'})})}
+function gsPick(tok){return new Promise(ok=>{const P=google.picker;const view=new P.DocsView(P.ViewId.SPREADSHEETS).setMimeTypes('application/vnd.google-apps.spreadsheet').setMode(P.DocsViewMode.LIST);
+  new P.PickerBuilder().addView(view).setOAuthToken(tok).setDeveloperKey(GS_API_KEY).setAppId(GS_APP_ID).setTitle('Choose a roster sheet').setCallback(d=>{const a=d[P.Response.ACTION];if(a===P.Action.PICKED){const doc=d[P.Response.DOCUMENTS][0];ok({id:doc[P.Document.ID],name:doc[P.Document.NAME]})}else if(a===P.Action.CANCEL)ok(null)}).build().setVisible(true)})}
+async function gsGet(path){const r=await fetch('https://sheets.googleapis.com/v4/spreadsheets/'+path,{headers:{Authorization:'Bearer '+GS.tok}});if(r.status===401){GS.tok=null;throw new Error('expired')}if(!r.ok)throw new Error('http'+r.status);return r.json()}
+function gsRowsToText(rows){rows=(rows||[]).filter(r=>r&&r.some(c=>String(c).trim()));const w=Math.max(0,...rows.map(r=>r.length));return rows.map(r=>Array.from({length:w},(_,i)=>String(r[i]==null?'':r[i]).replace(/[\t\r\n]+/g,' ').trim()).join('\t')).join('\n')}
+async function gsLoadTab(title){const box=$('#pasteBox');if(!box||!GS.file)return;gsStatus('<span class="muted small">Reading the sheet…</span>');
+  const q="'"+title.replace(/'/g,"''")+"'";const v=await gsGet(encodeURIComponent(GS.file.id)+'/values/'+encodeURIComponent(q)+'?valueRenderOption=FORMATTED_VALUE');
+  const txt=gsRowsToText(v.values);box.value=txt;const f=$('#pasteFmt');if(f)delete f.dataset.user;pastePreview();
+  const n=Math.max(0,txt?txt.split('\n').length-1:0);
+  gsStatus(`<span class="gsfile">${esc(GS.file.name)}</span>${GS.tabs.length>1?`<select id="gsTab" aria-label="Sheet tab">${GS.tabs.map(t=>`<option${t===title?' selected':''}>${esc(t)}</option>`).join('')}</select>`:''}<span class="muted small">${n?`${n} row${n===1?'':'s'} loaded. Check the preview, then Import.`:'This tab is empty.'}</span>`)}
+async function gsImport(){if(GS.busy)return;
+  if(!gsOn()){toast('Google Sheets import isn’t set up yet.');return}
+  if(location.protocol==='file:'){toast('Google Sheets import works on the website, not from a file on your computer.');return}
+  GS.busy=true;try{await gsPreload();const tok=await gsToken();const f=await gsPick(tok);if(!f)return;GS.file=f;
+    const m=await gsGet(encodeURIComponent(f.id)+'?fields=sheets.properties.title');GS.tabs=(m.sheets||[]).map(s=>s.properties.title);
+    await gsLoadTab(GS.tabs[0]||'Sheet1')}
+  catch(e){const m=String(e&&e.message||'');gsStatus('');toast(m==='load'?'Couldn’t reach Google. Check your connection and try again.':/denied|closed|popup|access_denied/.test(m)?'Google sign-in was cancelled.':m==='http403'||m==='http404'?'That sheet couldn’t be opened. Make sure you can view it in Google Sheets.':'Couldn’t import that sheet. Try again.')}
+  finally{GS.busy=false}}
 function csvSplit(l){const out=[];let cur='',q=false;for(let i=0;i<l.length;i++){const ch=l[i];if(q){if(ch==='"'){if(l[i+1]==='"'){cur+='"';i++}else q=false}else cur+=ch}else if(ch==='"')q=true;else if(ch===','){out.push(cur);cur=''}else cur+=ch}out.push(cur);return out}
 function pasteParse(txt){const lines=String(txt||'').replace(/\r/g,'').split('\n').filter(l=>l.trim());if(lines.length<2)return null;const tab=lines[0].includes('\t');const rows=lines.map(l=>(tab?l.split('\t'):csvSplit(l)).map(c=>c.trim()));const low=rows[0].map(h=>h.toLowerCase());
   const first=low.findIndex(h=>/^(first|given|preferred first)/.test(h)),last=low.findIndex(h=>/^(last|surname|family)/.test(h));let full=low.findIndex(h=>/name/.test(h)&&!/^(first|given|last|surname|family|preferred)/.test(h));if(first<0&&last<0&&full<0)full=0;
@@ -2535,8 +2570,9 @@ document.addEventListener('click',e=>{
   const fn=ACT[b.dataset.act];if(fn)fn(b,b.dataset.arg,e);
 });
 document.addEventListener('input',e=>{if(e.target&&e.target.id==='pZoom'){setZoom(+e.target.value);return}if(e.target&&e.target.id==='sZoom'){setSZoom(+e.target.value);return}if(e.target&&e.target.id==='mgSearch'){const q=e.target.value.trim().toLowerCase();ui.mgQ=e.target.value;document.querySelectorAll('.mg-list>[data-mgname],.mg-body>[data-mgname],.hist>[data-mgname]').forEach(r=>r.style.display=!q||r.dataset.mgname.includes(q)?'':'none');document.querySelectorAll('.mg-class').forEach(c=>{const hit=!q||c.dataset.mgname.includes(q)||[...c.querySelectorAll('.mg-body>[data-mgname]')].some(r=>r.style.display!=='none');c.style.display=hit?'':'none'})}});
+['pointerover','focusin'].forEach(t=>document.addEventListener(t,e=>{if(e.target&&e.target.closest&&e.target.closest('.gsbtn'))gsPreload().catch(()=>{})}));
 document.addEventListener('input',e=>{if(e.target&&e.target.id==='pasteBox'){clearTimeout(pastePreview.t);pastePreview.t=setTimeout(pastePreview,150)}});
-document.addEventListener('change',e=>{if(e.target&&e.target.id==='pasteFmt'){e.target.dataset.user='1';pastePreview();return}});
+document.addEventListener('change',e=>{if(e.target&&e.target.id==='gsTab'){gsLoadTab(e.target.value).catch(()=>toast('Couldn’t read that tab. Try again.'));return}if(e.target&&e.target.id==='pasteFmt'){e.target.dataset.user='1';pastePreview();return}});
 document.addEventListener('change',e=>{const el=e.target.closest('[data-ch]');if(!el||!S)return;const fn=CH[el.dataset.ch];if(fn)fn(el,e)});
 document.addEventListener('keydown',e=>{
   if(e.key==='Enter'&&e.target.id==='newStud'){e.preventDefault();ACT.addStud();return}
