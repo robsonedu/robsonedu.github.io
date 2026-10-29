@@ -1,3 +1,4 @@
+<meta charset="utf-8">
 <title>Robson Grouping Studio</title>
 <!-- Favicons -->
 <link rel="icon" type="image/png" href="images/FaviconCircleR.png">
@@ -1097,6 +1098,11 @@ function newClass(name,roomId){return{id:uid(),name,roomId,columns:[],students:[
 function migrate(st){
   const b=blankState();st.settings=Object.assign(b.settings,st.settings||{});if([OLD_Q,PREV_Q].some(q=>JSON.stringify(st.settings.qColors)===JSON.stringify(q)))st.settings.qColors=QDEF.slice();
   st.rooms=st.rooms||[];st.classes=st.classes||[];
+  /* repair: charts and group sets made while no criteria were picked were stored as Random even though their name says Mixed or Similar */
+  st.classes.forEach(c=>{if(!c.columns||!c.columns.length)return;const want=()=>{const q=c.quick&&c.quick.opts&&validCrit(c,c.quick.opts.crit);if(q&&q.length)return q;const c0=c.columns.find(x=>x.id===(c.opts||{}).by)||c.columns[0];return[c0.id,(c.students||[]).some(s=>s.g)?'__g':null].filter(Boolean)};
+    const typeOf=n=>{const m=/·\s*(Mixed|Similar)\s*·/.exec(n||'');return m?m[1].toLowerCase():null};
+    (c.history||[]).forEach(h=>{const t=typeOf(h.label)||typeOf(h.meta&&h.meta.name);if(!t)return;const r=h.recipe;if((r&&r.mode==='random')||(!r&&h.meta&&h.meta.mode==='set'&&h.meta.gmode==='random')){h.recipe={mode:t,crit:want()};if(h.meta&&h.meta.mode==='set')h.meta.gmode=t}});
+    (c.groupSets||[]).forEach(g=>{const t=typeOf(g.name);if(t&&g.meta&&g.meta.mode==='random')g.meta=Object.assign({},g.meta,{mode:t,crit:want()})})});
   st.classes.forEach(c=>{if(c.quick&&c.quick.setId&&!(c.groupSets||[]).some(g=>g.id===c.quick.setId)){const nx=(c.groupSets||[]).slice().sort((a,b)=>(b.date||0)-(a.date||0))[0];if(nx)Object.assign(c.quick,{blank:false,groups:nx.groups.map(g=>g.slice()),name:nx.name,setId:nx.id,meta:nx.meta,tables:nx.tables||null,tableLabels:nx.tableLabels||null,roomId:nx.roomId||null});else Object.assign(c.quick,{blank:true,groups:[],name:'',setId:null,meta:null})}if(c.opts)delete c.opts.roles;if(c.current)c.current.roles={};(c.history||[]).forEach(h=>h.roles={});if(c.view)delete c.view.roles;if(st.settings)delete st.settings.roles;if(c.view&&!c.view.v2){Object.assign(c.view,{repeats:false,seatNums:false,seatNos:false,show:[],v2:true})}});
   if(!st.rooms.length)st.rooms.push({id:uid(),name:'My classroom',items:preset('pods4')});
   st.rooms.forEach(r=>{r.items.forEach(i=>{if(i.ang==null){i.ang=i.rot?90:0}delete i.rot});numberRoom(r);unifyLinks(r)});
@@ -1124,7 +1130,7 @@ function parseName(name,order){const raw=String(name||'').replace(/\s+/g,' ').tr
   let end=t.length;if(end>2&&NAME_SUFFIX.test(t[end-1]))end--;let st=end-1;while(st>1&&NAME_PART.test(t[st-1]))st--;
   return{first:t[0],middle:t.slice(1,st).join(' '),last:t.slice(st,end).join(' ')}}
 function nameParts(s){const p=(s.first||s.last)?{first:s.first||'',middle:'',last:s.last||''}:parseName(s.name,s.nf);if(s.pref&&String(s.pref).trim())p.first=String(s.pref).trim();return p}
-const initialOf=last=>{const w=String(last).replace(/^((de|del|della|der|di|da|du|la|le|van|von|st\.?)\s+)+/i,'');return(w||last).replace(/^[^A-Za-zÀ-ÿ]+/,'')};
+const initialOf=last=>{const w=String(last).replace(/^((de|del|della|der|di|da|du|la|le|van|von|st\.?)\s+)+/i,'');return(w||last).replace(/^[^A-Za-z\u00C0-\u024F]+/,'')};
 function baseLabel(p,style,k){if(!p.last)return p.first;if(style==='first')return k?p.first+' '+initialOf(p.last).slice(0,k)+'.':p.first;if(style==='full')return[p.first,p.middle,p.last].filter(Boolean).join(' ');const L=initialOf(p.last);return p.first+' '+(k>=L.length?L:L.slice(0,Math.max(1,k))+'.')}
 let NAMEC=null;
 function nameLabels(style){NAMEC=NAMEC||{};if(NAMEC[style])return NAMEC[style];const M=new Map();
