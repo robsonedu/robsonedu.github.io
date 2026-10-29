@@ -1004,14 +1004,15 @@ function fmtDate(t){return new Date(t).toLocaleDateString(undefined,{weekday:'sh
 /* ---------- room geometry ---------- */
 function base(it){const f=FURN[it.type];return{w:+it.w||f.w,h:+it.h||f.h}}
 function angOf(it){const a=it.ang!=null?+it.ang:(it.rot?90:0);return((a%360)+360)%360}
-/* On a table turned to an odd angle, keep each name card level: find the widest card that still clears the table's other seats */
-function levelSeats(it,pts,bs,A,cw,ch,odd){const r=A-90*Math.round(A/90);if(Math.abs(r)<.5)return null;
-  const a0=cw*bs.w,a1=ch*bs.h,w0=Math.max(a0,a1),h0=Math.min(a0,a1),C=pts.map(p=>rotPt((p[0]-.5)*bs.w,(p[1]-.5)*bs.h,A)),G=.35;
-  if(C.length<2)return{W:w0*1.15,H:h0};let best=null;
-  for(let b=1;b>=.6-1e-9;b-=.05){const H=h0*b;let W=w0*1.35;
-    for(let i=0;i<C.length;i++)for(let j=i+1;j<C.length;j++){const dx=Math.abs(C[i][0]-C[j][0]),dy=Math.abs(C[i][1]-C[j][1]);if(dy<H+G)W=Math.min(W,dx-G)}
-    if(!best||W>best.W*1.04)best={W,H}}
-  if(best.W<w0*.6)best={W:w0*.6,H:h0*.7};return best}
+/* On a table turned to an odd angle, keep each name card level and full width; cards that would overlap are nudged apart (mostly up and down) */
+function levelSeats(it,pts,bs,A,cw,ch,odd){const r=A-90*Math.round(A/90);if(Math.abs(r)<.5){const sw=odd?ch*bs.h:cw*bs.w,sh=odd?cw*bs.w:ch*bs.h;if(pts.length<2||sw>=sh*.9)return null}
+  const a0=cw*bs.w,a1=ch*bs.h,W=Math.max(a0,a1)*1.05,H=Math.min(a0,a1)*.86,G=.4;
+  const P=pts.map(p=>rotPt((p[0]-.5)*bs.w,(p[1]-.5)*bs.h,A));
+  for(let n=0;n<60;n++){let moved=false;
+    for(let i=0;i<P.length;i++)for(let j=i+1;j<P.length;j++){const a=P[i],b=P[j],dx=b[0]-a[0],dy=b[1]-a[1],px=W+G-Math.abs(dx),py=H+G-Math.abs(dy);if(px<=0||py<=0)continue;moved=true;
+      if(py<=px*1.6){const m=py/2*(dy>=0?1:-1)+(dy===0?.01:0);a[1]-=m;b[1]+=m}else{const m=px/2*(dx>=0?1:-1);a[0]-=m;b[0]+=m}}
+    if(!moved)break}
+  return{W,H,pos:P.map(q=>{const l=rotPt(q[0],q[1],-A);return[.5+l[0]/bs.w,.5+l[1]/bs.h]})}}
 function tzHTML(cls,room,L,cur,qm,iss){if(ui.tblZoom==null)return'';const g=L.groups[ui.tblZoom];if(!g){ui.tblZoom=null;return''}
   const cardOf=(key,k)=>{const id=cur&&cur.seats[key],s=id&&stud(cls,id);if(!s)return`<div class="seat empty${ui.selSeat===key?' picked':''}" data-seat="${key}" tabindex="0" role="button" aria-label="Empty seat"></div>`;
     const q=qm.get(s.id)||0,sub=[],sl=showList(cls);for(const c of showCols(cls)){if(!sl.includes(c.id))continue;if(c.id==='__g'){if(s.g)sub.push(s.g)}else if(hasVal(s,c)){const t=String(s.v[c.id]).trim();sub.push(esc(ABBR[t.toLowerCase()]||t))}}
@@ -1537,7 +1538,7 @@ function roomHTML(room,L,o){
     const LV=(mode==='seat'||mode==='present')?levelSeats(it,pts,bs,A,cw,ch,odd):null;
     pts.forEach((p,k)=>{
       const key=it.id+':'+k;
-      const ss=LV?`left:${pct(p[0]-LV.W/bs.w/2)};top:${pct(p[1]-LV.H/bs.h/2)};width:${pct(LV.W/bs.w)};height:${pct(LV.H/bs.h)};--cr:${(-A).toFixed(2)}deg;transform:rotate(var(--cr))`:`left:${pct(p[0]-ow/2)};top:${pct(p[1]-oh/2)};width:${pct(ow)};height:${pct(oh)}${crs}`;
+      const ss=LV?`left:${pct(LV.pos[k][0]-LV.W/bs.w/2)};top:${pct(LV.pos[k][1]-LV.H/bs.h/2)};width:${pct(LV.W/bs.w)};height:${pct(LV.H/bs.h)};--cr:${(-A).toFixed(2)}deg;transform:rotate(var(--cr))`:`left:${pct(p[0]-ow/2)};top:${pct(p[1]-oh/2)};width:${pct(ow)};height:${pct(oh)}${crs}`;
       const SL=L.seatByKey.get(key),tg=SL&&SL.tag;
       if(mode==='edit'){const tagging=ui.tagGk&&SL&&SL.gk===ui.tagGk;
         if(ui.teamMode&&SL){const gs=L.groups[SL.gi],seq=ui.teamGk===SL.gk?ui.teamSeq:null,pos=seq?seq.indexOf(key):-1,n=gs.seats.length;
