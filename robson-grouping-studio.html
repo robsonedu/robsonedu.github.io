@@ -110,9 +110,9 @@ textarea{min-height:110px;font-family:var(--f-mono);font-size:13px;resize:vertic
 .empty{background:var(--surface);border:1px dashed var(--line-strong);border-radius:12px;padding:28px;display:grid;gap:10px;justify-items:start}
 .empty p{max-width:56ch}
 
-.shell{display:flex;align-items:flex-start;min-height:100%}
+.shell{display:flex;align-items:flex-start;min-height:100%;padding-left:calc(86px + max(8px,env(safe-area-inset-left,0px)))}
 .content{flex:1;min-width:0}
-.siderail{position:sticky;top:calc(8px + env(safe-area-inset-top,0px));flex:none;width:78px;height:calc(100vh - 16px - env(safe-area-inset-top,0px) - env(safe-area-inset-bottom,0px));height:calc(100dvh - 16px - env(safe-area-inset-top,0px) - env(safe-area-inset-bottom,0px));margin:8px 0 8px max(8px,env(safe-area-inset-left,0px));background:var(--rail);border-radius:14px;display:flex;flex-direction:column;align-items:center;gap:2px;padding:12px 0 10px;z-index:25}
+.siderail{position:fixed;top:calc(8px + env(safe-area-inset-top,0px));bottom:calc(8px + env(safe-area-inset-bottom,0px));left:max(8px,env(safe-area-inset-left,0px));width:78px;height:auto;box-sizing:border-box;overflow-y:auto;scrollbar-width:none;margin:0;background:var(--rail);border-radius:14px;display:flex;flex-direction:column;align-items:center;gap:2px;padding:12px 0 10px;z-index:25}
 .siderail-logo{width:40px;height:40px;display:grid;place-items:center;margin-bottom:10px;border-radius:10px;background:rgba(255,255,255,.06)}
 .siderail-logo .mark{width:22px;height:22px}
 .siderail-spacer{flex:1}
@@ -128,7 +128,7 @@ textarea{min-height:110px;font-family:var(--f-mono);font-size:13px;resize:vertic
 .crumb-app{font-family:var(--f-display);font-weight:700;font-size:16px;white-space:nowrap}
 .crumb-sep{color:var(--line-strong)}
 @media (max-width:720px){
-  .shell{display:block}
+  .shell{display:block;padding-left:0}
   .siderail{position:fixed;left:0;right:0;bottom:0;top:auto;width:auto;height:auto;margin:0;border-radius:14px 14px 0 0;flex-direction:row;justify-content:space-around;padding:6px max(4px,env(safe-area-inset-right,0px)) calc(6px + env(safe-area-inset-bottom,0px)) max(4px,env(safe-area-inset-left,0px))}
   .siderail-logo,.siderail-spacer{display:none}
   .siderail-item{width:auto;flex:1;min-width:0;font-size:10px}
