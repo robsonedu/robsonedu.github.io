@@ -1,5 +1,5 @@
 <meta charset="utf-8">
-<title>Robson Grouping Studio</title>
+<title>RobsonEDU Grouping Studio</title>
 <!-- Favicons -->
 <link rel="icon" type="image/png" href="images/FaviconCircleR.png">
 <link rel="icon" type="image/svg+xml" href="images/FaviconCircleR.svg">
@@ -1537,7 +1537,7 @@ function railHTML(){
 }
 function topHTML(cls){
   return`<header class="top"><div class="top-in">
-  <div class="crumb"><span class="crumb-app">Robson Grouping Studio</span><span class="crumb-sep" aria-hidden="true">/</span>
+  <div class="crumb"><span class="crumb-app">RobsonEDU Grouping Studio</span><span class="crumb-sep" aria-hidden="true">/</span>
   ${S.classes.length?`<label class="clsel"><span class="sr">Class</span><select data-ch="pickClass">${S.classes.map(c=>`<option value="${c.id}"${cls&&c.id===cls.id?' selected':''}>${esc(c.name)}</option>`).join('')}</select></label>`:''}</div>
   <div class="top-actions"><span id="saveState"${ui.tab==='groups'?' hidden':''} class="savestate ${!storageOK?'err':ui.saveState==='saving'?'busy':'ok'}" role="status" aria-live="polite">${saveLabel()}</span><div class="undo-group" role="group" aria-label="Undo and redo"><button class="iconbtn" id="btnUndo" data-act="undo" aria-label="Undo" title="Undo (Ctrl or Cmd + Z)"${hist.undo.length||saveT?'':' disabled'}>${svg('undo')}</button><button class="iconbtn" id="btnRedo" data-act="redo" aria-label="Redo" title="Redo (Shift + Ctrl or Cmd + Z)"${hist.redo.length?'':' disabled'}>${svg('redo')}</button></div><button class="btn primary" data-act="present"${cls?'':' disabled'}>${ui.tab==='stations'?svg('stations')+'Start stations':ui.tab==='groups'?'Present groups':'Present'}</button></div>
   </div></header>`;
@@ -1870,7 +1870,7 @@ function settingsHTML(){
 
 function welcomeHTML(){
   const mark='<span class="gmark" aria-hidden="true"><i></i><i></i><i></i><i></i></span>';
-  return`<div class="lockwrap"><div class="lockcard"><div class="brand">${mark}Robson Grouping Studio</div>
+  return`<div class="lockwrap"><div class="lockcard"><div class="brand">${mark}RobsonEDU Grouping Studio</div>
   <h1>Set up your classes</h1>
   <p class="muted">Build your room, add your rosters and data, and let the tool group students straight into a seating chart you can project.</p>
   <button class="btn primary" data-act="startSample">Try it with sample classes</button>
