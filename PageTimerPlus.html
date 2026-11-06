@@ -80,19 +80,19 @@ body{
 .vdock svg,.corner-btn svg,.seg svg{fill:none;stroke:currentColor;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round;flex:none;}
 
 .corner-btn{
-  position:fixed;top:20px;right:20px;z-index:46;display:grid;place-items:center;width:48px;height:48px;padding:0;
-  border-radius:16px;border:1px solid var(--dock-line);background:rgba(16,16,18,.5);
+  position:fixed;top:20px;right:20px;z-index:46;display:grid;place-items:center;width:60px;height:60px;padding:0;
+  border-radius:20px;border:1px solid var(--dock-line);background:rgba(16,16,18,.5);
   backdrop-filter:blur(5px);-webkit-backdrop-filter:blur(5px);
   color:#f3f5f9;cursor:pointer;opacity:.6;transition:opacity .3s,background .2s;
 }
 .corner-btn:hover,.corner-btn.active,.corner-btn:focus-visible{opacity:1;background:rgba(16,16,18,.75);}
-.corner-btn svg{width:22px;height:22px;}
+.corner-btn svg{width:27px;height:27px;}
 .corner-btn .live-dot{position:absolute;top:8px;right:8px;width:7px;height:7px;border-radius:50%;background:#2fb344;box-shadow:0 0 6px #2fb344;display:none;}
 .corner-btn.has-live .live-dot{display:block;}
 
 /* Vertical dock. Tools view by default; Themes takes over the dock at double width. */
 .vdock{
-  position:fixed;top:80px;right:20px;z-index:45;width:94px;display:flex;flex-direction:column;padding:7px;border-radius:22px;
+  position:fixed;top:92px;right:20px;z-index:45;width:94px;display:flex;flex-direction:column;padding:7px;border-radius:22px;
   background:rgba(16,16,18,.62);border:1px solid var(--dock-line);
   backdrop-filter:blur(5px);-webkit-backdrop-filter:blur(5px);
   box-shadow:0 20px 60px rgba(0,0,0,.45),inset 0 1px 0 rgba(255,255,255,.08);
@@ -101,12 +101,12 @@ body{
 }
 .vdock.themes{width:196px;}
 .vdock.open{transform:none;opacity:1;pointer-events:auto;}
-.vcol{display:flex;flex-direction:column;gap:3px;max-height:calc(100vh - 114px);overflow-y:auto;scrollbar-width:none;}
+.vcol{display:flex;flex-direction:column;gap:3px;max-height:calc(100vh - 126px);overflow-y:auto;scrollbar-width:none;}
 .vcol::-webkit-scrollbar,.tgrid::-webkit-scrollbar{display:none;}
 
 /* Themes view — replaces the tools, two thumbnails across */
 .vdock.themes .vcol{display:none;}
-.tcol{display:none;flex-direction:column;gap:8px;max-height:min(640px,calc(100vh - 114px));}
+.tcol{display:none;flex-direction:column;gap:8px;max-height:min(640px,calc(100vh - 126px));}
 .vdock.themes .tcol{display:flex;animation:tIn .3s var(--ease);}
 @keyframes tIn{from{opacity:0;transform:translateX(8px);}to{opacity:1;transform:none;}}
 .tcol-head{display:flex;align-items:center;gap:6px;padding:2px 2px 0;}
@@ -562,7 +562,7 @@ body.idle{cursor:none;}
    A 256 x 88 bar. While music plays, the YouTube player drops down under it
    (YouTube requires its player to be visible and at least 200 x 200). */
 .mbar{
-  position:fixed;top:80px;right:20px;z-index:47;width:256px;padding:10px;border-radius:18px;
+  position:fixed;top:92px;right:20px;z-index:47;width:256px;padding:10px;border-radius:18px;
   background:rgba(16,16,18,.74);border:1px solid var(--dock-line);
   box-shadow:0 20px 60px rgba(0,0,0,.45),inset 0 1px 0 rgba(255,255,255,.08);
   backdrop-filter:blur(5px);-webkit-backdrop-filter:blur(5px);
@@ -983,7 +983,42 @@ body.music-video #pane-bar .bars-wrap{max-width:calc(100vw - 580px);}
 <audio id="alarmSound" preload="auto" loop></audio>
 <audio id="alarmPreview" preload="none"></audio>
 
-<script>
+<style>
+/* ---------- POP-OUT: floating, always-on-top timer window ---------- */
+.tp-pop{
+  position:fixed;z-index:46;right:calc(20px + env(safe-area-inset-right,0px));bottom:calc(20px + env(safe-area-inset-bottom,0px));
+  display:grid;place-items:center;width:60px;height:60px;padding:0;border-radius:20px;
+  border:1px solid var(--dock-line);background:rgba(16,16,18,.5);
+  backdrop-filter:blur(5px);-webkit-backdrop-filter:blur(5px);
+  color:#f3f5f9;cursor:pointer;opacity:.6;transition:opacity .3s,background .2s;
+}
+.tp-pop:hover,.tp-pop:focus-visible{opacity:1;background:rgba(16,16,18,.75);}
+.tp-pop:focus-visible{outline:2px solid var(--dock-accent);outline-offset:3px;}
+.tp-pop svg{width:27px;height:27px;fill:none;stroke:currentColor;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round;}
+/* Phones can't float a window, so the button only shows on computers and iPads */
+@media (max-width:600px){.tp-pop{display:none;}}
+#tpPopped{position:fixed;inset:0;z-index:110;display:none;place-items:center;background:rgba(0,0,0,.55);
+  backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);padding:16px;}
+body.tp-popped #tpPopped{display:grid;}
+.tp-card{width:min(420px,100%);padding:24px;border-radius:20px;background:rgba(22,22,24,.94);border:1px solid var(--dock-line);
+  box-shadow:0 20px 60px rgba(0,0,0,.55);text-align:center;font-family:'Inter',sans-serif;color:#f3f5f9;text-shadow:none;}
+.tp-card h4{margin:0 0 8px;font:700 18px 'Inter',sans-serif;}
+.tp-card p{margin:0 0 18px;font:400 14px/1.5 'Inter',sans-serif;color:rgba(243,245,249,.78);}
+.tp-card button{border:0;border-radius:11px;padding:10px 18px;font:600 14px 'Inter',sans-serif;cursor:pointer;background:var(--dock-accent);color:#111;}
+.tp-card button:focus-visible{outline:2px solid #fff;outline-offset:2px;}
+</style>
+<button class="tp-pop chrome" id="tpPopBtn" type="button" title="Pop-Out: float the timer over Google Slides or PowerPoint (P)" aria-label="Pop-Out">
+  <svg viewBox="0 0 20 20" aria-hidden="true"><rect x="2.5" y="4" width="15" height="12" rx="2"/><rect x="10" y="9.5" width="5.5" height="4.5" rx="1"/></svg>
+</button>
+<div id="tpPopped" role="dialog" aria-modal="true" aria-labelledby="tpPoppedTitle">
+  <div class="tp-card">
+    <h4 id="tpPoppedTitle">Your timer is in the pop-out window</h4>
+    <p id="tpPoppedText">It floats on top of Google Slides, PowerPoint and other apps. Drag its corner to resize it. Close it any time to bring the timer back here.</p>
+    <button type="button" id="tpBringBack">Bring the timer back</button>
+  </div>
+</div>
+<script id="tpSnap">window.__TP_HEAD=document.head.innerHTML;window.__TP_BODY=document.body.innerHTML;</script>
+<script id="tpMain">
 /* =====================================================================
    SETTINGS
    ASSET_BASE: where your images/ and audio/ folders are, relative to this
@@ -2337,7 +2372,9 @@ const Tour = (()=>{
     {title:'Pick a theme', text:'Themes change the background, colors, and sounds. Tap any picture to try it.', when:()=>!themeLocked(),
      target:'#vdock', before(){ openDock(); openDrawer(true); }},
     {title:'Music', text:'Play the Classroom playlist, or add your own YouTube playlist link.',
-     target:'#musicBtn', side:'left', when:()=>!matchMedia('(max-width:600px)').matches, before(){ openDrawer(false); openDock(); }}
+     target:'#musicBtn', side:'left', when:()=>!matchMedia('(max-width:600px)').matches, before(){ openDrawer(false); openDock(); }},
+    {title:'Float it over your slides', text:'Pop-Out puts the timer in a small window that stays on top of Google Slides or PowerPoint. In that window, the corner button tucks it into a small countdown you can tap to bring back.',
+     target:'#tpPopBtn', side:'left', when:()=>!matchMedia('(max-width:600px)').matches, before(){ openDrawer(false); if(!dockPinned) setDock(false); }}
   ];
   /* Short tours for the other tools. Each runs the first time a teacher opens that tool. */
   TOURS.turn = [
@@ -2471,6 +2508,185 @@ const Tour = (()=>{
   /* Each tool's tour runs the first time a teacher opens it (?notour turns this off) */
   Tour.maybeAuto(700);
   wake();
+})();
+</script>
+<script type="text/plain" id="tpMiniJs">
+(function(){
+  var stage=document.getElementById('stage');
+  function fit(){
+    var p=document.querySelector('.pane.active'); if(!p) return;
+    stage.style.zoom='1'; stage.style.minHeight='100vh';
+    var l=1e9,r=-1e9,t=1e9,b=-1e9;
+    p.querySelectorAll('*').forEach(function(e){
+      var q=e.getBoundingClientRect(); if(!q.width||!q.height) return;
+      if(q.left<l)l=q.left; if(q.right>r)r=q.right; if(q.top<t)t=q.top; if(q.bottom>b)b=q.bottom;
+    });
+    if(r<=l) return;
+    var s=Math.min((innerWidth-28)/(r-l),(innerHeight-28)/(b-t),2.5);
+    s=Math.max(.15,s);
+    stage.style.zoom=s.toFixed(3); stage.style.minHeight=(innerHeight/s)+'px';
+  }
+  window.__tpFit=fit;
+
+  /* ---------- TUCK: shrink the pop-out to a small pill with the live time ---------- */
+  var root=document.documentElement, host=window.parent;
+  var ICON_TUCK='<svg viewBox="0 0 20 20" aria-hidden="true"><path d="M8 3v5H3M3 3l5 5M12 17v-5h5M17 17l-5-5"/></svg>';
+  var ICON_GROW='<svg viewBox="0 0 20 20" aria-hidden="true"><path d="M12 3h5v5M17 3l-5 5M8 17H3v-5M3 17l5-5"/></svg>';
+  var tb=document.createElement('button'); tb.type='button'; tb.className='tp-tuck chrome'; tb.id='tpTuck';
+  tb.title='Tuck the timer away (it keeps running)'; tb.setAttribute('aria-label','Tuck the timer away'); tb.innerHTML=ICON_TUCK;
+  var pill=document.createElement('button'); pill.type='button'; pill.id='tpPill';
+  pill.title='Show the full timer'; pill.setAttribute('aria-label','Show the full timer');
+  pill.innerHTML='<span id="tpPillTime">5:00</span><span class="tp-grow">'+ICON_GROW+'</span>';
+  document.body.appendChild(tb); document.body.appendChild(pill);
+  var big=null;
+  function readTime(){
+    var p=document.querySelector('.pane.active'); if(!p) return '';
+    var el=p.querySelector('.timer,.r-time,.clock'); if(!el) return '';
+    var c=el.cloneNode(true); c.querySelectorAll('.ampm').forEach(function(a){a.remove();});
+    return c.textContent.trim();
+  }
+  function tickPill(){
+    if(!root.classList.contains('tp-tucked')) return;
+    var tx=readTime(); document.getElementById('tpPillTime').textContent=tx;
+    pill.classList.toggle('done', /^0?0:00(\.0)?$/.test(tx) && !document.querySelector('.pane.active #aClock'));
+  }
+  function size(w,h){ try{ host.resizeTo(w,h); }catch(e){} }
+  function tuck(){
+    try{ big={w:host.outerWidth,h:host.outerHeight}; }catch(e){ big=null; }
+    root.classList.add('tp-tucked'); tickPill();
+    size(200,96); pill.focus({preventScroll:true});
+  }
+  function grow(){
+    root.classList.remove('tp-tucked');
+    if(big) size(Math.max(big.w,320),Math.max(big.h,240));
+    setTimeout(fit,120); setTimeout(fit,400);
+  }
+  tb.addEventListener('click',tuck);
+  pill.addEventListener('click',grow);
+  setInterval(tickPill,250);
+  addEventListener('resize',fit);
+  document.addEventListener('click',function(){setTimeout(fit,60);});
+  setInterval(fit,1500);
+  fit(); setTimeout(fit,300);
+  /* The guided tour belongs on the full page, not the small window */
+  var n=0,k=setInterval(function(){
+    var tour=document.getElementById('tour');
+    if(tour&&tour.classList.contains('on')){var s=document.getElementById('tourSkip'); if(s) s.click();}
+    if(++n>12) clearInterval(k);
+  },250);
+})();
+</script>
+<script type="text/plain" id="tpMiniCss">
+html.tp-pip body{overflow:hidden;min-height:100vh;}
+html.tp-pip .logo-bar,html.tp-pip #tour,html.tp-pip .err,html.tp-pip #tpPopBtn,html.tp-pip #tpPopped{display:none!important;}
+html.tp-pip .pane .row:has(> [data-act="set"]){display:none!important;}
+html.tp-pip #stage{padding:10px;min-height:100vh;justify-content:center;}
+html.tp-pip .row{margin-top:14px;gap:10px;}
+html.tp-pip .presets{margin-top:14px;}
+html.tp-pip .btn.round{width:60px;height:60px;font-size:1.15rem;}
+html.tp-pip .timer{font-size:10rem;}
+html.tp-pip .corner-btn{top:8px;right:8px;width:34px;height:34px;border-radius:11px;}
+html.tp-pip .corner-btn svg{width:18px;height:18px;}
+html.tp-pip .vdock{top:50px;right:8px;}
+html.tp-pip .vcol{max-height:calc(100vh - 62px);}
+
+html.tp-pip .tp-tuck{position:fixed;top:8px;left:8px;z-index:46;display:grid;place-items:center;width:34px;height:34px;padding:0;border-radius:11px;
+  border:1px solid var(--dock-line);background:rgba(16,16,18,.5);backdrop-filter:blur(5px);-webkit-backdrop-filter:blur(5px);color:#f3f5f9;cursor:pointer;opacity:.6;transition:opacity .3s,background .2s;}
+html.tp-pip .tp-tuck:hover,html.tp-pip .tp-tuck:focus-visible{opacity:1;background:rgba(16,16,18,.75);}
+html.tp-pip .tp-tuck svg,#tpPill svg{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round;}
+#tpPill{display:none;}
+html.tp-tucked #tpPill{position:fixed;inset:0;z-index:200;display:flex;align-items:center;justify-content:center;gap:10px;border:0;margin:0;padding:0 12px;width:100%;
+  background:rgba(14,14,16,.92);color:#fff;cursor:pointer;font:700 clamp(22px,42vh,64px)/1 'Inter',sans-serif;font-variant-numeric:tabular-nums;text-shadow:none;}
+html.tp-tucked #tpPill:hover .tp-grow{opacity:1;}
+#tpPill .tp-grow{opacity:.55;display:grid;place-items:center;transition:opacity .2s;}
+#tpPill .tp-grow svg{width:22px;height:22px;}
+html.tp-tucked #tpPill.done{animation:tpDone 1s ease-in-out infinite;}
+@keyframes tpDone{50%{background:rgba(224,49,49,.9);}}
+html.tp-tucked #tpPill:focus-visible{outline:2px solid #fff;outline-offset:-4px;}
+html.tp-tucked .tp-tuck,html.tp-tucked .corner-btn,html.tp-tucked .vdock{visibility:hidden;}
+@media (prefers-reduced-motion:reduce){html.tp-tucked #tpPill.done{animation:none;background:rgba(224,49,49,.9);}}
+</script>
+<script>
+/* =====================================================================
+   POP-OUT — opens the timer in a small always-on-top window
+   (Document Picture-in-Picture: Chrome and Edge 116+, Firefox 151+ on desktop).
+   The window runs its own copy of Timer PLUS in mini mode, starting on
+   the same tool and theme. Other browsers get a normal pop-up window.
+   ===================================================================== */
+(function(){
+  if(window.__TP_PIP) return;
+  var snapTag = document.getElementById('tpSnap').outerHTML;
+  var BODY = window.__TP_BODY.split(snapTag).join('');
+  var HEAD = window.__TP_HEAD;
+  var MAIN = document.getElementById('tpMain').textContent;
+  var MINI_JS = document.getElementById('tpMiniJs').textContent;
+  var MINI_CSS = document.getElementById('tpMiniCss').textContent;
+  var SC='scr'+'ipt';
+  function buildDoc(){
+    return '<!doctype html><html class="tp-pip"><head><meta charset="utf-8">' + HEAD +
+      '<style>' + MINI_CSS + '</style><'+SC+'>window.__TP_PIP=1;</'+SC+'></head><body>' + BODY +
+      '<'+SC+'>' + MAIN + '</'+SC+'><'+SC+'>' + MINI_JS + '</'+SC+'></body></html>';
+  }
+  var pop = null, watch = null;
+  function setPopped(on, floating){
+    document.body.classList.toggle('tp-popped', on);
+    if(on) document.getElementById('tpPoppedText').textContent = floating
+      ? 'It floats on top of Google Slides, PowerPoint and other apps. Drag its corner to resize it. Close it any time to bring the timer back here.'
+      : 'This browser opened a regular window, which can slip behind your slides. For a window that stays on top, use Chrome or Edge on a computer.';
+  }
+  function closed(){ pop = null; clearInterval(watch); setPopped(false); }
+  function pauseHere(){ try{ Object.values(CTRL).forEach(function(c){ if(c.running && c.running()) c.pause && c.pause(); }); }catch(e){} }
+  async function popOut(){
+    if(pop && !pop.closed){ pop.focus(); return; }
+    var W = 440, H = 320, w = null, floating = false;
+    try{
+      if(window.documentPictureInPicture){
+        w = await documentPictureInPicture.requestWindow({width:W, height:H});
+        floating = true;
+      }
+    }catch(e){ w = null; }
+    if(!w){
+      try{ w = window.open('', 'timerPlusPopOut', 'popup,width='+W+',height='+H+',resizable=yes'); }catch(e){ w = null; }
+    }
+    if(!w){
+      var framed = false; try{ framed = window.top !== window; }catch(e){ framed = true; }
+      toast(framed ? 'Pop-Out needs this page open in its own Chrome tab. Open the file directly or from robsonedu.com.'
+                   : 'Allow pop-ups for this page, then press Pop-Out again.', 5000);
+      return;
+    }
+    pop = w;
+    var d = w.document;
+    d.title = 'Timer PLUS';
+    d.body.innerHTML = '';
+    d.body.style.cssText = 'margin:0;background:#000;overflow:hidden;';
+    var f = d.createElement('iframe');
+    f.title = 'Timer PLUS';
+    f.setAttribute('allow', 'autoplay; fullscreen');
+    f.style.cssText = 'border:0;display:block;width:100vw;height:100vh;';
+    f.addEventListener('load', function(){
+      try{
+        var cw = f.contentWindow;
+        cw.eval('state.mode=' + JSON.stringify(state.mode) + ';state.type=' + JSON.stringify(state.type) +
+          ';' + (theme ? 'applyTheme(' + JSON.stringify(theme.id) + ');' : '') + 'if(theme&&theme.hidden)$("#themeBtn").hidden=true;show();window.__tpFit&&__tpFit();');
+      }catch(e){}
+    }, {once:true});
+    f.srcdoc = buildDoc();
+    d.body.appendChild(f);
+    pauseHere();
+    setPopped(true, floating);
+    w.addEventListener('pagehide', closed);
+    clearInterval(watch); watch = setInterval(function(){ if(!pop || pop.closed) closed(); }, 800);
+  }
+  function bringBack(){ try{ if(pop) pop.close(); }catch(e){} closed(); }
+  document.getElementById('tpPopBtn').addEventListener('click', popOut);
+  document.getElementById('tpBringBack').addEventListener('click', bringBack);
+  document.addEventListener('keydown', function(e){
+    if(e.ctrlKey || e.metaKey || e.altKey) return;
+    if(e.target.closest && e.target.closest('input,textarea,select')) return;
+    if(document.getElementById('tour').classList.contains('on')) return;
+    if(e.key === 'p' || e.key === 'P'){ e.preventDefault(); popOut(); }
+    else if(e.key === 'Escape' && pop) bringBack();
+  });
 })();
 </script>
 </body>
