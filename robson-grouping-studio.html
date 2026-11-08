@@ -803,6 +803,23 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--violet);
 .nameorder select{min-height:30px;padding:3px 26px 3px 10px;font-size:12px;border-radius:999px}
 .fm-pref{margin:6px 0 2px}.fm-pref input{min-height:34px}.fm-shows{display:block;margin-bottom:6px}.fm-sep{height:1px;background:rgba(60,60,67,.12);margin:4px 0 6px}
 .gsrow{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:10px}.gsbtn svg{color:#1e8e3e}.gsinfo{display:flex;align-items:center;gap:8px;flex-wrap:wrap;min-width:0}.gsinfo .gsfile{font-weight:700;font-size:13px;max-width:240px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.gsrow .gsinfo select{width:auto;max-width:180px;flex:none;min-height:32px;font-size:13px;padding-top:0;padding-bottom:0}.gsinfo{flex-direction:row}.gsinfo>*{flex:none}
+#tour-root .tour-block{position:fixed;inset:0;z-index:9000}
+#tour-root .tour-dim{position:fixed;inset:0;z-index:9001;background:rgba(18,16,30,.5)}
+#tour-root .tour-hole{position:fixed;z-index:9001;border-radius:18px;box-shadow:0 0 0 9999px rgba(18,16,30,.5),0 0 0 3px #a259ff;pointer-events:none;transition:left .25s,top .25s,width .25s,height .25s}
+#tour-root .tour-card{position:fixed;z-index:9002;background:#fff;border-radius:20px;padding:20px 20px 16px;box-shadow:0 24px 60px rgba(20,10,60,.3);color:#1d1d1f;transition:left .25s,top .25s}
+#tour-root .tour-card.center{left:50%;top:50%;transform:translate(-50%,-50%);width:min(440px,calc(100vw - 32px))!important;padding:26px 26px 18px}
+#tour-root .tour-mark{display:inline-grid;margin-bottom:12px}
+#tour-root .tour-step{display:flex;align-items:center;gap:8px;font-size:11.5px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:#8c52ff;margin-bottom:6px}
+#tour-root .tour-num{width:22px;height:22px;border-radius:50%;display:grid;place-items:center;color:#fff;font-size:12px;letter-spacing:0;background:linear-gradient(135deg,#ff4fb8,#a259ff 55%,#3d8bff)}
+#tour-root h3{margin:0 0 6px;font-size:20px;font-weight:800;letter-spacing:-.02em}
+#tour-root .tour-card.center h3{font-size:24px;background:linear-gradient(135deg,#ff4fb8 0%,#a259ff 52%,#3d8bff 100%);-webkit-background-clip:text;background-clip:text;color:transparent}
+#tour-root p{margin:0;font-size:14px;line-height:1.5;color:#3a3a3c}
+#tour-root .tour-foot{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:16px;flex-wrap:wrap}
+#tour-root .tour-dots{display:flex;gap:5px}
+#tour-root .tour-dots i{width:6px;height:6px;border-radius:50%;background:#d9d6e6}
+#tour-root .tour-dots i.on{width:16px;border-radius:3px;background:#a259ff}
+#tour-root .tour-btns{display:flex;gap:6px;margin-left:auto}
+#tour-root .btn.ghost{border-color:transparent;background:transparent;color:#6e6e73}
 .pasteprev{display:grid;gap:8px;padding:10px 12px;border-radius:12px;background:rgba(140,82,255,.07);border:1px solid rgba(140,82,255,.18)}
 .pp-row{display:flex;align-items:center;gap:10px;flex-wrap:wrap;font-size:13px}.pp-row select{min-height:32px;padding:4px 28px 4px 10px;font-size:13px;width:auto}
 .pp-ex{display:flex;flex-wrap:wrap;gap:6px;align-items:center;font-size:12px}.pp-ex span{background:#fff;border-radius:999px;padding:3px 9px;font-weight:600;box-shadow:0 1px 2px rgba(0,0,0,.06)}.pp-ex small,.pp-ex em{color:var(--muted);font-style:normal}
@@ -1415,29 +1432,30 @@ function subText(cls,groups,roles){
 }
 
 /* ---------- sample data (made-up students) ---------- */
+const SAMPLE_PREFIX='Sample 3rd Period';
 function sampleState(){
   const st=blankState();
-  const r1={id:uid(),name:'Room 214 · Pods',items:preset('pods4')},r2={id:uid(),name:'Room 214 · Test rows',items:preset('pairs')},r3={id:uid(),name:'Room 214 · Horseshoe',items:preset('horseshoe')};
-  st.rooms.push(r1,r2,r3);
+  const r1={id:uid(),name:SAMPLE_PREFIX+' Room',items:preset('pods4'),confirmed:true};
+  st.rooms.push(r1);
   const rnd=mulberry(214);
-  const mk=(name,names,seed)=>{
-    const c=newClass(name,r1.id);
-    c.columns=[{id:'c1',name:'Summative',dir:1,type:'score'},{id:'c3',name:'Behavior',dir:1,type:'rating'}];
-    names.forEach(n=>{const base=rnd();rnd();c.students.push({id:uid(),name:n,v:{c1:String(Math.round(42+base*50+rnd()*8)),c3:String(1+Math.floor(rnd()*3))},front:false,door:false,absent:false})});
-    c.opts.by='c1';c.opts.bal='c3';return c;
-  };
-  const c1=mk('3rd period (sample)',["Amara Okafor","Ben Castillo","Chloe Nguyen","Dante Brooks","Elena Petrova","Felix Morgan","Grace Kim","Hector Ruiz","Imani Carter","Jonah Fields","Kira Patel","Liam O'Neil","Maya Lindqvist","Nico Alvarez","Olivia Grant","Parker Hughes","Quinn Delgado","Rosa Jimenez","Sam Whitaker","Talia Ross","Uriel Banks","Vera Haddad","Wes Turner","Xander Cole"]);
+  const c1=newClass(SAMPLE_PREFIX+' Roster',r1.id);
+  c1.columns=[{id:'c1',name:'Summative',dir:1,type:'score'},{id:'c3',name:'Behavior',dir:1,type:'rating'}];
+  ["Amara Okafor","Ben Castillo","Chloe Nguyen","Dante Brooks","Elena Petrova","Felix Morgan","Grace Kim","Hector Ruiz","Imani Carter","Jonah Fields","Kira Patel","Liam O'Neil","Maya Lindqvist","Nico Alvarez","Olivia Grant","Parker Hughes","Quinn Delgado","Rosa Jimenez","Sam Whitaker","Talia Ross","Uriel Banks","Vera Haddad","Wes Turner","Xander Cole"].forEach(n=>{const base=rnd();rnd();c1.students.push({id:uid(),name:n,v:{c1:String(Math.round(42+base*50+rnd()*8)),c3:String(1+Math.floor(rnd()*3))},front:false,door:false,absent:false})});
+  c1.opts.by='c1';c1.opts.bal='c3';c1.opts.mode='mixed';
   const s=c1.students;s[8].flags={iep:true};s[13].flags={'504':true};s[6].flags={med:true};s[10].flags={el:true,interp:true};s[6].notes='Needs to see the board';s[3].notes='Works best with a quiet partner';
   c1.rules.push({id:uid(),type:'apart',a:s[3].id,b:s[23].id},{id:uid(),type:'together',a:s[4].id,b:s[17].id});
-  const c2=mk('5th period (sample)',["Aiden Shaw","Bella Ortiz","Caleb Young","Daisy Moore","Ethan Lowe","Fiona Reid","Gabe Santos","Hazel Price","Isaac Ward","Jade Rivera","Kai Bennett","Lena Fox","Miles Avery","Nora Webb","Owen Hale","Piper Lane","Reid Cruz","Sofia Diaz","Theo Park","Uma Singh","Violet Ames","Wyatt Bell"]);
-  sampleGenders(c1);sampleGenders(c2);
-  st.classes.push(c1,c2);st.activeClass=c1.id;
+  sampleGenders(c1);
+  st.classes.push(c1);st.activeClass=c1.id;
   const prevS=S;S=st;
-  c1.opts.mode='mixed';applyResult(c1,runGrouping(c1,r1,c1.opts));saveHistory(c1,'3rd period Q1 Mixed',Date.now()-7*864e5);c1.chartId=null;
-  c1.opts.mode='mixed';applyResult(c1,runGrouping(c1,r1,c1.opts));
-  [c1,c2].forEach(c=>{c.quick.opts={mode:'mixed',crit:['c1','__g'],avoid:true,sizeMode:'room',roomId:c.roomId}});
-  applyResult(c2,runGrouping(c2,r1,c2.opts));
-  S=prevS;
+  try{
+    /* the recommended flow: make Mixed groups, save the set, send it to a seating chart */
+    const q=c1.quick;q.opts={mode:'mixed',crit:['c1','__g'],avoid:true,sizeMode:'room',roomId:r1.id};
+    makeQuick(c1);
+    const gname=SAMPLE_PREFIX+' Mixed Group',x={id:uid(),name:gname,date:Date.now(),groups:q.groups.map(g=>g.slice()),meta:q.meta,size:q.size,tables:q.tables,tableLabels:q.tableLabels,roomId:q.roomId};
+    c1.groupSets.push(x);q.setId=x.id;q.name=gname;
+    seatGroups(c1,x.groups,x.name,x.tables,x.roomId,x.meta&&x.meta.mode,x.meta&&x.meta.crit);
+    createChart(c1,SAMPLE_PREFIX+' Seating Chart',x.meta&&TYPE_NAME[x.meta.mode]?{mode:x.meta.mode,crit:x.meta.crit||[]}:{mode:'mixed',crit:['c1','__g']});
+  }finally{S=prevS}
   return st;
 }
 const SAMPLE_G={Amara:'F',Ben:'M',Chloe:'F',Dante:'M',Elena:'F',Felix:'M',Grace:'F',Hector:'M',Imani:'F',Jonah:'M',Kira:'F',Liam:'M',Maya:'F',Nico:'M',Olivia:'F',Parker:'M',Rosa:'F',Talia:'F',Uriel:'M',Vera:'F',Wes:'M',Xander:'M',Aiden:'M',Bella:'F',Caleb:'M',Daisy:'F',Ethan:'M',Fiona:'F',Gabe:'M',Hazel:'F',Isaac:'M',Jade:'F',Lena:'F',Miles:'M',Nora:'F',Owen:'M',Piper:'F',Reid:'M',Sofia:'F',Theo:'M',Uma:'F',Violet:'F',Wyatt:'M'};
@@ -1481,7 +1499,7 @@ if(HAS_DOM){addEventListener('resize',placePop);addEventListener('scroll',placeP
 /* keep the Groups page in step with the class: its room follows the class's room layout, and Mixed/Similar always start with a criterion */
 function syncQuick(c){const o=c&&c.quick&&c.quick.opts;if(!o)return;if(o.mode!=='random'&&!critOptions(c).length)o.mode='random';if(o.seenRoom!==c.roomId){o.roomId=c.roomId;o.seenRoom=c.roomId}
   if(o.mode!=='random'&&!validCrit(c,o.crit).length){const c0=c.columns.find(x=>x.id===c.opts.by)||c.columns[0];const cr=[c0&&c0.id,c.students.some(s=>s.g)?'__g':null].filter(Boolean);if(cr.length)o.crit=cr}}
-function render(){NAMEC=null;try{const ac=S&&activeClass&&activeClass();if(ac)syncQuick(ac)}catch(e){}try{renderNow()}catch(e){setTimeout(()=>{try{renderNow()}catch(x){}},0)}}
+function render(){NAMEC=null;try{const ac=S&&activeClass&&activeClass();if(ac)syncQuick(ac)}catch(e){}try{renderNow()}catch(e){setTimeout(()=>{try{renderNow()}catch(x){}},0)}if(ui.tour!=null&&HAS_DOM)requestAnimationFrame(tourPlace)}
 function renderNow(){
   const app=$('#app');
   applyColors();
@@ -1495,7 +1513,7 @@ function renderNow(){
   try{fitNames(document)}catch(e){}
   renderPresent();
 }
-function backupNoticeHTML(){if(!S||!S.classes.length||ui.tab==='settings')return'';const st=S.settings,now=Date.now(),D=864e5;if(st.lastBackup&&now-st.lastBackup<30*D)return'';if(st.backupSnooze&&now-st.backupSnooze<7*D)return'';
+function backupNoticeHTML(){if(!S||!S.classes.length||ui.tab==='settings'||ui.tour!=null)return'';const st=S.settings,now=Date.now(),D=864e5;if(st.lastBackup&&now-st.lastBackup<30*D)return'';if(st.backupSnooze&&now-st.backupSnooze<7*D)return'';
   return`<div class="bk-note" role="status"><span class="bk-ic" aria-hidden="true">!</span><div class="bk-t"><b>${st.lastBackup?'It’s been a while since your last backup.':'Your work is saved only in this browser.'}</b> It’s lost if you clear your browsing data, use a different browser or computer, or open the tool from a different web address. Download a backup about once a month.</div><button class="btn small primary" data-act="downloadBackup">Download backup</button><button class="btn small" data-act="backupLater">Remind me later</button></div>`}
 function fitNames(root){(root||document).querySelectorAll('.room').forEach(room=>{const ns=[...room.querySelectorAll('.furn .seat.filled .nm')];if(!ns.length)return;
   /* one size for the whole room: the size that lets the longest name fit, never below 62% */
@@ -1845,6 +1863,10 @@ function settingsHTML(){
         <li>Your data is lost if you clear browsing data, switch browsers or computers, or open the tool from a new web address. Download a backup monthly.</li>
       </ul>
     </section>
+    <section class="panel"><h3>Getting started</h3>
+      <p class="muted small">Walk through Room, Roster, Groups, Seating Chart and Present with the sample class. If you deleted the sample class, the tour adds it back.</p>
+      <div class="row"><button class="btn primary" data-act="replayTour">Take the tour</button>${S.classes.some(c=>c.name.startsWith(SAMPLE_PREFIX))?'':'<button class="btn" data-act="addSamples">Add the sample class</button>'}</div>
+    </section>
     <section class="panel"><h3>Erase everything</h3>
       <p class="muted small">Removes all classes, rooms and history from this device. This can't be undone.</p>
       <label class="field"><span>Type ERASE to confirm</span><input type="text" id="eraseTxt" autocomplete="off"></label>
@@ -1874,11 +1896,11 @@ function settingsHTML(){
 function welcomeHTML(){
   const mark='<span class="gmark" aria-hidden="true"><i></i><i></i><i></i><i></i></span>';
   return`<div class="lockwrap"><div class="lockcard"><div class="brand">${mark}RobsonEDU Grouping Studio</div>
-  <h1>Set up your classes</h1>
-  <p class="muted">Build your room, add your rosters and data, and let the tool group students straight into a seating chart you can project.</p>
-  <button class="btn primary" data-act="startSample">Try it with sample classes</button>
-  <button class="btn" data-act="startBlank">Start with an empty class</button>
-  <p class="tip">The sample classes use made-up students. You can delete them any time.</p>
+  <h1>Welcome! Let’s take a quick look around.</h1>
+  <p class="muted">Grouping Studio turns your room and class data into balanced groups and a seating chart you can project. We’ll add a sample class to explore, named <b>Sample 3rd Period</b>: a room, a roster, a Mixed group and a seating chart.</p>
+  <button class="btn primary" data-act="startTour">Start the tour</button>
+  <button class="btn" data-act="skipTour">Skip tour</button>
+  <p class="tip">The sample class uses made-up students. Delete it any time in Manage.</p>
   ${storageOK?'':'<p class="err">This browser is blocking storage, so changes will last only until you close the tab.</p>'}
   <ul class="facts"><li>Saved only in this browser on this device. Nothing is uploaded.</li><li>Present mode never shows scores or notes.</li></ul>
   </div></div>`;
@@ -2200,6 +2222,52 @@ async function enterPresent(src){
 function exitPresent(){const w=ui.pwin;ui.pwin=null;try{if(w&&!w.closed)w.close()}catch(e){}ui.pGroups=null;ui.pSnap=null;document.getElementById('present-root').innerHTML='';ui.present=false;ui.psrc='chart';renderPresent();try{if(document.fullscreenElement)document.exitFullscreen()}catch(e){}try{wake&&wake.release()}catch(e){}wake=null;render()}
 
 /* ---------- session ---------- */
+/* ---------- onboarding tour ---------- */
+const TOUR=[
+  {title:'Welcome to Grouping Studio',body:'We added a sample class so you can look around. Everything sample is named <b>Sample 3rd Period</b>: a room, a roster, a Mixed group and a seating chart.<br><br>This short tour follows the path you will use for every class: <b>Room → Roster → Groups → Seating Chart → Present</b>.'},
+  {tab:'room',sel:'.room.edit',step:'1',title:'Room',body:'<b>Sample 3rd Period Room</b> is a map of the classroom. Drag a table to move it, and drag its round arrow to turn it. Ready-made layouts and more furniture are on this page too.<br><br>Build each room once. Every class that meets there can share it.'},
+  {tab:'roster',sel:'table.roster',step:'2',title:'Roster',body:'<b>Sample 3rd Period Roster</b> is the class list plus the data you group by, called criteria. Here that is a Summative score and a Behavior rating. The first criterion counts most.'},
+  {tab:'roster',sel:()=>{const b=$('#pasteBox');return b&&b.closest('.panel')},step:'2',title:'Bring in your own class',body:'Click <b>New class</b> at the top of this page, then import from Google Sheets or paste your spreadsheet rows, including the header row. Check the purple preview and click <b>Import</b>.'},
+  {tab:'groups',sel:'section.stage',step:'3',title:'Groups',body:'<b>Sample 3rd Period Mixed Group</b> gives every group a spread of high to low Summative scores, with gender balanced. Tap a name to swap it for the best match, then click <b>Save group set</b>.'},
+  {tab:'groups',sel:'[data-act=qSeat]',step:'3',title:'Send to Seating Chart',body:'This seats these exact groups at the tables in your room and opens the new chart.'},
+  {tab:'arrange',sel:'.room.seat-mode',step:'4',title:'Seating Chart',body:'<b>Sample 3rd Period Seating Chart</b> puts each group at a table, ranked into its seats. Drag a student onto another seat to swap them, or click a table’s name for a close-up.'},
+  {tab:'arrange',sel:'[data-act=present]',step:'5',title:'Present or print',body:'Present shows the chart to the class with <b>names only</b>: no scores, colors, supports or notes. Print from there too.'},
+  {tab:'manage',sel:'.siderail-item[data-arg=manage]',title:'Keep or delete the samples',body:'The samples are yours to explore. When you are done with them, delete them here in <b>Manage</b>.'},
+  {title:'You’re ready',body:'Start your own class on the <b>Roster</b> page with <b>New class</b>.<br><br>Your work is saved only in this browser, so download a backup about once a month in <b>Settings</b>. You can take this tour again from Settings any time.'}
+];
+function tourRoot(){let r=document.getElementById('tour-root');if(!r){r=document.createElement('div');r.id='tour-root';document.body.appendChild(r)}return r}
+function tourTarget(st){if(!st||!st.sel)return null;try{const el=typeof st.sel==='function'?st.sel():document.querySelector(st.sel);if(!el)return null;const r=el.getBoundingClientRect();return r.width&&r.height?el:null}catch(e){return null}}
+function tourShow(i){if(i<0||i>=TOUR.length){tourEnd();return}ui.tour=i;const st=TOUR[i];ui.newChart=null;ui.present&&exitPresent();
+  if(st.tab&&ui.tab!==st.tab){ui.tab=st.tab;render()}else render();
+  const el=tourTarget(st);if(el){const r=el.getBoundingClientRect();if(r.top<96||r.bottom>innerHeight-20)scrollBy(0,r.height>innerHeight-130?r.top-96:r.top-(innerHeight-r.height)/2-20)}else scrollTo(0,0);
+  requestAnimationFrame(()=>{tourPlace();const n=$('#tourNext');n&&n.focus({preventScroll:true})})}
+function tourEnd(){ui.tour=null;const r=document.getElementById('tour-root');if(r)r.innerHTML='';render()}
+function tourPlace(){if(ui.tour==null||!HAS_DOM)return;const i=ui.tour,st=TOUR[i],root=tourRoot(),el=tourTarget(st),last=i===TOUR.length-1;
+  const W=innerWidth,H=innerHeight,cw=Math.min(360,W-32);let hole='',cx,cy,center=!el;
+  if(el){const r=el.getBoundingClientRect(),p=8,x=Math.max(8,r.left-p),y=Math.max(8,r.top-p),x2=Math.min(W-8,r.right+p),y2=Math.min(H-8,r.bottom+p);
+    hole=`<div class="tour-hole" style="left:${x}px;top:${y}px;width:${Math.max(0,x2-x)}px;height:${Math.max(0,y2-y)}px"></div>`;
+    const ch=260,gap=16;
+    if(W-x2>=cw+gap+16){cx=x2+gap;cy=Math.min(Math.max(16,y),H-ch-16)}
+    else if(x>=cw+gap+16){cx=x-gap-cw;cy=Math.min(Math.max(16,y),H-ch-16)}
+    else if(H-y2>=ch+gap){cy=y2+gap;cx=Math.min(Math.max(16,x),W-cw-16)}
+    else if(y>=ch+gap){cy=y-gap-ch;cx=Math.min(Math.max(16,x),W-cw-16)}
+    else{cx=W-cw-24;cy=H-ch-24}}
+  const dots=TOUR.map((_,k)=>`<i class="${k===i?'on':''}"></i>`).join('');
+  root.innerHTML=`<div class="tour-block"></div>${center?'<div class="tour-dim"></div>':hole}
+  <div class="tour-card${center?' center':''}" role="dialog" aria-modal="true" aria-labelledby="tourTitle" style="${center?'':`left:${cx}px;top:${cy}px;`}width:${cw}px">
+    ${st.step?`<div class="tour-step"><span class="tour-num">${st.step}</span>Step ${st.step} of 5</div>`:''}
+    ${center?'<span class="gmark tour-mark" aria-hidden="true"><i></i><i></i><i></i><i></i></span>':''}<h3 id="tourTitle">${st.title}</h3><p>${st.body}</p>
+    <div class="tour-foot"><div class="tour-dots" aria-label="Tour progress, ${i+1} of ${TOUR.length}">${dots}</div>
+      <div class="tour-btns">${last?'':'<button class="btn small ghost" data-tour="skip">Skip tour</button>'}${i>0?'<button class="btn small" data-tour="back">Back</button>':''}<button class="btn small primary" id="tourNext" data-tour="next">${last?'Finish':i===0?'Start the tour':'Next'}</button></div></div>
+  </div>`;
+  /* keep the card fully on screen */
+  const card=root.querySelector('.tour-card');if(card&&!center){const cr=card.getBoundingClientRect();if(cr.bottom>H-12)card.style.top=Math.max(12,H-12-cr.height)+'px'}}
+if(HAS_DOM){
+  document.addEventListener('click',e=>{const b=e.target.closest&&e.target.closest('[data-tour]');if(!b||ui.tour==null)return;e.preventDefault();e.stopPropagation();const a=b.dataset.tour;if(a==='next')tourShow(ui.tour+1);else if(a==='back')tourShow(ui.tour-1);else tourEnd()},true);
+  document.addEventListener('keydown',e=>{if(ui.tour==null)return;if(e.key==='Escape'){e.preventDefault();e.stopPropagation();tourEnd()}else if(e.key==='ArrowRight'&&!/INPUT|TEXTAREA|SELECT/.test(e.target.tagName)){tourShow(ui.tour+1)}else if(e.key==='ArrowLeft'&&!/INPUT|TEXTAREA|SELECT/.test(e.target.tagName)&&ui.tour>0){tourShow(ui.tour-1)}},true);
+  let tq=0;const rq=()=>{if(ui.tour==null)return;cancelAnimationFrame(tq);tq=requestAnimationFrame(tourPlace)};addEventListener('resize',rq);addEventListener('scroll',rq,true);
+}
+function addSamples(){const t=sampleState();S.rooms.push(...t.rooms);S.classes.push(...t.classes);S.activeClass=t.classes[0].id}
 function startSession(st){S=migrate(st);ui.tab='arrange';ui.roomId=null;ui.selSeat=null;setSel([]);writeData();resetHistory();render()}
 function eraseAll(){try{localStorage.removeItem(DATA_KEY)}catch(e){}S=null;resetHistory();ui.present=false;$('#print-root').innerHTML='';render();toast('All data erased')}
 
@@ -2243,8 +2311,10 @@ const ACT={
     save();render();toast('Deleted. Undo to bring it back.')},
   tab:(b,a)=>{ui.tab=a;ui.tblZoom=null;ui.colMenu=null;ui.addMenu=false;ui.flagMenu=null;ui.selSeat=null;setSel([]);ui.qswap=null;ui.qpick=null;if(a==='groups')ui.qAnim=true;render();scrollTo(0,0)},
   present:()=>enterPresent(ui.tab==='groups'?'quick':ui.tab==='stations'?'stations':'chart'),
-  startSample:()=>startSession(sampleState()),
-  startBlank:()=>startSession(starterState()),
+  startTour:()=>{startSession(sampleState());tourShow(0)},
+  skipTour:()=>startSession(sampleState()),
+  replayTour:()=>{if(!S.classes.some(c=>c.name.startsWith(SAMPLE_PREFIX))){addSamples();save()}else{const c=S.classes.find(c=>c.name.startsWith(SAMPLE_PREFIX));S.activeClass=c.id}tourShow(0)},
+  addSamples:()=>{addSamples();save();ui.tab='arrange';render();toast('Sample class added')},
   eraseAll:()=>{const t=$('#eraseTxt');if(!t||t.value.trim()!=='ERASE'){toast('Type ERASE to confirm');t&&t.focus();return}eraseAll()},
   toggleCount:(b,id)=>{const h=need().history.find(x=>x.id===id);if(!h)return;h.noRepeat=!h.noRepeat;save();render()},
   toggleRepeats:()=>{const c=need();c.view.repeats=!c.view.repeats;save();render()},
