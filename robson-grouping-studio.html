@@ -526,7 +526,10 @@ html,body{height:100%}
 .p-stage{flex:1;min-height:0;display:flex;align-items:center;justify-content:center;padding:30px max(16px,env(safe-area-inset-right,0px)) 16px max(16px,env(safe-area-inset-left,0px))}
 .p-stage .room{flex:none;overflow:visible}
 .roomscroll{overflow-x:auto;border-radius:12px}
-.roomscroll .room{min-width:620px}
+.roomscroll .room{min-width:0}
+.roomscroll.zoomed .room{max-width:none!important;width:calc(var(--vzb,100%) * var(--vz,1));margin-inline:0!important}
+.roomscroll{touch-action:pan-x pan-y}
+.vzbar{display:flex;align-items:center;justify-content:flex-end;gap:8px;margin:0 0 6px;font-size:12.5px;font-weight:700;color:var(--muted)}
 .lm.vert span{writing-mode:vertical-rl}
 .room.pmode .furn{background:var(--tc);border-color:var(--furn-line)}
 .room.pmode .seat.filled{background:var(--chip);box-shadow:none;border-color:var(--furn-line);cursor:default;align-items:center;text-align:center;padding:0 3px;touch-action:auto}
@@ -823,6 +826,46 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--violet);
 #tour-root .tour-dots i.on{width:16px;border-radius:3px;background:#a259ff}
 #tour-root .tour-btns{display:flex;gap:6px;margin-left:auto}
 #tour-root .btn.ghost{border-color:transparent;background:transparent;color:#6e6e73}
+.pickbar{position:fixed;left:50%;bottom:22px;transform:translateX(-50%);z-index:40;display:flex;align-items:center;gap:10px;max-width:calc(100vw - 24px);padding:8px 8px 8px 16px;border-radius:999px;background:#1d1d1f;color:#fff;box-shadow:0 14px 34px rgba(0,0,0,.28);font-size:13.5px}
+.pickbar>span{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pickbar .btn{background:#fff;color:#1d1d1f;border-color:#fff;flex:none}
+.pickbar .iconbtn{color:#fff;flex:none}
+.hidtray{display:grid;gap:8px;padding:12px 14px;border-radius:16px;background:rgba(120,120,135,.08);border:1px dashed rgba(60,60,67,.28)}
+.ht-head{display:grid;gap:2px}
+.ht-list{display:flex;flex-wrap:wrap;gap:6px}
+.ht-chip{display:inline-flex;align-items:center;gap:6px;padding:6px 11px;border-radius:999px;border:1px solid var(--line-strong);background:var(--surface);font:inherit;font-size:13px;font-weight:700;color:var(--muted);cursor:pointer}
+.ht-chip svg,.hidpill svg,.pickbar svg{width:15px;height:15px;fill:none;stroke:currentColor;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round;flex:none}
+.ht-chip.open{background:#1d1d1f;color:#fff;border-color:#1d1d1f}
+.ht-panel{display:grid;gap:8px;padding:12px;border-radius:12px;background:var(--surface);box-shadow:0 2px 10px rgba(0,0,0,.06)}
+.ht-acts{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.ht-move{display:inline-flex;gap:6px;align-items:center}
+.ht-move select{min-height:30px;font-size:13px;max-width:200px}
+.hidpill{display:inline-flex;align-items:center;gap:4px;margin-left:6px;padding:2px 8px;border-radius:999px;border:0;background:rgba(120,120,135,.14);color:var(--muted);font:inherit;font-size:11.5px;font-weight:700;cursor:pointer;white-space:nowrap}
+.siderail-item .lbl-s{display:none}
+@media (max-width:720px){
+  .pickbar{bottom:calc(84px + env(safe-area-inset-bottom,0px))}
+  .siderail{padding-top:4px;padding-bottom:calc(4px + env(safe-area-inset-bottom,0px))}
+  .siderail-item{gap:1px;padding:3px 0 4px;font-size:10px}
+  .siderail-item .ic{width:34px;height:28px}
+  .siderail-item svg{width:19px;height:19px}
+  .siderail-item .lbl-l{display:none}.siderail-item .lbl-s{display:inline}
+  .main{padding-bottom:calc(76px + env(safe-area-inset-bottom,0px))}
+}
+@media (max-width:600px){
+  .top-in{flex-wrap:nowrap;gap:8px;padding:6px 8px 6px 10px}
+  .crumb{flex:1 1 auto;min-width:0;flex-wrap:nowrap}
+  .crumb>*{min-width:0}
+  .top-actions{flex:none;gap:6px}
+  .top-actions .btn{padding:0 12px;min-height:34px}
+  .undo-group button{width:30px}
+}
+@media (max-width:900px){
+  .rail .panel{padding:14px}
+  .rail .panel h3,.panel h3{font-size:15.5px}
+  .rail .panel small.muted,.rail .panel p.muted,.rail .panel .muted.small,.panel>p.muted.small{font-size:12px;line-height:1.35}
+  .addroom .addfurn{min-height:40px;font-size:12px}
+  .stage .hint{font-size:12px}
+}
 .pasteprev{display:grid;gap:8px;padding:10px 12px;border-radius:12px;background:rgba(140,82,255,.07);border:1px solid rgba(140,82,255,.18)}
 .pp-row{display:flex;align-items:center;gap:10px;flex-wrap:wrap;font-size:13px}.pp-row select{min-height:32px;padding:4px 28px 4px 10px;font-size:13px;width:auto}
 .pp-ex{display:flex;flex-wrap:wrap;gap:6px;align-items:center;font-size:12px}.pp-ex span{background:#fff;border-radius:999px;padding:3px 9px;font-weight:600;box-shadow:0 1px 2px rgba(0,0,0,.06)}.pp-ex small,.pp-ex em{color:var(--muted);font-style:normal}
@@ -1321,7 +1364,7 @@ function checkIssues(cls,L,cur){
   }
   for(const s of cls.students){
     const k=seatOf.get(s.id);if(!k)continue;const seat=L.seatByKey.get(k);
-    if(s.absent)list.push({lvl:'warn',t:`${dname(s)} is marked absent but still has a seat.`});
+    if(s.absent)list.push({lvl:'warn',t:`${dname(s)} is hidden but still has a seat.`});
   }
   const un=cls.students.filter(s=>!s.absent&&!seatOf.has(s.id));
   if(un.length)list.push({lvl:'bad',t:un.length===1?'1 student doesn’t have a seat yet.':`${un.length} students don’t have a seat yet.`});
@@ -1514,6 +1557,7 @@ function renderNow(){
   app.innerHTML=`<div class="shell">${railHTML()}<div class="content">${topHTML(cls)}<main class="main" id="main">${backupNoticeHTML()}${viewHTML(cls)}</main></div></div>${ui.newChart&&cls?newChartHTML(cls):''}${ui.shufAsk&&cls?shuffleAskHTML(cls):''}`;
   ui.animate=false;ui.qAnim=false;placePop();
   fitSeatRoom();
+  try{vzApply()}catch(e){}
   try{fitNames(document)}catch(e){}
   renderPresent();
 }
@@ -1526,6 +1570,8 @@ function fitNames(root){(root||document).querySelectorAll('.room').forEach(room=
 function fitSeatRoom(){const r=document.querySelector('.roomscroll .room.edit');if(!r)return;r.style.maxWidth='';const top=r.getBoundingClientRect().top+(window.scrollY||0),avail=window.innerHeight-Math.min(top,window.innerHeight*.45)-20;r.style.maxWidth=Math.max(620,avail*100/70)+'px';r.style.marginInline='auto'}
 if(HAS_DOM)addEventListener('resize',()=>{try{fitSeatRoom();fitNames(document)}catch(e){}});
 const IC={
+  eyeoff:'<path d="M3 3l18 18"/><path d="M10.6 5.1A9.9 9.9 0 0112 5c5 0 8.5 4.2 9.5 7a12 12 0 01-2.7 4"/><path d="M6.1 6.2C4.3 7.4 3.1 9.3 2.5 12c1 2.8 4.5 7 9.5 7 1.8 0 3.4-.5 4.8-1.3"/><path d="M9.9 10a3 3 0 004.1 4.1"/>',
+  eye:'<path d="M2.5 12c1-2.8 4.5-7 9.5-7s8.5 4.2 9.5 7c-1 2.8-4.5 7-9.5 7s-8.5-4.2-9.5-7z"/><circle cx="12" cy="12" r="3"/>',
   sheet:'<rect x="4" y="3" width="16" height="18" rx="2.5"/><path d="M4 9h16M4 15h16M10 9v12"/>',
   arrange:'<rect x="3" y="4" width="7.5" height="6" rx="1.5"/><rect x="13.5" y="4" width="7.5" height="6" rx="1.5"/><rect x="3" y="14" width="7.5" height="6" rx="1.5"/><rect x="13.5" y="14" width="7.5" height="6" rx="1.5"/>',
   groups:'<path d="M3 7h3.5c2 0 3.2 1 4.3 2.8l2.4 4.4C14.3 16 15.5 17 17.5 17H21"/><path d="M3 17h3.5c1.4 0 2.4-.5 3.2-1.4"/><path d="M14.3 8.4C15.1 7.5 16.1 7 17.5 7H21"/><path d="M18 4l3 3-3 3"/><path d="M18 14l3 3-3 3"/>',
@@ -1554,7 +1600,7 @@ const IC={
 };
 const svg=k=>`<svg viewBox="0 0 24 24" aria-hidden="true">${IC[k]}</svg>`;
 function railHTML(){
-  const item=(k,l)=>`<button class="siderail-item" data-act="tab" data-arg="${k}"${ui.tab===k?' aria-current="page"':''}><span class="ic">${svg(k)}</span>${l}</button>`;
+  const SHORT={arrange:'Chart'};const item=(k,l)=>`<button class="siderail-item" data-act="tab" data-arg="${k}"${ui.tab===k?' aria-current="page"':''} aria-label="${l}"><span class="ic">${svg(k)}</span><span class="lbl-l">${l}</span><span class="lbl-s">${SHORT[k]||l}</span></button>`;
   return`<nav class="siderail" aria-label="Sections"><a class="siderail-logo" href="https://www.robsonedu.com/PageGrouping.html" target="_top" title="Back to RobsonEDU Grouping" aria-label="Back to RobsonEDU Grouping"><span class="gmark"><i></i><i></i><i></i><i></i></span></a>
   ${item('arrange','Seating Chart')}${item('groups','Groups')}${item('stations','Stations')}<div class="siderail-sep" role="separator" aria-hidden="true"></div>${item('roster','Roster')}${item('room','Room')}
   <div class="siderail-spacer"></div>${item('manage','Manage')}${item('settings','Settings')}</nav>`;
@@ -1637,9 +1683,10 @@ function arrangeHTML(cls){
   <section class="stage">
     ${chartDetailsHTML(cls)}
     ${hasSeats&&rp.list.length?`<div class="repeat-note${v.repeats?' open':''}"><button class="rn-head" data-act="toggleRepeats" aria-expanded="${!!v.repeats}"><span class="rn-ic" aria-hidden="true">↺</span><span><b>${rp.list.length} pair${rp.list.length===1?' has':'s have'}</b> been ${rp.type?'in '+TYPE_NAME[rp.type]+' groups':'grouped'} together before</span><span class="rn-link">${v.repeats?'Hide':'Show'}</span></button>${v.repeats?`<div class="rn-list">${rp.byG.map(([gi,ps])=>`<div class="rn-row"><b class="rn-t">${esc(L.groups[gi].label)}</b><span>${ps.map(p=>`<span class="rn-pair tipbtn" tabindex="0" data-tip="Together in ${esc(p.charts.join(', '))}">${esc(nameOf(cls,p.a))} + ${esc(nameOf(cls,p.b))}${p.charts.length>1?` <b>×${p.charts.length}</b>`:''}</span>`).join('')}</span></div>`).join('')}<small class="rn-hint">Hover a pair to see which chart they shared. Drag students to split them up.</small></div>`:''}</div>`:''}
-    ${tzHTML(cls,room,L,cur,qm,iss)}<div class="szwrap">${(()=>{ui.sZoomMax=zoomMax(room);if((ui.sZoom||1)>ui.sZoomMax)ui.sZoom=ui.sZoomMax;return''})()}${ui.sZoomMax>1?`<div class="s-zoom" aria-label="Seat size"><button class="sz-b" id="sZoomMinus" data-act="sZoomStep" data-arg="-0.1" aria-label="Smaller seats" title="Smaller seats"${(ui.sZoom||1)<=1?' disabled':''}>−</button><button class="sz-fit" id="sZoomVal" data-act="sZoomFit" title="Back to 100%">${Math.round((ui.sZoom||1)*100)}%</button><button class="sz-b" id="sZoomPlus" data-act="sZoomStep" data-arg="0.1" aria-label="Bigger seats" title="Bigger seats"${(ui.sZoom||1)>=ui.sZoomMax?' disabled':''}>+</button></div>`:''}<div class="roomscroll">${roomHTML(room,L,{mode:'seat',cls,cur,qm,flag:iss.flag,animate:ui.animate})}</div></div>
+    ${tzHTML(cls,room,L,cur,qm,iss)}${pickBarHTML(cls)}<div class="szwrap">${(()=>{ui.sZoomMax=zoomMax(room);if((ui.sZoom||1)>ui.sZoomMax)ui.sZoom=ui.sZoomMax;return''})()}${ui.sZoomMax>1?`<div class="s-zoom" aria-label="Seat size"><button class="sz-b" id="sZoomMinus" data-act="sZoomStep" data-arg="-0.1" aria-label="Smaller seats" title="Smaller seats"${(ui.sZoom||1)<=1?' disabled':''}>−</button><button class="sz-fit" id="sZoomVal" data-act="sZoomFit" title="Back to 100%">${Math.round((ui.sZoom||1)*100)}%</button><button class="sz-b" id="sZoomPlus" data-act="sZoomStep" data-arg="0.1" aria-label="Bigger seats" title="Bigger seats"${(ui.sZoom||1)>=ui.sZoomMax?' disabled':''}>+</button></div>`:''}<div class="roomscroll">${roomHTML(room,L,{mode:'seat',cls,cur,qm,flag:iss.flag,animate:ui.animate})}</div></div>
     ${unseated.length&&hasSeats?`<div class="tray"><span class="section-label" style="color:var(--danger)">Not seated</span>${unseated.map(s=>`<div class="seat filled q${qm.get(s.id)||0}${ui.selSeat==='u:'+s.id?' picked':''}" data-seat="u:${s.id}" data-sid="${s.id}" tabindex="0" role="button"><span class="nm">${esc(dname(s))}</span></div>`).join('')}</div>`:''}
-    <p class="hint">${hasSeats?'Drag a student onto another seat to swap them. On a touch screen, tap one student, then tap where they should go. Hover a name to see your notes.':'Choose how to group on the right, then press Create chart.'}</p>
+    ${hiddenTrayHTML(cls)}
+    <p class="hint">${hasSeats?'Drag a student onto another seat to swap them. On a touch screen, tap one student, then tap where they should go. Double-click or double-tap a student to hide someone who dropped. Pinch the room to zoom in.':'Choose how to group on the right, then press Create chart.'}</p>
     ${hasSeats?`<div class="issues">${iss.list.length?iss.list.map(i=>`<div class="issue ${i.lvl}"><b>${i.lvl==='bad'?'Fix':i.lvl==='note'?'Note':'Check'}</b><span>${esc(i.t)}</span></div>`).join(''):`<div class="issue ok"><b>OK</b><span>Every seating rule is met.</span></div>`}</div>`:''}
     ${hasSeats&&by?`<div class="field"><span>Tables at a glance · ${esc(by.name)}</span><div class="gsum">${L.groups.map(g=>{const ss=g.seats.map(si=>cur.seats[L.seats[si].key]).filter(Boolean).map(id=>stud(cls,id));return`<div class="gcard"><b>${esc(g.label)}</b><span class="muted">${ss.length} student${ss.length===1?'':'s'} · <span class="num">${esc(summ(ss,by))}</span>${ss.some(x=>x&&x.g)?` · ${ss.filter(x=>x&&x.g==='M').length}M ${ss.filter(x=>x&&x.g==='F').length}F`:''}</span><div class="dots">${ss.map(s=>`<i style="background:var(--q${qm.get(s.id)||0})" title="${esc(dname(s))}"></i>`).join('')}</div></div>`}).join('')}</div></div>`:''}
   </section>
@@ -1678,7 +1725,7 @@ function rosterHTML(cls){
   const sOpts=cls.students.map(s=>`<option value="${s.id}">${esc(s.name)}</option>`).join('');
   const mc=cols.find(c=>c.id===ui.colMenu);
   const fs=ui.flagMenu&&stud(cls,ui.flagMenu);
-  const pop=fs?`<div class="pop flagmenu" id="pop" role="dialog" aria-label="Supports for ${esc(fs.name)}" data-anchor="[data-act=flagMenu][data-arg='${fs.id}']"><b class="fm-title">${esc(fs.name)}</b><label class="field fm-pref"><span>Goes by</span><input type="text" data-ch="pref" data-id="${fs.id}" value="${esc(fs.pref||'')}" placeholder="${esc(parseName(fs.name,fs.nf).first||'Preferred name')}"></label><small class="muted fm-shows">On charts: <b>${esc(dname(fs))}</b></small><div class="fm-sep"></div>${FLAGS.map(f=>`<label class="fm-row"><i class="fdot${f.ring?' ring':''}" style="background:${f.c}" aria-hidden="true"></i><span>${f.label}</span><input type="checkbox" data-ch="flag" data-id="${fs.id}" data-key="${f.k}"${fs.flags&&fs.flags[f.k]?' checked':''}></label>`).join('')}<small class="muted">Only you see these. They never appear when presenting or in the sub copy.</small></div>`:mc?`<div class="pop colmenu" id="pop" role="dialog" aria-label="Edit ${esc(mc.name)}" data-anchor="[data-act=colMenu][data-arg='${mc.id}']">
+  const pop=fs?`<div class="pop flagmenu" id="pop" role="dialog" aria-label="Supports for ${esc(fs.name)}" data-anchor="[data-act=flagMenu][data-arg='${fs.id}']"><b class="fm-title">${esc(fs.name)}</b><label class="field fm-pref"><span>Goes by</span><input type="text" data-ch="pref" data-id="${fs.id}" value="${esc(fs.pref||'')}" placeholder="${esc(parseName(fs.name,fs.nf).first||'Preferred name')}"></label><small class="muted fm-shows">On charts: <b>${esc(dname(fs))}</b></small><div class="fm-sep"></div>${FLAGS.map(f=>`<label class="fm-row"><i class="fdot${f.ring?' ring':''}" style="background:${f.c}" aria-hidden="true"></i><span>${f.label}</span><input type="checkbox" data-ch="flag" data-id="${fs.id}" data-key="${f.k}"${fs.flags&&fs.flags[f.k]?' checked':''}></label>`).join('')}<small class="muted">Only you see these. They never appear when presenting or in the sub copy.</small><div class="fm-sep"></div><button class="btn small" data-act="${fs.absent?'unhideStud':'hideStud'}" data-arg="${fs.id}">${svg(fs.absent?'eye':'eyeoff')}${fs.absent?'Show on charts again':'Hide from charts'}</button></div>`:mc?`<div class="pop colmenu" id="pop" role="dialog" aria-label="Edit ${esc(mc.name)}" data-anchor="[data-act=colMenu][data-arg='${mc.id}']">
     <label class="field"><span>Name</span><input type="text" data-ch="colName" data-col="${mc.id}" value="${esc(mc.name)}"></label>
     <div class="field"><span>Type</span><div class="seg four" role="group" aria-label="Type">${Object.entries(TYPES).map(([k,t])=>`<button data-act="colType" data-arg="${mc.id}|${k}" aria-pressed="${(mc.type||'score')===k}">${t.label}</button>`).join('')}</div><small class="muted">${TYPES[mc.type||'score'].help}</small></div>
     ${isCat(mc)&&mc.options?`<div class="field"><span>Choices</span><div class="chips">${mc.options.map((o,i)=>`<span class="pill"><i class="cdot" style="background:var(--q${5+i})"></i>${esc(o)}</span>`).join('')}</div><small class="muted">Pick from the dropdown in each student’s row.</small></div>`:isCat(mc)?(()=>{const l=catList(cls,mc);return`<div class="field"><span>Categories in use</span><div class="chips">${l.length?l.map(x=>`<span class="pill">${esc(x.name)} · ${x.n}</span>`).join(''):'<small class="muted">Type a label in each student’s box. Labels you’ve used appear as suggestions.</small>'}</div></div>`})():`<div class="field"><span>Which end is stronger?</span><div class="seg two" role="group" aria-label="Direction"><button data-act="colDir" data-arg="${mc.id}|1" aria-pressed="${mc.dir!==-1}">Higher</button><button data-act="colDir" data-arg="${mc.id}|-1" aria-pressed="${mc.dir===-1}">Lower</button></div><small class="muted">${mc.type==='level'?'Lexile and A to Z levels: higher is stronger.':'Use Lower for things like class rank, where 1 is best.'}</small></div>`}
@@ -1696,8 +1743,8 @@ function rosterHTML(cls){
   </section>
   <div class="keyrow">${cls.students.length?`<label class="nameorder" title="How the names in your list are written. Names with a comma (Davis, Jordan) are always read as last name first.">Names are written <select data-ch="nameOrder">${[['fl','First Last'],['lf','Last First']].map(([k,l])=>`<option value="${k}"${(cls.nameOrder||'fl')===k?' selected':''}>${l}</option>`).join('')}</select></label>`:''}<span class="keysep"></span><span class="addstud"><input type="text" id="newStud" placeholder="New student name" aria-label="New student name"><button class="addbtn" data-act="addStud">${svg('plus')}Add student</button></span><button class="addbtn" data-act="addMenu" aria-haspopup="menu" aria-expanded="${!!ui.addMenu}">${svg('plus')}Add criteria</button><span class="keysep2"></span><span><i class="gdot"></i>Grouping</span><span><i class="bdot"></i>Also balance</span></div>
   <div class="tablewrap"><table class="roster"><thead><tr><th class="flagth"><span class="sr">Supports</span></th><th class="shrink">Name</th><th class="shrink">Gender</th>${cols.map(c=>`<th class="colth"><button class="colbtn${ui.colMenu===c.id?' open':''}" data-act="colMenu" data-arg="${c.id}" aria-haspopup="dialog" aria-expanded="${ui.colMenu===c.id}" title="Click to edit. Drag to reorder."><span class="cn">${esc(c.name)}${cls.opts.by===c.id?'<i class="gdot" title="Used for grouping" aria-label="Used for grouping"></i>':cls.opts.bal===c.id?'<i class="bdot" title="Also balanced" aria-label="Also balanced"></i>':''}</span><span class="ct">${c.options?'Color':TYPES[c.type||'score'].label}${c.dir===-1&&!isCat(c)?' · low is best':''}</span></button></th>`).join('')}<th class="notesth">Notes</th><th><span class="sr">Remove</span></th></tr></thead>
-  <tbody>${cls.students.map(s=>`<tr><td class="flagcell"><button class="flagbtn${ui.flagMenu===s.id?' open':''}" data-act="flagMenu" data-arg="${s.id}" aria-haspopup="dialog" aria-label="Supports for ${esc(s.name)}" title="Student supports">${svg('clip')}</button></td>
-  <td class="shrink"><div class="namecell"><input type="text" class="name" data-ch="stud" data-id="${s.id}" data-key="name" value="${esc(s.name)}" aria-label="Name"><span class="flagdots" data-fid="${s.id}">${flagDots(s)}</span><span class="dnprev" data-did="${s.id}" title="How this name shows on charts">${esc(dname(s))}</span></div></td>
+  <tbody>${cls.students.map(s=>`<tr${s.absent?' class="absent"':''}><td class="flagcell"><button class="flagbtn${ui.flagMenu===s.id?' open':''}" data-act="flagMenu" data-arg="${s.id}" aria-haspopup="dialog" aria-label="Supports for ${esc(s.name)}" title="Student supports">${svg('clip')}</button></td>
+  <td class="shrink"><div class="namecell"><input type="text" class="name" data-ch="stud" data-id="${s.id}" data-key="name" value="${esc(s.name)}" aria-label="Name"><span class="flagdots" data-fid="${s.id}">${flagDots(s)}</span><span class="dnprev" data-did="${s.id}" title="How this name shows on charts">${esc(dname(s))}</span>${s.absent?`<button class="hidpill" data-act="unhideStud" data-arg="${s.id}" title="Hidden from charts and groups. Click to show again.">${svg('eyeoff')}Hidden · Show</button>`:''}</div></td>
   <td class="shrink"><div class="gseg" role="group" aria-label="Gender for ${esc(s.name)}">${['M','F'].map(g=>`<button data-act="setG" data-arg="${s.id}|${g}" aria-pressed="${s.g===g}" title="${g==='M'?'Male':'Female'}. Click again to clear.">${g}</button>`).join('')}</div></td>
   ${cols.map(c=>isCat(c)&&c.options?`<td class="ccell"><select class="pcolor" data-ch="stud" data-id="${s.id}" data-key="v:${c.id}" style="--pc:${PCOLORS[(s.v&&s.v[c.id])||'']||'transparent'}" aria-label="${esc(c.name)} for ${esc(s.name)}"><option value=""></option>${c.options.map(o=>`<option${catKey(s.v&&s.v[c.id])===catKey(o)?' selected':''}>${esc(o)}</option>`).join('')}</select></td>`:`<td class="ccell"><input type="text" class="${isCat(c)?'cat':'num'}" data-ch="stud" data-id="${s.id}" data-key="v:${c.id}"${isCat(c)?` list="dl-${c.id}"`:` inputmode="${c.type==='level'?'text':'decimal'}"`} value="${esc(s.v&&s.v[c.id]!==undefined?s.v[c.id]:'')}" aria-label="${esc(c.name)} for ${esc(s.name)}"></td>`).join('')}
   <td class="notescell"><input type="text" class="notes" data-ch="stud" data-id="${s.id}" data-key="notes" value="${esc(s.notes||'')}" placeholder="Add a note" aria-label="Notes for ${esc(s.name)}"></td>
@@ -2237,7 +2284,7 @@ const TOUR=[
   {tab:'arrange',sel:'.room.seat-mode',step:'4',title:'Seating Chart',body:'<b>(Sample 3rd Period Seating Chart)</b> puts each group at a table, ranked into its seats. Drag a student onto another seat to swap them, or click a table’s name for a close-up.'},
   {tab:'arrange',sel:'[data-act=present]',step:'5',title:'Present or print',body:'Present shows the chart to the class with <b>names only</b>: no scores, colors, supports or notes. Print from there too.'},
   {tab:'manage',sel:'.siderail-item[data-arg=manage]',title:'Keep or delete the samples',body:'The samples are yours to explore. When you are done with them, delete them here in <b>Manage</b>.'},
-  {title:'You’re ready',body:'Start your own class on the <b>Roster</b> page with <b>New class</b>.<br><br>Your work is saved only in this browser, so download a backup about once a month in <b>Settings</b>. You can take this tour again from Settings any time.'}
+  {title:'You’re ready',body:'Start with your own room here on the <b>Room</b> page. Then add your class on the <b>Roster</b> page with <b>New class</b>.<br><br>Your work is saved only in this browser, so download a backup about once a month in <b>Settings</b>. You can take this tour again from Settings any time.'}
 ];
 function tourRoot(){let r=document.getElementById('tour-root');if(!r){r=document.createElement('div');r.id='tour-root';document.body.appendChild(r)}return r}
 function tourTarget(st){if(!st||!st.sel)return null;try{const el=typeof st.sel==='function'?st.sel():document.querySelector(st.sel);if(!el)return null;const r=el.getBoundingClientRect();return r.width&&r.height?el:null}catch(e){return null}}
@@ -2245,7 +2292,7 @@ function tourShow(i){if(i<0||i>=TOUR.length){tourEnd();return}ui.tour=i;const st
   if(st.tab&&ui.tab!==st.tab){ui.tab=st.tab;render()}else render();
   const el=tourTarget(st);if(el){const r=el.getBoundingClientRect();if(r.top<96||r.bottom>innerHeight-20)scrollBy(0,r.height>innerHeight-130?r.top-96:r.top-(innerHeight-r.height)/2-20)}else scrollTo(0,0);
   requestAnimationFrame(()=>{tourPlace();const n=$('#tourNext');n&&n.focus({preventScroll:true})})}
-function tourEnd(){ui.tour=null;const r=document.getElementById('tour-root');if(r)r.innerHTML='';render()}
+function tourEnd(){ui.tour=null;const r=document.getElementById('tour-root');if(r)r.innerHTML='';ui.tab='room';ui.selSeat=null;setSel([]);render();scrollTo(0,0)}
 function tourPlace(){if(ui.tour==null||!HAS_DOM)return;const i=ui.tour,st=TOUR[i],root=tourRoot(),el=tourTarget(st),last=i===TOUR.length-1;
   const W=innerWidth,H=innerHeight,cw=Math.min(360,W-32);let hole='',cx,cy,center=!el;
   if(el){const r=el.getBoundingClientRect(),p=8,x=Math.max(8,r.left-p),y=Math.max(8,r.top-p),x2=Math.min(W-8,r.right+p),y2=Math.min(H-8,r.bottom+p);
@@ -2272,6 +2319,53 @@ if(HAS_DOM){
   let tq=0;const rq=()=>{if(ui.tour==null)return;cancelAnimationFrame(tq);tq=requestAnimationFrame(tourPlace)};addEventListener('resize',rq);addEventListener('scroll',rq,true);
 }
 function addSamples(){const t=sampleState();S.rooms.push(...t.rooms);S.classes.push(...t.classes);S.activeClass=t.classes[0].id}
+/* ---------- pinch / trackpad zoom on the room grid (Room and Seating Chart) ---------- */
+const VZ_MAX=4;ui.vz={edit:1,seat:1};ui.vzx={edit:0,seat:0};
+function vzKey(sc){const r=sc&&sc.querySelector('.room');return r?(r.classList.contains('edit')?'edit':r.classList.contains('seat-mode')?'seat':null):null}
+function vzSet(sc,z,cx,cy){const k=vzKey(sc);if(!k)return;const room=sc.querySelector('.room');z=Math.min(VZ_MAX,Math.max(1,z));
+  const rr=room.getBoundingClientRect(),sr=sc.getBoundingClientRect();cx=cx==null?sr.left+sr.width/2:cx;cy=cy==null?rr.top+rr.height/2:cy;
+  const fx=(cx-rr.left)/rr.width,fy=(cy-rr.top)/rr.height;
+  if(!sc.classList.contains('zoomed'))sc.style.setProperty('--vzb',rr.width+'px');ui.vz[k]=z;sc.style.setProperty('--vz',z);sc.classList.toggle('zoomed',z>1.001);
+  const nr=room.getBoundingClientRect();sc.scrollLeft=Math.max(0,fx*nr.width-(cx-sr.left));ui.vzx[k]=sc.scrollLeft;
+  const dy=nr.top+fy*nr.height-cy;if(Math.abs(dy)>1)scrollBy(0,dy);vzBadge(sc);clearTimeout(vzSet.t);vzSet.t=setTimeout(()=>{try{fitNames(document)}catch(e){}},120)}
+function vzBadge(sc){const k=vzKey(sc);let b=sc.previousElementSibling&&sc.previousElementSibling.classList.contains('vzbar')?sc.previousElementSibling:null;const z=ui.vz[k]||1;
+  if(z<=1.001){if(b)b.remove();return}
+  if(!b){b=document.createElement('div');b.className='vzbar';b.innerHTML='<span class="vz-pct"></span><button class="btn small" data-act="vzFit">Fit room</button>';sc.parentNode.insertBefore(b,sc)}
+  b.querySelector('.vz-pct').textContent=Math.round(z*100)+'%'}
+function vzApply(){if(!HAS_DOM)return;document.querySelectorAll('.roomscroll').forEach(sc=>{const k=vzKey(sc);if(!k)return;const z=ui.vz[k]||1;sc.classList.remove('zoomed');const rm=sc.querySelector('.room');if(rm)sc.style.setProperty('--vzb',rm.getBoundingClientRect().width+'px');sc.style.setProperty('--vz',z);sc.classList.toggle('zoomed',z>1.001);if(z>1.001)sc.scrollLeft=ui.vzx[k]||0;vzBadge(sc)})}
+if(HAS_DOM){
+  let P=null;
+  const pts=e=>[...e.touches].slice(0,2),mid=t=>[(t[0].clientX+t[1].clientX)/2,(t[0].clientY+t[1].clientY)/2],dist=t=>Math.hypot(t[0].clientX-t[1].clientX,t[0].clientY-t[1].clientY);
+  const cancelDrag=()=>{if(window.__cancelDrag)window.__cancelDrag()};
+  document.addEventListener('touchstart',e=>{if(e.touches.length!==2||ui.present)return;const sc=e.target.closest&&e.target.closest('.roomscroll');if(!sc||!vzKey(sc))return;cancelDrag();const t=pts(e);P={sc,d0:dist(t),z0:ui.vz[vzKey(sc)]||1,m:mid(t)};e.preventDefault()},{passive:false,capture:true});
+  document.addEventListener('touchmove',e=>{if(!P)return;if(e.touches.length<2){P=null;return}e.preventDefault();const t=pts(e),m=mid(t),z=P.z0*dist(t)/Math.max(20,P.d0);
+    /* two-finger drag also pans */const dx=m[0]-P.m[0];P.sc.scrollLeft-=dx;P.m=m;vzSet(P.sc,z,m[0],m[1])},{passive:false,capture:true});
+  document.addEventListener('touchend',e=>{if(P&&e.touches.length<2){const k=vzKey(P.sc);if(k)ui.vzx[k]=P.sc.scrollLeft;P=null}},{capture:true});
+  /* iOS Safari page-zoom gesture: keep it off the grid */
+  ['gesturestart','gesturechange'].forEach(t=>document.addEventListener(t,e=>{if(e.target.closest&&e.target.closest('.roomscroll'))e.preventDefault()},{passive:false}));
+  /* trackpad pinch and ctrl/cmd + wheel */
+  document.addEventListener('wheel',e=>{if(!(e.ctrlKey||e.metaKey)||ui.present)return;const sc=e.target.closest&&e.target.closest('.roomscroll');if(!sc||!vzKey(sc))return;e.preventDefault();vzSet(sc,(ui.vz[vzKey(sc)]||1)*Math.exp(-e.deltaY*.01),e.clientX,e.clientY)},{passive:false});
+  document.addEventListener('scroll',e=>{const sc=e.target;if(sc&&sc.classList&&sc.classList.contains('roomscroll')){const k=vzKey(sc);if(k)ui.vzx[k]=sc.scrollLeft}},true);
+}
+/* ---------- hide a student from charts (dropped, moved, out for a while) ---------- */
+function hideStudent(cls,id){const s=stud(cls,id);if(!s)return null;s.absent=true;s.hiddenAt=Date.now();const cur=curOf(cls);for(const k in cur.seats)if(cur.seats[k]===id)delete cur.seats[k];const q=cls.quick;if(q&&Array.isArray(q.groups))q.groups=q.groups.map(g=>g.filter(x=>x!==id));return s}
+function showStudent(cls,id){const s=stud(cls,id);if(!s)return null;s.absent=false;delete s.hiddenAt;return s}
+function moveStudent(from,to,id){const s=stud(from,id);if(!s||!to||to===from)return null;
+  const v={},lost=[];for(const c of from.columns){const val=s.v&&s.v[c.id];if(val==null||val==='')continue;const tc=to.columns.find(x=>x.name.trim().toLowerCase()===c.name.trim().toLowerCase());if(tc)v[tc.id]=val;else lost.push(c.name)}
+  const ns=Object.assign({},s,{v,absent:false});delete ns.hiddenAt;
+  if(to.students.some(x=>x.id===ns.id))ns.id=uid();
+  if(to.nameOrder!==from.nameOrder&&!s.nf&&from.nameOrder==='lf')ns.nf='lf';
+  to.students.push(ns);
+  from.students=from.students.filter(x=>x.id!==id);from.rules=from.rules.filter(r=>r.a!==id&&r.b!==id);
+  const cur=curOf(from);for(const k in cur.seats)if(cur.seats[k]===id)delete cur.seats[k];
+  if(from.quick&&Array.isArray(from.quick.groups))from.quick.groups=from.quick.groups.map(g=>g.filter(x=>x!==id));
+  return{s:ns,lost}}
+function pickedStudent(cls){const k=ui.selSeat;if(!k||!cls)return null;const id=String(k).startsWith('u:')?String(k).slice(2):(curOf(cls).seats||{})[k];return id?stud(cls,id):null}
+function pickBarHTML(cls){const s=pickedStudent(cls);if(!s)return'';return`<div class="pickbar" role="status"><span><b>${esc(dname(s))}</b> selected. Tap a seat to move or swap.</span><button class="btn small" data-act="hideStud" data-arg="${s.id}">${svg('eyeoff')}Hide from chart</button><button class="iconbtn" data-act="pickClear" aria-label="Clear selection">${svg('x')}</button></div>`}
+function hiddenTrayHTML(cls){const hid=cls.students.filter(s=>s.absent);if(!hid.length)return'';const hm=ui.hidMenu&&hid.find(s=>s.id===ui.hidMenu),others=S.classes.filter(c=>c.id!==cls.id);
+  return`<div class="hidtray"><div class="ht-head"><span class="section-label">Hidden from charts · ${hid.length}</span><small class="muted">Still on the roster, but left out of charts and groups. Click a name to show them again, move them to another class, or delete them.</small></div>
+  <div class="ht-list">${hid.map(s=>`<button class="ht-chip${hm===s?' open':''}" data-act="hidMenu" data-arg="${s.id}" aria-expanded="${hm===s}">${svg('eyeoff')}${esc(dname(s))}</button>`).join('')}</div>
+  ${hm?`<div class="ht-panel"><b>${esc(hm.name)}</b><div class="ht-acts"><button class="btn small" data-act="unhideStud" data-arg="${hm.id}">${svg('eye')}Show on chart</button>${others.length?`<span class="ht-move"><select id="hidTo" aria-label="Class to move ${esc(hm.name)} to">${others.map(c=>`<option value="${c.id}">${esc(c.name)}</option>`).join('')}</select><button class="btn small" data-act="moveStud" data-arg="${hm.id}">Move</button></span>`:''}${confirmBtn('dh:'+hm.id,'Delete from class','Delete for good?','delStud',hm.id,'btn small danger')}</div><small class="muted">Show on chart puts them in Not seated, ready to drag to a seat. Out for a while? Just leave them hidden.</small></div>`:''}</div>`}
 function startSession(st){S=migrate(st);ui.tab='arrange';ui.roomId=null;ui.selSeat=null;setSel([]);writeData();resetHistory();render()}
 function eraseAll(){try{localStorage.removeItem(DATA_KEY)}catch(e){}S=null;resetHistory();ui.present=false;$('#print-root').innerHTML='';render();toast('All data erased')}
 
@@ -2287,6 +2381,8 @@ function doSwap(k1,k2){
   save();render();
 }
 function tapSeat(key,has){
+  const cls=activeClass(),sid=has&&cls?(String(key).startsWith('u:')?String(key).slice(2):(curOf(cls).seats||{})[key]):null,now=Date.now(),lt=tapSeat.last;tapSeat.last={sid,t:now};
+  if(sid&&lt&&lt.sid===sid&&now-lt.t<450){tapSeat.last=null;ACT.hideStud(null,sid);return}
   if(ui.selSeat===null){if(!has)return;ui.selSeat=key;render();return}
   if(ui.selSeat===key){ui.selSeat=null;render();return}
   const a=ui.selSeat;ui.selSeat=null;doSwap(a,key);
@@ -2456,6 +2552,12 @@ const ACT={
   newClass:()=>{const c=newClass('Class '+(S.classes.length+1),(activeClass()?roomOf(activeClass()):S.rooms[0]).id);c.columns=[{id:uid(),name:'Score',dir:1}];c.opts.by=c.columns[0].id;S.classes.push(c);S.activeClass=c.id;ui.tab='roster';save();render();const i=document.querySelector('[data-ch=className]');i&&i.select()},
   delClass:()=>{const c=need();S.classes=S.classes.filter(x=>x.id!==c.id);S.activeClass=S.classes[0]?S.classes[0].id:null;save();render();toast('Class deleted')},
   addStud:()=>{const i=$('#newStud'),name=i.value.trim();if(!name){i.focus();return}const cls=need();const ns={id:uid(),name,v:{},g:'',notes:'',absent:false};if(cls.nameOrder==='lf')ns.nf='lf';cls.students.push(ns);save();render();const n=$('#newStud');n&&n.focus()},
+  hideStud:(b,id)=>{const cls=need(),s=hideStudent(cls,id);if(!s)return;ui.selSeat=null;ui.hidMenu=null;ui.flagMenu=null;save();render();toast(dname(s)+' is hidden from charts. Find them under Hidden below the room.')},
+  unhideStud:(b,id)=>{const cls=need(),s=showStudent(cls,id);if(!s)return;ui.hidMenu=null;save();render();toast(dname(s)+(ui.tab==='arrange'?' is back. Drag them from Not seated to a seat.':' will be on charts again.'))},
+  hidMenu:(b,id)=>{ui.hidMenu=ui.hidMenu===id?null:id;render()},
+  pickClear:()=>{ui.selSeat=null;render()},
+  moveStud:(b,id)=>{const cls=need(),to=S.classes.find(c=>c.id===($('#hidTo')||{}).value);if(!to)return;const r=moveStudent(cls,to,id);if(!r)return;ui.hidMenu=null;save();render();toast(`Moved ${dname(r.s)} to ${to.name}.`+(r.lost.length?` ${r.lost.join(', ')} ${r.lost.length>1?'aren’t columns':'isn’t a column'} there, so that data was left behind.`:''))},
+  vzFit:(b)=>{const sc=b.parentNode&&b.parentNode.nextElementSibling;if(sc&&sc.classList.contains('roomscroll'))vzSet(sc,1)},
   delStud:(b,id)=>{const cls=need();cls.students=cls.students.filter(s=>s.id!==id);cls.rules=cls.rules.filter(r=>r.a!==id&&r.b!==id);const cur=curOf(cls);for(const k in cur.seats)if(cur.seats[k]===id)delete cur.seats[k];save();render()},
   setG:(b,a)=>{const[id,g]=a.split('|'),st=stud(need(),id);if(!st)return;st.g=st.g===g?'':g;b.parentElement.querySelectorAll('button').forEach(x=>x.setAttribute('aria-pressed',x.textContent===st.g));save()},
   flagMenu:(b,id)=>{ui.colMenu=null;ui.addMenu=false;ui.flagMenu=ui.flagMenu===id?null:id;render()},
@@ -2674,6 +2776,7 @@ function groupDelta(list,dx,dy){let a=-1e9,b=1e9,c=-1e9,d=1e9;list.forEach(o=>{c
 function boxOf(it){const d=dims(it);return{l:it.x-d.w/2,t:it.y-d.h/2,r:it.x+d.w/2,b:it.y+d.h/2}}
 /* pointer: drag students between seats, drag furniture in the room editor */
 let drag=null;
+window.__cancelDrag=()=>{if(!drag)return;if(drag.k==='item'&&drag.list)drag.list.forEach(o=>{o.it.x=o.x0;o.it.y=o.y0});if(drag.ghost)drag.ghost.remove();if(drag.m)drag.m.remove();document.querySelectorAll('.lifting,.drop').forEach(x=>x.classList.remove('lifting','drop'));const was=drag.k;drag=null;if(was==='item')render()};
 document.addEventListener('pointerdown',e=>{
   if(!S||(ui.present&&!ui.pwin)||(e.button!==undefined&&e.button!==0))return;
   const gr=e.target.closest('[data-grip]');
@@ -2706,7 +2809,7 @@ document.addEventListener('pointerdown',e=>{
     drag={k:'item',list,bx,toggled,x:e.clientX,y:e.clientY,rect:item.closest('.room').getBoundingClientRect(),moved:false};
     try{item.setPointerCapture(e.pointerId)}catch(x){}e.preventDefault();return}
   const floor=e.target.closest('.room.edit');
-  if(floor){const rect=floor.getBoundingClientRect(),m=document.createElement('div');m.className='marquee';floor.appendChild(m);
+  if(floor&&e.pointerType!=='touch'){const rect=floor.getBoundingClientRect(),m=document.createElement('div');m.className='marquee';floor.appendChild(m);
     drag={k:'marquee',floor,m,rect,x:e.clientX,y:e.clientY,base:(e.shiftKey||e.metaKey||e.ctrlKey)?ui.selIds.slice():[],moved:false};
     try{floor.setPointerCapture(e.pointerId)}catch(x){}e.preventDefault();return}
 });
