@@ -1435,10 +1435,10 @@ function subText(cls,groups,roles){
 const SAMPLE_PREFIX='Sample 3rd Period';
 function sampleState(){
   const st=blankState();
-  const r1={id:uid(),name:SAMPLE_PREFIX+' Room',items:preset('pods4'),confirmed:true};
+  const r1={id:uid(),name:'('+SAMPLE_PREFIX+' Room)',items:preset('pods4'),confirmed:true};
   st.rooms.push(r1);
   const rnd=mulberry(214);
-  const c1=newClass(SAMPLE_PREFIX+' Roster',r1.id);
+  const c1=newClass('('+SAMPLE_PREFIX+' Roster)',r1.id);
   c1.columns=[{id:'c1',name:'Summative',dir:1,type:'score'},{id:'c3',name:'Behavior',dir:1,type:'rating'}];
   ["Amara Okafor","Ben Castillo","Chloe Nguyen","Dante Brooks","Elena Petrova","Felix Morgan","Grace Kim","Hector Ruiz","Imani Carter","Jonah Fields","Kira Patel","Liam O'Neil","Maya Lindqvist","Nico Alvarez","Olivia Grant","Parker Hughes","Quinn Delgado","Rosa Jimenez","Sam Whitaker","Talia Ross","Uriel Banks","Vera Haddad","Wes Turner","Xander Cole"].forEach(n=>{const base=rnd();rnd();c1.students.push({id:uid(),name:n,v:{c1:String(Math.round(42+base*50+rnd()*8)),c3:String(1+Math.floor(rnd()*3))},front:false,door:false,absent:false})});
   c1.opts.by='c1';c1.opts.bal='c3';c1.opts.mode='mixed';
@@ -1451,10 +1451,10 @@ function sampleState(){
     /* the recommended flow: make Mixed groups, save the set, send it to a seating chart */
     const q=c1.quick;q.opts={mode:'mixed',crit:['c1','__g'],avoid:true,sizeMode:'room',roomId:r1.id};
     makeQuick(c1);
-    const gname=SAMPLE_PREFIX+' Mixed Group',x={id:uid(),name:gname,date:Date.now(),groups:q.groups.map(g=>g.slice()),meta:q.meta,size:q.size,tables:q.tables,tableLabels:q.tableLabels,roomId:q.roomId};
+    const gname='('+SAMPLE_PREFIX+' Mixed Group)',x={id:uid(),name:gname,date:Date.now(),groups:q.groups.map(g=>g.slice()),meta:q.meta,size:q.size,tables:q.tables,tableLabels:q.tableLabels,roomId:q.roomId};
     c1.groupSets.push(x);q.setId=x.id;q.name=gname;
     seatGroups(c1,x.groups,x.name,x.tables,x.roomId,x.meta&&x.meta.mode,x.meta&&x.meta.crit);
-    createChart(c1,SAMPLE_PREFIX+' Seating Chart',x.meta&&TYPE_NAME[x.meta.mode]?{mode:x.meta.mode,crit:x.meta.crit||[]}:{mode:'mixed',crit:['c1','__g']});
+    createChart(c1,'('+SAMPLE_PREFIX+' Seating Chart)',x.meta&&TYPE_NAME[x.meta.mode]?{mode:x.meta.mode,crit:x.meta.crit||[]}:{mode:'mixed',crit:['c1','__g']});
   }finally{S=prevS}
   return st;
 }
@@ -1865,7 +1865,7 @@ function settingsHTML(){
     </section>
     <section class="panel"><h3>Getting started</h3>
       <p class="muted small">Walk through Room, Roster, Groups, Seating Chart and Present with the sample class. If you deleted the sample class, the tour adds it back.</p>
-      <div class="row"><button class="btn primary" data-act="replayTour">Take the tour</button>${S.classes.some(c=>c.name.startsWith(SAMPLE_PREFIX))?'':'<button class="btn" data-act="addSamples">Add the sample class</button>'}</div>
+      <div class="row"><button class="btn primary" data-act="replayTour">Take the tour</button>${S.classes.some(c=>c.name.includes(SAMPLE_PREFIX))?'':'<button class="btn" data-act="addSamples">Add the sample class</button>'}</div>
     </section>
     <section class="panel"><h3>Erase everything</h3>
       <p class="muted small">Removes all classes, rooms and history from this device. This can't be undone.</p>
@@ -1897,7 +1897,7 @@ function welcomeHTML(){
   const mark='<span class="gmark" aria-hidden="true"><i></i><i></i><i></i><i></i></span>';
   return`<div class="lockwrap"><div class="lockcard"><div class="brand">${mark}RobsonEDU Grouping Studio</div>
   <h1>Welcome! Let’s take a quick look around.</h1>
-  <p class="muted">Grouping Studio turns your room and class data into balanced groups and a seating chart you can project. We’ll add a sample class to explore, named <b>Sample 3rd Period</b>: a room, a roster, a Mixed group and a seating chart.</p>
+  <p class="muted">Grouping Studio turns your room and class data into balanced groups and a seating chart you can project. We’ll add a sample class to explore, named <b>(Sample 3rd Period …)</b>: a room, a roster, a Mixed group and a seating chart.</p>
   <button class="btn primary" data-act="startTour">Start the tour</button>
   <button class="btn" data-act="skipTour">Skip tour</button>
   <p class="tip">The sample class uses made-up students. Delete it any time in Manage.</p>
@@ -2224,13 +2224,13 @@ function exitPresent(){const w=ui.pwin;ui.pwin=null;try{if(w&&!w.closed)w.close(
 /* ---------- session ---------- */
 /* ---------- onboarding tour ---------- */
 const TOUR=[
-  {title:'Welcome to Grouping Studio',body:'We added a sample class so you can look around. Everything sample is named <b>Sample 3rd Period</b>: a room, a roster, a Mixed group and a seating chart.<br><br>This short tour follows the path you will use for every class: <b>Room → Roster → Groups → Seating Chart → Present</b>.'},
-  {tab:'room',sel:'.room.edit',step:'1',title:'Room',body:'<b>Sample 3rd Period Room</b> is a map of the classroom. Drag a table to move it, and drag its round arrow to turn it. Ready-made layouts and more furniture are on this page too.<br><br>Build each room once. Every class that meets there can share it.'},
-  {tab:'roster',sel:'table.roster',step:'2',title:'Roster',body:'<b>Sample 3rd Period Roster</b> is the class list plus the data you group by, called criteria. Here that is a Summative score and a Behavior rating. The first criterion counts most.'},
+  {title:'Welcome to Grouping Studio',body:'We added a sample class so you can look around. Everything sample starts with <b>(Sample 3rd Period …)</b>: a room, a roster, a Mixed group and a seating chart.<br><br>This short tour follows the path you will use for every class: <b>Room → Roster → Groups → Seating Chart → Present</b>.'},
+  {tab:'room',sel:'.room.edit',step:'1',title:'Room',body:'<b>(Sample 3rd Period Room)</b> is a map of the classroom. Drag a table to move it, and drag its round arrow to turn it. Ready-made layouts and more furniture are on this page too.<br><br>Build each room once. Every class that meets there can share it.'},
+  {tab:'roster',sel:'table.roster',step:'2',title:'Roster',body:'<b>(Sample 3rd Period Roster)</b> is the class list plus the data you group by, called criteria. Here that is a Summative score and a Behavior rating. The first criterion counts most.'},
   {tab:'roster',sel:()=>{const b=$('#pasteBox');return b&&b.closest('.panel')},step:'2',title:'Bring in your own class',body:'Click <b>New class</b> at the top of this page, then import from Google Sheets or paste your spreadsheet rows, including the header row. Check the purple preview and click <b>Import</b>.'},
-  {tab:'groups',sel:'section.stage',step:'3',title:'Groups',body:'<b>Sample 3rd Period Mixed Group</b> gives every group a spread of high to low Summative scores, with gender balanced. Tap a name to swap it for the best match, then click <b>Save group set</b>.'},
+  {tab:'groups',sel:'section.stage',step:'3',title:'Groups',body:'<b>(Sample 3rd Period Mixed Group)</b> gives every group a spread of high to low Summative scores, with gender balanced. Tap a name to swap it for the best match, then click <b>Save group set</b>.'},
   {tab:'groups',sel:'[data-act=qSeat]',step:'3',title:'Send to Seating Chart',body:'This seats these exact groups at the tables in your room and opens the new chart.'},
-  {tab:'arrange',sel:'.room.seat-mode',step:'4',title:'Seating Chart',body:'<b>Sample 3rd Period Seating Chart</b> puts each group at a table, ranked into its seats. Drag a student onto another seat to swap them, or click a table’s name for a close-up.'},
+  {tab:'arrange',sel:'.room.seat-mode',step:'4',title:'Seating Chart',body:'<b>(Sample 3rd Period Seating Chart)</b> puts each group at a table, ranked into its seats. Drag a student onto another seat to swap them, or click a table’s name for a close-up.'},
   {tab:'arrange',sel:'[data-act=present]',step:'5',title:'Present or print',body:'Present shows the chart to the class with <b>names only</b>: no scores, colors, supports or notes. Print from there too.'},
   {tab:'manage',sel:'.siderail-item[data-arg=manage]',title:'Keep or delete the samples',body:'The samples are yours to explore. When you are done with them, delete them here in <b>Manage</b>.'},
   {title:'You’re ready',body:'Start your own class on the <b>Roster</b> page with <b>New class</b>.<br><br>Your work is saved only in this browser, so download a backup about once a month in <b>Settings</b>. You can take this tour again from Settings any time.'}
@@ -2313,7 +2313,7 @@ const ACT={
   present:()=>enterPresent(ui.tab==='groups'?'quick':ui.tab==='stations'?'stations':'chart'),
   startTour:()=>{startSession(sampleState());tourShow(0)},
   skipTour:()=>startSession(sampleState()),
-  replayTour:()=>{if(!S.classes.some(c=>c.name.startsWith(SAMPLE_PREFIX))){addSamples();save()}else{const c=S.classes.find(c=>c.name.startsWith(SAMPLE_PREFIX));S.activeClass=c.id}tourShow(0)},
+  replayTour:()=>{if(!S.classes.some(c=>c.name.includes(SAMPLE_PREFIX))){addSamples();save()}else{const c=S.classes.find(c=>c.name.includes(SAMPLE_PREFIX));S.activeClass=c.id}tourShow(0)},
   addSamples:()=>{addSamples();save();ui.tab='arrange';render();toast('Sample class added')},
   eraseAll:()=>{const t=$('#eraseTxt');if(!t||t.value.trim()!=='ERASE'){toast('Type ERASE to confirm');t&&t.focus();return}eraseAll()},
   toggleCount:(b,id)=>{const h=need().history.find(x=>x.id===id);if(!h)return;h.noRepeat=!h.noRepeat;save();render()},
