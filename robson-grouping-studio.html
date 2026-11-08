@@ -294,10 +294,14 @@ button.nc-row:hover{background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.08)}
 .layout.railright{grid-template-columns:minmax(0,1fr) 292px}
 .seat-head{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;margin-bottom:14px}
 .sh-left{min-width:0;display:grid;gap:12px}
-@media (max-width:600px){.seat-head{flex-wrap:wrap}.seat-head>.sh-left{flex:1 1 100%}.stage-head>div:first-child{flex:1 1 100%!important;min-width:0}.chartbar{min-width:0}.chartbar .chartsel-wrap,.chartbar .qmenu{flex:1 1 auto;min-width:0}.chartbar .chartsel,.chartbar .qmenu-btn{max-width:100%;font-size:24px}}
+@media (max-width:900px){.seat-head{flex-wrap:wrap;gap:10px}.seat-head>.sh-left{flex:1 1 100%}.stage-head>div:first-child{flex:1 1 100%!important;min-width:0}.crumb-app,.crumb-sep{display:none}}
+@media (max-width:600px){.chartbar{min-width:0}.chartbar .chartsel-wrap,.chartbar .qmenu{flex:1 1 auto;min-width:0}.chartbar .chartsel,.chartbar .qmenu-btn{max-width:100%}.chart-tools .iconbtn{width:28px;height:28px}}
 .sh-left>p{margin:-6px 0 0}
-.seat-head>.legend{justify-content:flex-end;flex:none;align-self:flex-end;margin-bottom:-2px}
-@media (min-width:901px){.seat-head>.legend{width:292px}}
+.seat-head>.legrow{flex:none;align-self:flex-end;margin-bottom:-2px;display:flex;align-items:center;justify-content:flex-end;gap:8px}
+.legrow .legend{justify-content:flex-end}
+.legrow .sz-top{display:none}
+@media (min-width:901px){.seat-head>.legrow{width:292px}}
+@media (max-width:900px){.seat-head>.legrow{flex:1 1 100%;align-self:auto;justify-content:space-between;margin:0}.legrow .legend{justify-content:flex-start;gap:6px}.legrow .sz-top{display:flex;margin:0;flex:none}.szwrap>.s-zoom{display:none}}
 .seat-head .optbtn{margin-top:4px}
 @media (max-width:900px){.layout,.layout.railright{grid-template-columns:minmax(0,1fr)}}
 .layout.solo{grid-template-columns:minmax(0,1fr)}
@@ -841,7 +845,7 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--violet);
 .ht-move{display:inline-flex;gap:6px;align-items:center}
 .ht-move select{min-height:30px;font-size:13px;max-width:200px}
 .hidpill{display:inline-flex;align-items:center;gap:4px;margin-left:6px;padding:2px 8px;border-radius:999px;border:0;background:rgba(120,120,135,.14);color:var(--muted);font:inherit;font-size:11.5px;font-weight:700;cursor:pointer;white-space:nowrap}
-.siderail-item .lbl-s{display:none}
+.siderail-item .lbl-s,.top-actions .lbl-s{display:none}
 @media (max-width:720px){
   .pickbar{bottom:calc(84px + env(safe-area-inset-bottom,0px))}
   .siderail{padding-top:4px;padding-bottom:calc(4px + env(safe-area-inset-bottom,0px))}
@@ -855,17 +859,26 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--violet);
   .top-in{flex-wrap:nowrap;gap:8px;padding:6px 8px 6px 10px}
   .crumb{flex:1 1 auto;min-width:0;flex-wrap:nowrap}
   .crumb>*{min-width:0}
+  .crumb .clsel{flex:1 1 auto;min-width:0;max-width:100%;overflow:hidden}
+  .crumb .clsel select{width:100%;min-width:0;max-width:100%;text-overflow:ellipsis}
+  .top-actions .lbl-l{display:none}.top-actions .lbl-s{display:inline}
+  .top-actions .savestate:not(.err){display:none}
   .top-actions{flex:none;gap:6px}
   .top-actions .btn{padding:0 12px;min-height:34px}
   .undo-group button{width:30px}
 }
 @media (max-width:900px){
+  .sh-left>p.muted,.stage-head p.muted,.page-head p.muted,.stage .hint,.stage>.hint{font-size:13px;line-height:1.4}
+  .page-head h2,.stage-head h2{font-size:24px}
+  .chartbar .chartsel,.chartbar .qmenu-btn{font-size:24px}
+  .legend span{padding:3px 8px;font-size:12px}
   .rail .panel{padding:14px}
   .rail .panel h3,.panel h3{font-size:15.5px}
   .rail .panel small.muted,.rail .panel p.muted,.rail .panel .muted.small,.panel>p.muted.small{font-size:12px;line-height:1.35}
   .addroom .addfurn{min-height:40px;font-size:12px}
-  .stage .hint{font-size:12px}
+  .stage .hint{font-size:13px}
 }
+@media (max-width:600px){.chartbar .chartsel,.chartbar .qmenu-btn{font-size:20px}.page-head h2,.stage-head h2{font-size:21px}.sh-left>p.muted,.stage-head p.muted,.page-head p.muted,.stage .hint{font-size:12.5px}}
 .pasteprev{display:grid;gap:8px;padding:10px 12px;border-radius:12px;background:rgba(140,82,255,.07);border:1px solid rgba(140,82,255,.18)}
 .pp-row{display:flex;align-items:center;gap:10px;flex-wrap:wrap;font-size:13px}.pp-row select{min-height:32px;padding:4px 28px 4px 10px;font-size:13px;width:auto}
 .pp-ex{display:flex;flex-wrap:wrap;gap:6px;align-items:center;font-size:12px}.pp-ex span{background:#fff;border-radius:999px;padding:3px 9px;font-weight:600;box-shadow:0 1px 2px rgba(0,0,0,.06)}.pp-ex small,.pp-ex em{color:var(--muted);font-style:normal}
@@ -1609,7 +1622,7 @@ function topHTML(cls){
   return`<header class="top"><div class="top-in">
   <div class="crumb"><span class="crumb-app">RobsonEDU Grouping Studio</span><span class="crumb-sep" aria-hidden="true">/</span>
   ${S.classes.length?`<label class="clsel"><span class="sr">Class</span><select data-ch="pickClass">${S.classes.map(c=>`<option value="${c.id}"${cls&&c.id===cls.id?' selected':''}>${esc(c.name)}</option>`).join('')}</select></label>`:''}</div>
-  <div class="top-actions"><span id="saveState"${ui.tab==='groups'?' hidden':''} class="savestate ${!storageOK?'err':ui.saveState==='saving'?'busy':'ok'}" role="status" aria-live="polite">${saveLabel()}</span><div class="undo-group" role="group" aria-label="Undo and redo"><button class="iconbtn" id="btnUndo" data-act="undo" aria-label="Undo" title="Undo (Ctrl or Cmd + Z)"${hist.undo.length||saveT?'':' disabled'}>${svg('undo')}</button><button class="iconbtn" id="btnRedo" data-act="redo" aria-label="Redo" title="Redo (Shift + Ctrl or Cmd + Z)"${hist.redo.length?'':' disabled'}>${svg('redo')}</button></div><button class="btn primary" data-act="present"${cls?'':' disabled'}>${ui.tab==='stations'?svg('stations')+'Start stations':ui.tab==='groups'?'Present groups':'Present'}</button></div>
+  <div class="top-actions"><span id="saveState"${ui.tab==='groups'?' hidden':''} class="savestate ${!storageOK?'err':ui.saveState==='saving'?'busy':'ok'}" role="status" aria-live="polite">${saveLabel()}</span><div class="undo-group" role="group" aria-label="Undo and redo"><button class="iconbtn" id="btnUndo" data-act="undo" aria-label="Undo" title="Undo (Ctrl or Cmd + Z)"${hist.undo.length||saveT?'':' disabled'}>${svg('undo')}</button><button class="iconbtn" id="btnRedo" data-act="redo" aria-label="Redo" title="Redo (Shift + Ctrl or Cmd + Z)"${hist.redo.length?'':' disabled'}>${svg('redo')}</button></div><button class="btn primary" data-act="present"${cls?'':' disabled'}>${ui.tab==='stations'?svg('stations')+'<span class="lbl-l">Start stations</span><span class="lbl-s">Start</span>':ui.tab==='groups'?'<span class="lbl-l">Present groups</span><span class="lbl-s">Present</span>':'Present'}</button></div>
   </div></header>`;
 }
 function viewHTML(cls){switch(ui.tab){case'groups':return groupsHTML(cls);case'stations':return stationsHTML(cls);case'roster':return rosterHTML(cls);case'room':return roomViewHTML();case'settings':return settingsHTML();case'manage':return manageHTML();default:return arrangeHTML(cls)}}
@@ -1677,13 +1690,14 @@ function arrangeHTML(cls){
   const by=cls.columns.find(c=>c.id===o.by);
   const help=(isCat(by)&&by.options?{mixed:'Every table gets a mix of colors.',similar:'Students with the same color sit together.'}:isCat(by)?{mixed:`Every table gets a mix of ${by.name.toLowerCase()}.`,similar:`Students with the same ${by.name.toLowerCase()} sit together.`}:{mixed:'Every table gets a spread of high, middle and low.',similar:'Students are grouped in bands: highs together, lows together.'})[o.mode]||'A fresh shuffle that still follows your rules.';
   const panelOpen=true; /* Options toggle removed for now; S.settings.seatPanel kept for later */
-  return`${!openChart(cls)&&!cls.history.length&&cls.students.length&&roomOf(cls).confirmed===false&&!ui.layoutAsked?layoutAskHTML(cls):''}    <div class="seat-head"><div class="sh-left">${chartBarHTML(cls)}<p class="muted">${esc(room.name)} · ${here.length} students · ${L.seats.length} seats in ${L.groups.length} groups${hasSeats?' · '+esc(metaText(cls,cur.meta)):''}</p></div>${v.colors&&by?`<div class="legend" aria-label="Color key">${isCat(by)&&by.options?by.options.map((o,i)=>`<span><i style="background:var(--q${5+i})"></i>${esc(o)}</span>`).join(''):isCat(by)?catList(cls,by).map((c,i)=>`<span><i style="background:var(--q${i<4?i+1:0})"></i>${esc(i<4?c.name:'Other')}</span>`).slice(0,5).join(''):[1,2,3,4].map(q=>`<span class="tipbtn" tabindex="0" data-tip="${QFULL[q-1]}" aria-label="${QFULL[q-1]}"><i style="background:var(--q${q})"></i>${QABBR[q-1]}</span>`).join('')}</div>`:''}</div>
+  ui.sZoomMax=zoomMax(room);if((ui.sZoom||1)>ui.sZoomMax)ui.sZoom=ui.sZoomMax;
+  return`${!openChart(cls)&&!cls.history.length&&cls.students.length&&roomOf(cls).confirmed===false&&!ui.layoutAsked?layoutAskHTML(cls):''}    <div class="seat-head"><div class="sh-left">${chartBarHTML(cls)}<p class="muted">${esc(room.name)} · ${here.length} students · ${L.seats.length} seats in ${L.groups.length} groups${hasSeats?' · '+esc(metaText(cls,cur.meta)):''}</p></div>${(v.colors&&by)||ui.sZoomMax>1?`<div class="legrow">${v.colors&&by?`<div class="legend" aria-label="Color key">${isCat(by)&&by.options?by.options.map((o,i)=>`<span><i style="background:var(--q${5+i})"></i>${esc(o)}</span>`).join(''):isCat(by)?catList(cls,by).map((c,i)=>`<span><i style="background:var(--q${i<4?i+1:0})"></i>${esc(i<4?c.name:'Other')}</span>`).slice(0,5).join(''):[1,2,3,4].map(q=>`<span class="tipbtn" tabindex="0" data-tip="${QFULL[q-1]}" aria-label="${QFULL[q-1]}"><i style="background:var(--q${q})"></i>${QABBR[q-1]}</span>`).join('')}</div>`:''}${ui.sZoomMax>1?`<div class="s-zoom sz-top" aria-label="Seat size"><button class="sz-b sz-minus" data-act="sZoomStep" data-arg="-0.1" aria-label="Smaller seats" title="Smaller seats"${(ui.sZoom||1)<=1?' disabled':''}>−</button><button class="sz-fit sz-val"  data-act="sZoomFit" title="Back to 100%">${Math.round((ui.sZoom||1)*100)}%</button><button class="sz-b sz-plus" data-act="sZoomStep" data-arg="0.1" aria-label="Bigger seats" title="Bigger seats"${(ui.sZoom||1)>=ui.sZoomMax?' disabled':''}>+</button></div>`:''}</div>`:''}</div>
   <div class="layout railright${panelOpen?'':' solo'}">
 
   <section class="stage">
     ${chartDetailsHTML(cls)}
     ${hasSeats&&rp.list.length?`<div class="repeat-note${v.repeats?' open':''}"><button class="rn-head" data-act="toggleRepeats" aria-expanded="${!!v.repeats}"><span class="rn-ic" aria-hidden="true">↺</span><span><b>${rp.list.length} pair${rp.list.length===1?' has':'s have'}</b> been ${rp.type?'in '+TYPE_NAME[rp.type]+' groups':'grouped'} together before</span><span class="rn-link">${v.repeats?'Hide':'Show'}</span></button>${v.repeats?`<div class="rn-list">${rp.byG.map(([gi,ps])=>`<div class="rn-row"><b class="rn-t">${esc(L.groups[gi].label)}</b><span>${ps.map(p=>`<span class="rn-pair tipbtn" tabindex="0" data-tip="Together in ${esc(p.charts.join(', '))}">${esc(nameOf(cls,p.a))} + ${esc(nameOf(cls,p.b))}${p.charts.length>1?` <b>×${p.charts.length}</b>`:''}</span>`).join('')}</span></div>`).join('')}<small class="rn-hint">Hover a pair to see which chart they shared. Drag students to split them up.</small></div>`:''}</div>`:''}
-    ${tzHTML(cls,room,L,cur,qm,iss)}${pickBarHTML(cls)}<div class="szwrap">${(()=>{ui.sZoomMax=zoomMax(room);if((ui.sZoom||1)>ui.sZoomMax)ui.sZoom=ui.sZoomMax;return''})()}${ui.sZoomMax>1?`<div class="s-zoom" aria-label="Seat size"><button class="sz-b" id="sZoomMinus" data-act="sZoomStep" data-arg="-0.1" aria-label="Smaller seats" title="Smaller seats"${(ui.sZoom||1)<=1?' disabled':''}>−</button><button class="sz-fit" id="sZoomVal" data-act="sZoomFit" title="Back to 100%">${Math.round((ui.sZoom||1)*100)}%</button><button class="sz-b" id="sZoomPlus" data-act="sZoomStep" data-arg="0.1" aria-label="Bigger seats" title="Bigger seats"${(ui.sZoom||1)>=ui.sZoomMax?' disabled':''}>+</button></div>`:''}<div class="roomscroll">${roomHTML(room,L,{mode:'seat',cls,cur,qm,flag:iss.flag,animate:ui.animate})}</div></div>
+    ${tzHTML(cls,room,L,cur,qm,iss)}${pickBarHTML(cls)}<div class="szwrap">${(()=>{ui.sZoomMax=zoomMax(room);if((ui.sZoom||1)>ui.sZoomMax)ui.sZoom=ui.sZoomMax;return''})()}${ui.sZoomMax>1?`<div class="s-zoom" aria-label="Seat size"><button class="sz-b sz-minus" data-act="sZoomStep" data-arg="-0.1" aria-label="Smaller seats" title="Smaller seats"${(ui.sZoom||1)<=1?' disabled':''}>−</button><button class="sz-fit sz-val"  data-act="sZoomFit" title="Back to 100%">${Math.round((ui.sZoom||1)*100)}%</button><button class="sz-b sz-plus" data-act="sZoomStep" data-arg="0.1" aria-label="Bigger seats" title="Bigger seats"${(ui.sZoom||1)>=ui.sZoomMax?' disabled':''}>+</button></div>`:''}<div class="roomscroll">${roomHTML(room,L,{mode:'seat',cls,cur,qm,flag:iss.flag,animate:ui.animate})}</div></div>
     ${unseated.length&&hasSeats?`<div class="tray"><span class="section-label" style="color:var(--danger)">Not seated</span>${unseated.map(s=>`<div class="seat filled q${qm.get(s.id)||0}${ui.selSeat==='u:'+s.id?' picked':''}" data-seat="u:${s.id}" data-sid="${s.id}" tabindex="0" role="button"><span class="nm">${esc(dname(s))}</span></div>`).join('')}</div>`:''}
     ${hiddenTrayHTML(cls)}
     <p class="hint">${hasSeats?'Drag a student onto another seat to swap them. On a touch screen, tap one student, then tap where they should go. Double-click or double-tap a student to hide someone who dropped. Pinch the room to zoom in.':'Choose how to group on the right, then press Create chart.'}</p>
@@ -2239,7 +2253,7 @@ function zoomMax(room){const L=layoutInfo(room),A=zoomAnchors(L),first=new Set(L
     if(first.has(it.id)){const lw=(g.label||'').length*.9+.6,lh=2.1;R.push({c:a.c,lab:1,f:z=>{const ly=a.y+z*(a.top-a.y);return{x0:a.x-z*lw/2,x1:a.x+z*lw/2,y0:ly-z*lh,y1:ly}}})}}));
   const ok=z=>{const B=R.map(r=>Object.assign({c:r.c},r.f(z)));for(let i=0;i<B.length;i++)for(let j=i+1;j<B.length;j++){const a=B[i],b=B[j];if(a.c===b.c)continue;if(a.x0<b.x1-.15&&b.x0<a.x1-.15&&a.y0<b.y1-.15&&b.y0<a.y1-.15)return false}return true};
   let z=1;while(z<2&&ok(z+.05))z+=.05;return Math.round(z*100)/100}
-function setSZoom(v){ui.sZoom=Math.round(clamp(v,1,ui.sZoomMax||2)*100)/100;try{localStorage.setItem('rgs.seatZoom',ui.sZoom)}catch(e){}const o=document.getElementById('sZoomVal'),r=document.querySelector('.room.seat-mode'),mi=document.getElementById('sZoomMinus'),pl=document.getElementById('sZoomPlus');if(o)o.textContent=Math.round(ui.sZoom*100)+'%';if(r)r.style.setProperty('--pz',ui.sZoom);if(mi)mi.disabled=ui.sZoom<=1;if(pl)pl.disabled=ui.sZoom>=(ui.sZoomMax||2);clearTimeout(setSZoom.t);setSZoom.t=setTimeout(()=>{try{fitNames(document)}catch(e){}},180)}
+function setSZoom(v){ui.sZoom=Math.round(clamp(v,1,ui.sZoomMax||2)*100)/100;try{localStorage.setItem('rgs.seatZoom',ui.sZoom)}catch(e){}const r=document.querySelector('.room.seat-mode');document.querySelectorAll('.sz-val').forEach(o=>o.textContent=Math.round(ui.sZoom*100)+'%');if(r)r.style.setProperty('--pz',ui.sZoom);document.querySelectorAll('.sz-minus').forEach(b=>b.disabled=ui.sZoom<=1);document.querySelectorAll('.sz-plus').forEach(b=>b.disabled=ui.sZoom>=(ui.sZoomMax||2));clearTimeout(setSZoom.t);setSZoom.t=setTimeout(()=>{try{fitNames(document)}catch(e){}},180)}
 function setZoom(v){ui.pZoom=clamp(v,1,ui.pZoomMax||2);const d=PD(),i=d.getElementById('pZoom'),o=d.getElementById('pZoomVal');if(i&&+i.value!==ui.pZoom)i.value=ui.pZoom;if(o)o.textContent=Math.round(ui.pZoom*100)+'%';fitPresent()}
 let pan=null;function panStart(e){const st=e.target.closest&&e.target.closest('.p-stage.zoomed');if(!st||e.target.closest('button,select,input'))return;pan={st,x:e.clientX,y:e.clientY,l:st.scrollLeft,t:st.scrollTop};st.classList.add('panning');const d=st.ownerDocument;const mv=ev=>{if(!pan)return;pan.st.scrollLeft=pan.l-(ev.clientX-pan.x);pan.st.scrollTop=pan.t-(ev.clientY-pan.y)},up=()=>{if(pan)pan.st.classList.remove('panning');pan=null;d.removeEventListener('pointermove',mv);d.removeEventListener('pointerup',up)};d.addEventListener('pointermove',mv);d.addEventListener('pointerup',up)}
 if(HAS_DOM)document.addEventListener('pointerdown',e=>{if(ui.present&&!ui.pwin)panStart(e)});
