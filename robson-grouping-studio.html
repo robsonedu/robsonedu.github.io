@@ -815,7 +815,11 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--violet);
 .gsrow{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:10px}.gsbtn svg{color:#1e8e3e}.gsinfo{display:flex;align-items:center;gap:8px;flex-wrap:wrap;min-width:0}.gsinfo .gsfile{font-weight:700;font-size:13px;max-width:240px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.gsrow .gsinfo select{width:auto;max-width:180px;flex:none;min-height:32px;font-size:13px;padding-top:0;padding-bottom:0}.gsinfo{flex-direction:row}.gsinfo>*{flex:none}
 #tour-root .tour-block{position:fixed;inset:0;z-index:9000}
 #tour-root .tour-dim{position:fixed;inset:0;z-index:9001;background:rgba(18,16,30,.5)}
-#tour-root .tour-hole{position:fixed;z-index:9001;border-radius:18px;box-shadow:0 0 0 9999px rgba(18,16,30,.5),0 0 0 3px #a259ff;pointer-events:none;transition:left .25s,top .25s,width .25s,height .25s}
+#tour-root .tour-dimsvg{position:fixed;left:0;top:0;z-index:9001;pointer-events:none}
+#tour-root .tour-hole{position:fixed;z-index:9001;border-radius:18px;box-shadow:0 0 0 3px #a259ff;pointer-events:none}
+#tour-root .tour-hole.nav{border-radius:12px;box-shadow:0 0 0 3px #ff4fb8,0 0 18px 4px rgba(255,79,184,.55);animation:tourPulse 1.6s ease-in-out infinite}
+@keyframes tourPulse{50%{box-shadow:0 0 0 3px #ff4fb8,0 0 26px 8px rgba(255,79,184,.35)}}
+@media (prefers-reduced-motion:reduce){#tour-root .tour-hole.nav{animation:none}}
 #tour-root .tour-card{position:fixed;z-index:9002;background:#fff;border-radius:20px;padding:20px 20px 16px;box-shadow:0 24px 60px rgba(20,10,60,.3);color:#1d1d1f;transition:left .25s,top .25s}
 #tour-root .tour-card.center{left:50%;top:50%;transform:translate(-50%,-50%);width:min(440px,calc(100vw - 32px))!important;padding:26px 26px 18px}
 #tour-root .tour-mark{display:inline-grid;margin-bottom:12px}
@@ -2321,7 +2325,12 @@ function tourPlace(){if(ui.tour==null||!HAS_DOM)return;const i=ui.tour,st=TOUR[i
     else if(y>=ch+gap){cy=y-gap-ch;cx=Math.min(Math.max(16,x),W-cw-16)}
     else{cx=W-cw-24;cy=H-ch-24}}
   const dots=TOUR.map((_,k)=>`<i class="${k===i?'on':''}"></i>`).join('');
-  root.innerHTML=`<div class="tour-block"></div>${center?'<div class="tour-dim"></div>':hole}
+  /* dim everything except the target and the current section in the sidebar dock */
+  const holes=[];if(el){const r=el.getBoundingClientRect(),p=8;holes.push({x:Math.max(8,r.left-p),y:Math.max(8,r.top-p),x2:Math.min(W-8,r.right+p),y2:Math.min(H-8,r.bottom+p),k:''})}
+  const nav=st.tab&&document.querySelector(`.siderail-item[data-arg="${st.tab}"]`);if(nav&&nav!==el){const r=nav.getBoundingClientRect();if(r.width)holes.push({x:r.left-3,y:r.top-3,x2:r.right+3,y2:r.bottom+3,k:' nav'})}
+  const dim=`<svg class="tour-dimsvg" width="${W}" height="${H}" aria-hidden="true"><defs><mask id="tourMask"><rect width="${W}" height="${H}" fill="#fff"/>${holes.map(h=>`<rect x="${h.x}" y="${h.y}" width="${Math.max(0,h.x2-h.x)}" height="${Math.max(0,h.y2-h.y)}" rx="${h.k?12:18}" fill="#000"/>`).join('')}</mask></defs><rect width="${W}" height="${H}" fill="rgba(18,16,30,.5)" mask="url(#tourMask)"/></svg>`;
+  hole=holes.map(h=>`<div class="tour-hole${h.k}" style="left:${h.x}px;top:${h.y}px;width:${Math.max(0,h.x2-h.x)}px;height:${Math.max(0,h.y2-h.y)}px"></div>`).join('');
+  root.innerHTML=`<div class="tour-block"></div>${dim}${hole}
   <div class="tour-card${center?' center':''}" role="dialog" aria-modal="true" aria-labelledby="tourTitle" style="${center?'':`left:${cx}px;top:${cy}px;`}width:${cw}px">
     ${st.step?`<div class="tour-step"><span class="tour-num">${st.step}</span>Step ${st.step} of 5</div>`:''}
     ${center?'<span class="gmark tour-mark" aria-hidden="true"><i></i><i></i><i></i><i></i></span>':''}<h3 id="tourTitle">${st.title}</h3><p>${st.body}</p>
