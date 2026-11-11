@@ -1563,7 +1563,10 @@ function render(){NAMEC=null;try{const ac=S&&activeClass&&activeClass();if(ac)sy
 function renderNow(){
   const app=$('#app');
   applyColors();
-  if(!S){app.innerHTML=welcomeHTML();$('#present-root').innerHTML='';document.body.classList.remove('presenting');return}
+  if(!S){$('#present-root').innerHTML='';document.body.classList.remove('presenting');
+    /* first visit (or after Erase all data): add the sample class and open the tour, no landing page */
+    if(!renderNow.starting){renderNow.starting=true;try{startSession(sampleState());tourShow(0);if(!storageOK)setTimeout(()=>toast('This browser is blocking storage, so changes will last only until you close the tab.'),400)}finally{renderNow.starting=false}}
+    return}
   applyColors();
   try{syncCharts()}catch(e){}
   const cls=activeClass();
