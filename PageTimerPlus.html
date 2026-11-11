@@ -1,6 +1,19 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+<!-- Privacy-friendly analytics by Plausible: no cookies, and it never sees student names or class data -->
+<script async src="https://plausible.io/js/pa-5Fst0gD4eHLdc8P8C8P6G.js"></script>
+<script>
+  window.plausible=window.plausible||function(){(plausible.q=plausible.q||[]).push(arguments)},plausible.init=plausible.init||function(i){plausible.o=i||{}};
+  plausible.init()
+  /* RobsonEDU: count which tools get used. Only action names go out, never student or class data.
+     rTrack(name, props, once): "once" counts an action one time per page visit. */
+  window.rTrack=function(n,p,once){try{var k=n+JSON.stringify(p||{});if(once){var s=rTrack.s=rTrack.s||{};if(s[k])return;s[k]=1}p?plausible(n,{props:p}):plausible(n)}catch(e){}};
+  document.addEventListener('click',function(e){try{var a=e.target.closest&&e.target.closest('a[href]');if(!a)return;var h=a.getAttribute('href')||'';
+    if(/^mailto:/i.test(h))rTrack('Email Click');
+    else if(/\.pdf([?#]|$)/i.test(h))rTrack('PDF Download',{file:decodeURIComponent(h.split(/[?#]/)[0].split('/').pop())});
+    else if(a.closest('.tc-card'))rTrack('TeamCard Opened',{card:(a.querySelector('img')||{}).alt||''});}catch(x){}},true);
+</script>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Timer PLUS: Free Classroom Timer | RobsonEDU</title>
@@ -1361,7 +1374,7 @@ const Standard = (()=>{
       el.classList.remove('running'); el.classList.add('glow'); playThemeEnd();
     } else upd();
   }
-  function start(){ if(running) return; if(remaining <= 0) return; el.classList.add('running'); endTime = Date.now() + remaining*1000; running = true; warned = remaining <= theme.warnAt; iv = setInterval(tick, 250); }
+  function start(){ if(running) return; if(remaining <= 0) return; el.classList.add('running'); endTime = Date.now() + remaining*1000; running = true; if(window.rTrack)rTrack('Timer Started',{type:'standard'},1); warned = remaining <= theme.warnAt; iv = setInterval(tick, 250); }
   function pause(){ if(!running) return; clearInterval(iv); iv = null; running = false; remaining = Math.round((endTime - Date.now())/1000); el.classList.remove('running'); }
   function reset(){ clearInterval(iv); iv = null; running = false; remaining = duration; warned = false; upd(); el.classList.remove('running','glow'); stopThemeSounds(); }
   function setTime(sec, autostart){
@@ -1436,7 +1449,7 @@ const Turn = (()=>{
   function start(){
     if(running) return;
     if(el.classList.contains('timer-pulsate')) reset();
-    running = true; chips().forEach((c,i)=>{ if(i+1 !== currentTurn) c.classList.add('dim'); });
+    running = true; if(window.rTrack)rTrack('Timer Started',{type:'turn'},1); chips().forEach((c,i)=>{ if(i+1 !== currentTurn) c.classList.add('dim'); });
     chips()[currentTurn-1].classList.add('active'); chips()[currentTurn-1].classList.remove('dim');
     startTime = performance.now(); rafId = requestAnimationFrame(tick);
   }
@@ -1520,7 +1533,7 @@ const Bar = (()=>{
   function start(){
     if(running) return;
     if(el.classList.contains('timer-pulsate')) reset();
-    running = true; el.classList.remove('timer-pulsate');
+    running = true; if(window.rTrack)rTrack('Timer Started',{type:'bar'},1); el.classList.remove('timer-pulsate');
     rows().forEach((r,i)=>r.classList.toggle('row-active', i+1 === currentTurn));
     startTime = performance.now(); rafId = requestAnimationFrame(tick);
   }
@@ -1646,7 +1659,7 @@ const Routines = (()=>{
   function start(){
     if(running || !steps.length) return;
     if(done) reset();
-    running = true; endTime = Date.now() + remaining; elT.classList.remove('glow');
+    running = true; if(window.rTrack)rTrack('Timer Started',{type:'routines'},1); endTime = Date.now() + remaining; elT.classList.remove('glow');
     iv = setInterval(tick, 200); render();
   }
   function pause(){ if(!running) return; running = false; clearInterval(iv); iv = null; remaining = endTime - Date.now(); render(); }
@@ -1972,7 +1985,7 @@ const Stopwatch = (()=>{
   const now = () => acc + (running ? performance.now() - startAt : 0);
   const f = ms => { const t = Math.floor(ms/100), d = t % 10, s = Math.floor(t/10); return fmt(s) + '.' + d; };
   const upd = () => el.textContent = f(now());
-  function start(){ if(running) return; running = true; startAt = performance.now(); el.classList.add('running'); iv = setInterval(upd, 50); }
+  function start(){ if(running) return; running = true; if(window.rTrack)rTrack('Timer Started',{type:'stopwatch'},1); startAt = performance.now(); el.classList.add('running'); iv = setInterval(upd, 50); }
   function pause(){ if(!running) return; acc = now(); running = false; clearInterval(iv); el.classList.remove('running'); upd(); }
   function reset(){ pause(); acc = 0; laps = []; renderLaps(); upd(); }
   function lap(){ const t = now(); if(!t) return; const prev = laps.length ? laps[laps.length-1].total : 0; laps.push({total:t, split:t-prev}); renderLaps(); }

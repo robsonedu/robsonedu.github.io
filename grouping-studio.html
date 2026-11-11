@@ -1,4 +1,17 @@
 <meta charset="utf-8">
+<!-- Privacy-friendly analytics by Plausible: no cookies, and it never sees student names or class data -->
+<script async src="https://plausible.io/js/pa-5Fst0gD4eHLdc8P8C8P6G.js"></script>
+<script>
+  window.plausible=window.plausible||function(){(plausible.q=plausible.q||[]).push(arguments)},plausible.init=plausible.init||function(i){plausible.o=i||{}};
+  plausible.init()
+  /* RobsonEDU: count which tools get used. Only action names go out, never student or class data.
+     rTrack(name, props, once): "once" counts an action one time per page visit. */
+  window.rTrack=function(n,p,once){try{var k=n+JSON.stringify(p||{});if(once){var s=rTrack.s=rTrack.s||{};if(s[k])return;s[k]=1}p?plausible(n,{props:p}):plausible(n)}catch(e){}};
+  document.addEventListener('click',function(e){try{var a=e.target.closest&&e.target.closest('a[href]');if(!a)return;var h=a.getAttribute('href')||'';
+    if(/^mailto:/i.test(h))rTrack('Email Click');
+    else if(/\.pdf([?#]|$)/i.test(h))rTrack('PDF Download',{file:decodeURIComponent(h.split(/[?#]/)[0].split('/').pop())});
+    else if(a.closest('.tc-card'))rTrack('TeamCard Opened',{card:(a.querySelector('img')||{}).alt||''});}catch(x){}},true);
+</script>
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>Grouping Studio: Seating Charts &amp; Groups | RobsonEDU</title>
 <meta name="description" content="Grouping Studio: a free seating chart and group maker for teachers. Build your room once and make balanced seating charts and groups in a few clicks. No sign-in; student data stays on your device.">
@@ -1455,7 +1468,7 @@ function qDirty(c){const q=c.quick;if(q.blank||!q.groups.length)return false;con
 function afterSetGone(c){const q=c.quick;if(q.setId&&c.groupSets.some(g=>g.id===q.setId))return;const nx=c.groupSets.slice().sort((a,b)=>(b.date||0)-(a.date||0))[0];
   if(nx)Object.assign(q,{blank:false,groups:nx.groups.map(g=>g.slice()),name:nx.name,setId:nx.id,meta:nx.meta,size:nx.size||q.size,tables:nx.tables||null,tableLabels:nx.tableLabels||null,roomId:nx.roomId||null,over:0});
   else Object.assign(q,{blank:true,groups:[],name:'',setId:null,meta:null,tables:null,tableLabels:null,over:0})}
-function chartDone(cls,left,name){ui.newChart=null;ui.chartFlow=null;ui.chartEdit=null;ui.tab='arrange';ui.animate=true;save();render();scrollTo(0,0);toast(`“${name||'Chart'}” created`+(left?`. ${left} student${left>1?'s':''} didn’t fit, so drag them from Not seated.`:''))}
+function chartDone(cls,left,name){if(window.rTrack)rTrack('Chart Created');ui.newChart=null;ui.chartFlow=null;ui.chartEdit=null;ui.tab='arrange';ui.animate=true;save();render();scrollTo(0,0);toast(`“${name||'Chart'}” created`+(left?`. ${left} student${left>1?'s':''} didn’t fit, so drag them from Not seated.`:''))}
 function shuffleAskHTML(cls){const h=openChart(cls),lr=lastRecipe(cls),r=lr?lr.r:{mode:'random',crit:[]};
   return`<div class="modal-back" data-act="shCancel"><div class="modal ncmodal" role="dialog" aria-modal="true" aria-label="Shuffle this chart">
     <div class="nc-head"><div><h3>Shuffle “${esc(h?h.label||'Untitled chart':'this chart')}”?</h3><p class="muted small">This will replace the seats in this chart. Choose SAVE AS NEW CHART to preserve the original or SHUFFLE THIS CHART ANYWAY to overwrite it.</p></div><button class="iconbtn" data-act="shCancel" aria-label="Close">${svg('x')}</button></div>
@@ -2285,6 +2298,7 @@ function beep(){try{actx=actx||new(window.AudioContext||window.webkitAudioContex
 function resetTimer(cls,phase){const c=cls.stationsCfg||{};const ms0=phase==='transition'?clamp(+c.transition||60,5,600)*1000:ui.psrc==='stations'?clamp(+c.work||12,1,120)*60000:clamp(+cls.rotation.minutes||12,1,90)*60000;ui.timer={running:false,end:0,left:ms0,total:ms0}}
 function runTimer(){ui.timer.end=Date.now()+ui.timer.left;ui.timer.running=true}
 async function enterPresent(src){
+  if(window.rTrack)rTrack('Present Opened',{view:src==='stations'?'stations':'chart'});
   const cls=activeClass();if(!cls)return;
   ui.psrc=src||'chart';
   ui.pZoom=1;const rv=S.settings.presentReveal||'show';ui.pHidden=(rv==='hidden'||rv==='auto')&&ui.psrc!=='stations';ui.pSet=false;ui.pAutoReveal=rv==='auto'&&ui.psrc!=='stations';ui.pGroups=null;ui.pSnap=null;ui.present=true;ui.round=0;ui.phase='work';ui.pview='chart';ui.pAnimate=true;resetTimer(cls);ui.selSeat=null;

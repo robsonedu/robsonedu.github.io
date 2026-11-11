@@ -1,6 +1,19 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+<!-- Privacy-friendly analytics by Plausible: no cookies, and it never sees student names or class data -->
+<script async src="https://plausible.io/js/pa-5Fst0gD4eHLdc8P8C8P6G.js"></script>
+<script>
+  window.plausible=window.plausible||function(){(plausible.q=plausible.q||[]).push(arguments)},plausible.init=plausible.init||function(i){plausible.o=i||{}};
+  plausible.init()
+  /* RobsonEDU: count which tools get used. Only action names go out, never student or class data.
+     rTrack(name, props, once): "once" counts an action one time per page visit. */
+  window.rTrack=function(n,p,once){try{var k=n+JSON.stringify(p||{});if(once){var s=rTrack.s=rTrack.s||{};if(s[k])return;s[k]=1}p?plausible(n,{props:p}):plausible(n)}catch(e){}};
+  document.addEventListener('click',function(e){try{var a=e.target.closest&&e.target.closest('a[href]');if(!a)return;var h=a.getAttribute('href')||'';
+    if(/^mailto:/i.test(h))rTrack('Email Click');
+    else if(/\.pdf([?#]|$)/i.test(h))rTrack('PDF Download',{file:decodeURIComponent(h.split(/[?#]/)[0].split('/').pop())});
+    else if(a.closest('.tc-card'))rTrack('TeamCard Opened',{card:(a.querySelector('img')||{}).alt||''});}catch(x){}},true);
+</script>
 <meta charset="utf-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <title>Color Selector</title>

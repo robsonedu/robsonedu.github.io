@@ -1523,7 +1523,7 @@ const taskWheel = new Drum($('#taskCanvas'), {
 const active = () => settings.mode === 'drum' ? drum : wheel;
 
 /* ---------- Flow ---------- */
-function spin(v0) {
+function spin(v0) { if (window.rTrack) rTrack('Spin', {tool: settings.mode || 'wheel'}, 1);
   if (busy()) return;
   if (settings.mode === 'colors') { colorSpin(); return; }
   if (settings.mode === 'numbers') { numSpin(); return; }
