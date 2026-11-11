@@ -99,10 +99,42 @@
 <meta property="og:url" content="https://www.robsonedu.com/ColorsPersonality.html">
 <meta property="og:image" content="https://www.robsonedu.com/images/TRUE%20COLORS%20PersonalityBkgd.png">
 <meta name="twitter:card" content="summary_large_image">
+<script type="application/ld+json">
+{
+ "@context": "https://schema.org",
+ "@type": "WebApplication",
+ "name": "Colors Personality Assessment",
+ "url": "https://www.robsonedu.com/ColorsPersonality.html",
+ "description": "Free ranked-choice personality quiz with instant scoring in four colors: Orange, Green, Blue and Gold.",
+ "applicationCategory": "EducationalApplication",
+ "operatingSystem": "Any (web browser)",
+ "browserRequirements": "Requires a modern web browser",
+ "isAccessibleForFree": true,
+ "offers": {
+  "@type": "Offer",
+  "price": "0",
+  "priceCurrency": "USD"
+ },
+ "audience": {
+  "@type": "EducationalAudience",
+  "educationalRole": "teacher"
+ },
+ "featureList": [
+  "Ranked-choice questions",
+  "Instant scoring",
+  "Shareable result image"
+ ],
+ "publisher": {
+  "@type": "Organization",
+  "name": "RobsonEDU",
+  "url": "https://www.robsonedu.com/"
+ }
+}
+</script>
 </head>
 <body>
   <div class="wrap">
-    <div class="title">True Colors Personality Quiz</div>
+    <div class="title">Colors Personality Assessment</div>
     <p class="desc">
       Rank each set of statements with <strong>4</strong> (most like you), <strong>3</strong>, <strong>2</strong>, and <strong>1</strong> (least like you).
       Each value can be used <em>once per question</em>. <a href="https://docs.google.com/document/d/103QJAz6NErvZO7if-GUeKb3Utnu2dhTYgKIJFKnSN04/edit?usp=sharing" target="_blank" style="color: #bababaff;"> Printable version here.</a>
@@ -115,7 +147,7 @@
       <span class="chip gold">D = Gold</span>
     </div>
 
-    <div class="card" id="quizCard" role="region" aria-label="True Colors quiz">
+    <div class="card" id="quizCard" role="region" aria-label="Colors Personality Assessment">
       <form id="quizForm" novalidate></form>
 
       <div class="btns">
@@ -136,7 +168,7 @@
 
       <!-- Screenshot-friendly card: mirrors the form’s look & includes snapshots -->
       <div id="shareCard" class="share-card">
-        <div class="share-title">My True Colors Result</div>
+        <div class="share-title">My Colors Personality Result</div>
         <div class="share-line" id="shareLine"></div>
         <div class="share-grid" id="shareGrid"></div>
 
@@ -430,12 +462,12 @@
       const totals = `Orange ${r.totals.Orange}, Green ${r.totals.Green}, Blue ${r.totals.Blue}, Gold ${r.totals.Gold}`;
       const primary = r.primary.join(' / ') || '—';
       const secondary = r.secondary.join(' / ') || '—';
-      return `True Colors Result — Primary: ${primary} | Secondary: ${secondary}
+      return `Colors Personality Result — Primary: ${primary} | Secondary: ${secondary}
 Totals: ${totals}`;
     }
 
     function emailResults(r) {
-      const subject = encodeURIComponent('My True Colors Result');
+      const subject = encodeURIComponent('My Colors Personality Result');
       const body = encodeURIComponent(buildPlainSummary(r) + '\n\n(Shared from the classroom quiz)');
       window.location.href = `mailto:?subject=${subject}&body=${body}`;
     }
@@ -478,7 +510,7 @@ Totals: ${totals}`;
     function triggerDownload(dataUrl) {
       const link = document.createElement('a');
       link.href = dataUrl;
-      link.download = `true-colors-result-${new Date().toISOString().replace(/[:.]/g,'-')}.png`;
+      link.download = `colors-personality-result-${new Date().toISOString().replace(/[:.]/g,'-')}.png`;
       link.click();
     }
 
