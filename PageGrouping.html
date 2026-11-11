@@ -1,11 +1,11 @@
 <!DOCTYPE HTML>
 <html lang="en">
 <head>
-  <title>Grouping</title>
+  <title>Grouping | Grouping Studio: Seating Charts &amp; Groups</title>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
   <meta name="rating" content="child">
-  <meta name="description" content="RobsonEDU is an ad-free classroom tool for teachers and students.">
+  <meta name="description" content="Grouping Studio: a free seating chart and group maker for teachers. Balanced seating charts in a few clicks, plus grouping strategies and resources.">
   <link rel="stylesheet" href="assets/css/main.css" />
   <noscript><link rel="stylesheet" href="assets/css/noscript.css" /></noscript>
 
@@ -17,6 +17,52 @@
   <link rel="apple-touch-icon" href="images/IconCircleT%20(512%20x%20512%20px).png">
 
   <style>
+
+    /* ---------- Grouping Studio hero (same format as Timer PLUS on the Timers page) ---------- */
+    .tp-hero { display: grid; grid-template-columns: minmax(0, 1.45fr) minmax(0, 1fr); gap: 36px; align-items: center; margin: 8px 0 40px; }
+    .tp-hero-pic { display: block; border-bottom: none; text-decoration: none; }
+    .tp-slides { position: relative; aspect-ratio: 16/9; overflow: hidden; border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.28); background: #eef0f5; transition: transform 0.25s ease, box-shadow 0.25s ease; }
+    .tp-hero-pic:hover .tp-slides { transform: scale(1.015); box-shadow: 0 14px 36px rgba(0,0,0,0.32); }
+    .tp-slides img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; display: block; }
+    .tp-slides img + img { opacity: 0; animation: tpShow 18s infinite; }
+    .tp-slides img:nth-child(2) { animation-delay: 3s; }
+    .tp-slides img:nth-child(3) { animation-delay: 6s; }
+    .tp-slides img:nth-child(4) { animation-delay: 9s; }
+    .tp-slides img:nth-child(5) { animation-delay: 12s; }
+    .tp-slides img:nth-child(6) { animation-delay: 15s; animation-name: tpShowLast; }
+    @keyframes tpShow { 0% { opacity: 0; } 3.33% { opacity: 1; } 19.9% { opacity: 1; } 20%, 100% { opacity: 0; } }
+    @keyframes tpShowLast { 0% { opacity: 0; } 3.33% { opacity: 1; } 16.67% { opacity: 1; } 20%, 100% { opacity: 0; } }
+    @media (prefers-reduced-motion: reduce) { .tp-slides img + img { animation: none; } }
+    .tp-badge { display: inline-block; font-size: 0.7em; font-weight: 900; letter-spacing: 0.12em; line-height: 1.6; text-transform: uppercase; background: #f2849e; color: #fff; padding: 0.1em 0.8em; border-radius: 99px; margin-bottom: 0.8em; }
+    .tp-hero h2 { margin-bottom: 0.4em; }
+    .tp-hero ul.actions { margin-bottom: 1em; }
+    .tp-note { font-size: 0.85em; }
+    .tp-trust { font-size: 0.85em; font-weight: 700; margin: -0.4em 0 1.1em; }
+    /* ---------- Jump straight to a section ---------- */
+    .tool-row { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 12px; margin: 16px 0 48px; }
+    .tool-link { display: flex; flex-direction: column; align-items: center; text-align: center; gap: 2px; padding: 18px 8px 14px; border: solid 2px #c9c9c9; border-radius: 12px; border-bottom: solid 2px #c9c9c9; color: inherit; text-decoration: none; transition: border-color 0.2s ease, transform 0.2s ease, color 0.2s ease; }
+    .tool-link:hover { border-color: #f2849e !important; color: #f2849e !important; transform: translateY(-2px); }
+    .tool-link .icon { font-size: 1.5em; margin-bottom: 6px; border-bottom: none; }
+    .tool-link strong { font-size: 1.05em; }
+    .tool-link small { font-size: 0.75em; line-height: 1.3; opacity: 0.8; }
+    @media screen and (max-width: 980px) { .tool-row { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+    @media screen and (max-width: 800px) { .tp-hero { grid-template-columns: 1fr; gap: 20px; } }
+    @media screen and (max-width: 480px) { .tool-row { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+
+    /* ---------- Guide "app" icons, in a row under the screenshot ---------- */
+    .tp-left { display: grid; gap: 18px; }
+    .app-row { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
+    .app { display: flex; align-items: center; gap: 14px; text-decoration: none; color: inherit; padding: 10px 14px 10px 10px; border-radius: 18px; border: solid 2px #e4e4ea; border-bottom: solid 2px #e4e4ea !important; transition: border-color .2s ease, transform .2s ease; }
+    .app:hover { border-color: #c24dff !important; border-bottom-color: #c24dff !important; transform: translateY(-2px); }
+    .app-ic { flex: none; width: 60px; height: 60px; border-radius: 17px; display: grid; place-items: center; box-shadow: inset 0 1px 0 rgba(255,255,255,.45), 0 8px 18px rgba(140,82,255,.28); }
+    .app-ic svg { width: 32px; height: 32px; fill: none; stroke: #fff; stroke-width: 1.9; stroke-linecap: round; stroke-linejoin: round; }
+    .app-txt { display: flex; flex-direction: column; line-height: 1.25; min-width: 0; }
+    .app-label { font-weight: 700; font-size: 0.95em; }
+    .app-txt small { font-size: 0.75em; opacity: .75; }
+    .app-ic.guide { background: linear-gradient(145deg, #ff4fb8 0%, #c24dff 100%); }
+    .app-ic.quick { background: linear-gradient(145deg, #a259ff 0%, #3d8bff 100%); }
+    @media screen and (max-width: 800px) { .tp-left { display: contents; } .app-row { order: 3; } }
+    @media screen and (max-width: 480px) { .app-row { grid-template-columns: 1fr; } }
     /* Match PageSelectors thumbnail-card layout */
     .thumb-grid {
       display: grid;
@@ -97,18 +143,58 @@
 
         <h1 class="tight-heading">Grouping</h1>
 
-        <!-- Jump Links -->
+        <p><strong>Boost engagement and learning through the right grouping strategy.</strong> By intentionally grouping students, teachers can balance skills, foster collaboration, and create learning communities that match the purpose of each activity.</p>
+
+        <!-- Grouping Studio -->
+        <section class="tp-hero" id="studio">
+          <div class="tp-left">
+          <a class="tp-hero-pic" href="grouping-studio.html" aria-label="Open Grouping Studio: Seating Charts and Groups">
+            <div class="tp-slides">
+              <img src="images/GSHero1.jpg" alt="Grouping Studio: a seating chart with balanced tables">
+              <img src="images/GSHero2.jpg" alt="Grouping Studio: Mixed groups with balance checks" loading="lazy">
+              <img src="images/GSHero3.jpg" alt="Grouping Studio: building a room layout" loading="lazy">
+              <img src="images/GSHero4.jpg" alt="Grouping Studio: the class roster and criteria" loading="lazy">
+              <img src="images/GSHero5.jpg" alt="Grouping Studio: station rotations" loading="lazy">
+              <img src="images/GSHero6.jpg" alt="Grouping Studio: Present view with names only" loading="lazy">
+            </div>
+          </a>
+          <div class="app-row" aria-label="Guides">
+            <a class="app" href="https://docs.google.com/document/d/1jG8CeycRBgrMUP4yFEQaZ8kPCbl6VdjV5e37Nbg5SUo/edit?usp=sharing" target="_blank" rel="noopener noreferrer"><span class="app-ic guide"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 6.5C10.2 5.2 7.6 4.6 4 4.8v13c3.6-.2 6.2.4 8 1.7 1.8-1.3 4.4-1.9 8-1.7v-13c-3.6-.2-6.2.4-8 1.7z"/><path d="M12 6.5v13"/></svg></span><span class="app-txt"><span class="app-label">User Guide</span><small>Every feature, step by step</small></span></a>
+            <a class="app" href="RobsonEDU-Grouping-Studio-Quick-Start.pdf" target="_blank" rel="noopener noreferrer"><span class="app-ic quick"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="3" width="14" height="18" rx="2.5"/><path d="M12.8 7.2L9.6 12.4h3l-1.3 4.4 3.3-5.3h-3z"/></svg></span><span class="app-txt"><span class="app-label">Quick Start</span><small>One page, front and back</small></span></a>
+          </div>
+          </div>
+          <div>
+            <span class="tp-badge">New</span>
+            <h2 class="tp-title">Grouping Studio: Seating Charts &amp; Groups</h2>
+            <p><strong>Build your room once. Make balanced seating charts and groups in a few clicks.</strong> Add your roster, and Mixed, Similar or Random groups drop straight into your tables. Swap students, present names only to the class, print a copy for a sub, and run timed stations.</p>
+            <ul class="actions">
+              <li><a href="grouping-studio.html" class="button primary">Open Grouping Studio</a></li>
+            </ul>
+            <p class="tp-trust">Free. No sign-in. Student data stays on your device.</p>
+            <p class="tp-note">New here? A short tour starts the first time you open Grouping Studio, with a sample class to explore.</p>
+          </div>
+        </section>
+
+        <!-- Jump to a section -->
+        <h2 id="sections">Jump Straight to a Section</h2>
+        <div class="tool-row">
+          <a class="tool-link" href="grouping-studio.html?page=room"><span class="icon solid fa-border-all" aria-hidden="true"></span><strong>Room</strong><small>Build your room layout</small></a>
+          <a class="tool-link" href="grouping-studio.html?page=roster"><span class="icon solid fa-users" aria-hidden="true"></span><strong>Roster</strong><small>Import or paste a class</small></a>
+          <a class="tool-link" href="grouping-studio.html?page=groups"><span class="icon solid fa-random" aria-hidden="true"></span><strong>Groups</strong><small>Mixed, Similar or Random</small></a>
+          <a class="tool-link" href="grouping-studio.html?page=chart"><span class="icon solid fa-th-large" aria-hidden="true"></span><strong>Seating Chart</strong><small>Seat groups at your tables</small></a>
+          <a class="tool-link" href="grouping-studio.html?page=stations"><span class="icon solid fa-sync" aria-hidden="true"></span><strong>Stations</strong><small>Timed group rotations</small></a>
+          <a class="tool-link" href="grouping-studio.html?page=present"><span class="icon solid fa-desktop" aria-hidden="true"></span><strong>Present</strong><small>Names only, for the class</small></a>
+        </div>
+
+        <!-- More grouping resources -->
+        <h2 id="resources">More Grouping Resources</h2>
         <p><strong>Quick Jump:</strong>
           <a href="#strategies">Grouping Strategies</a> |
           <a href="#readme">Grouping README</a> |
-          <a href="#tool">Grouping Tool</a> |
+          <a href="#tool">Grouping Tool (Google Sheets)</a> |
           <a href="#fixed">Fixed Grouping</a>
         </p>
-
-        <p><strong>Boost engagement and learning through the right grouping strategy.</strong> By intentionally grouping students, teachers can balance skills, foster collaboration, and create learning communities that match the purpose of each activity.</p>
-
         <p><strong>Strategic grouping</strong> is ideal for content learning, long-term projects, and high-stakes tasks because it supports balanced skills, targeted support, and stronger outcomes. <strong>Random grouping</strong> is quick, low-prep, and useful for community-building, equity, and adaptability. A blended approach gives teachers flexibility to match the grouping strategy to the purpose.</p>
-
         <!-- Grouping Resources -->
         <div class="thumb-grid">
 
@@ -129,11 +215,11 @@
           </section>
 
           <section class="tool-card" id="tool">
-            <h2>Grouping Tool</h2>
+            <h2>Grouping Tool (Google Sheets)</h2>
             <a href="https://docs.google.com/spreadsheets/d/1AQi_dxLpq-7gbj6g01ToGMBjbi9OWa3MGvODRb2fyHY/copy" target="_blank" rel="noopener noreferrer">
               <img src="images/Grouping%20Tool%20THUMB.jpg" alt="Grouping Tool" loading="lazy" decoding="async">
             </a>
-            <p>Build strategic groups of mixed or similar ability.</p>
+            <p>The original spreadsheet version. Make a copy and build strategic groups of mixed or similar ability.</p>
           </section>
 
           <section class="tool-card" id="fixed">
