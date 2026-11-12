@@ -180,29 +180,20 @@
 	text-shadow: 0 2px 6px rgba(0, 0, 0, 0.65);
 }
 
-/* Grouping Studio tile: the image carries its own title,
-   so no dark band, overlay label or hover cover. */
-.tiles article.tile-clean > a {
-	background: transparent !important;
+/* Grouping Studio tile: its photo is lighter than the others,
+   so a darker shade keeps the white title and description readable. */
+.tiles article.tile-light h2 .tile-tag {
+	display: block;
+	margin-top: 0.35em;
 }
-.tiles article.tile-clean h2 {
-	position: absolute !important;
-	width: 1px; height: 1px;
-	overflow: hidden;
-	clip: rect(0 0 0 0);
-	white-space: nowrap;
+@media screen and (max-width: 736px) {
+	.tiles article.tile-light h2 .tile-tag {
+		white-space: normal;
+		font-size: 0.6em;
+	}
 }
-body:not(.is-touch) .tiles article.tile-clean:hover > .image:before {
-	opacity: 0 !important;
-}
-.tiles article.tile-clean > .image img {
-	transition: transform 0.35s ease;
-}
-body:not(.is-touch) .tiles article.tile-clean:hover > .image img {
-	transform: scale(1.04);
-}
-.tiles article.tile-clean {
-	box-shadow: 0 6px 18px rgba(162, 89, 255, 0.18);
+.tiles article.tile-light > a {
+	background: rgba(22, 19, 31, 0.62);
 }
 
 	</style>
@@ -418,21 +409,29 @@ body:not(.is-touch) .tiles article.tile-clean:hover > .image img {
 					     GROUPING STUDIO (featured)
 					     ========================= -->
 
-					<article class="style4 tile-clean">
+					<article class="style4 tile-light">
 
 						<span class="image">
 
 							<img
-								src="images/THUMBGroupingStudio2.jpg"
+								src="images/THUMBGroupingStudio3.jpg"
 								alt="Grouping Studio seating chart and group maker"
 							/>
 
 						</span>
 
 
-						<a href="grouping-studio.html" aria-label="Grouping Studio: Seating Charts &amp; Groups">
+						<a href="grouping-studio.html">
 
-							<h2>Grouping Studio: Seating Charts &amp; Groups</h2>
+							<h2>Grouping Studio:<br><span class="tile-tag">Seating Charts &amp; Groups</span></h2>
+
+							<div class="content">
+
+								<p>
+									New! Seating charts &amp; groups. Build your room once and make balanced seating charts and groups in a few clicks.
+								</p>
+
+							</div>
 
 						</a>
 
