@@ -14,82 +14,239 @@
     else if(/\.pdf([?#]|$)/i.test(h))rTrack('PDF Download',{file:decodeURIComponent(h.split(/[?#]/)[0].split('/').pop())});
     else if(a.closest('.tc-card'))rTrack('TeamCard Opened',{card:(a.querySelector('img')||{}).alt||''});}catch(x){}},true);
 </script>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Colors Personality Assessment for Students | RobsonEDU</title>
-  <link rel="icon" type="image/png" href="images/FaviconCircleR.png">
-  <meta name="description" content="Colors Personality Assessment: a free, ranked-choice personality quiz with instant scoring in four colors: Orange, Green, Blue and Gold. No sign-in." />
-  <style>
-    :root{
-      --c-orange:#f59e0b; --c-green:#10b981; --c-blue:#3b82f6; --c-gold:#d4af37;
-      --bg:#0b0f14; --card:#111827; --text:#e5e7eb; --muted:#9ca3af; --accent:#22d3ee;
-      --focus:#7dd3fc;
-    }
-    * { box-sizing: border-box; }
-    html,body { margin:0; background:var(--bg); color:var(--text); font-family: system-ui,-apple-system,Segoe UI,Roboto,Inter,Arial,sans-serif; }
-    .wrap { max-width: 960px; margin: 32px auto; padding: 16px; }
-    .title { font-size: 28px; font-weight: 800; letter-spacing:.2px; }
-    .desc { color: var(--muted); line-height: 1.55; }
-    .card { background: var(--card); border-radius: 16px; padding: 20px; box-shadow: 0 10px 30px rgba(0,0,0,.25); }
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+<title>Colors Personality Assessment for Students | RobsonEDU</title>
+<link rel="icon" type="image/png" href="images/FaviconCircleR.png">
+<meta name="description" content="Colors Personality Assessment: a free, ranked-choice personality quiz with instant scoring in four colors: Orange, Green, Blue and Gold. No sign-in." />
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700;800&display=swap" crossorigin="anonymous">
+<style>
+:root{
+  --bg:#f2f3f7;--surface:#fff;--surface-2:rgba(118,118,128,.10);--ink:#1d1d1f;--muted:#6e6e73;
+  --line:rgba(60,60,67,.12);--line-strong:rgba(60,60,67,.22);
+  --grad:linear-gradient(90deg,#ff4fb8 0%,#a259ff 52%,#3d8bff 100%);
+  --orange:#ff9500;--green:#30b350;--blue:#0a7aff;--gold:#ffcc00;
+  --orange-t:#fff3e0;--green-t:#e6f6ea;--blue-t:#e6f1ff;--gold-t:#fff8d1;
+  --shadow:0 1px 2px rgba(20,20,40,.04),0 10px 30px rgba(40,40,80,.07);
+  --f:-apple-system,BlinkMacSystemFont,"SF Pro Text",Figtree,"Helvetica Neue",sans-serif;
+  --fd:-apple-system,BlinkMacSystemFont,"SF Pro Display",Figtree,"Helvetica Neue",sans-serif;
+  color-scheme:light;
+}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--f);font-size:16px;line-height:1.5;-webkit-font-smoothing:antialiased}
+button{font:inherit;color:inherit;cursor:pointer}
+a{color:inherit}
+h1,h2,h3{font-family:var(--fd);margin:0;letter-spacing:-.02em;line-height:1.1;text-wrap:balance}
+p{margin:0}
+:focus-visible{outline:2px solid var(--ink);outline-offset:2px}
 
-    .legend { display:flex; gap:10px; flex-wrap:wrap; margin:8px 0 16px; }
-    .chip { padding:6px 10px; border-radius:999px; font-size:12px; font-weight:700; color:#0b0f14; white-space:nowrap; }
-    .chip.orange { background:var(--c-orange); }
-    .chip.green  { background:var(--c-green); }
-    .chip.blue   { background:var(--c-blue); }
-    .chip.gold   { background:var(--c-gold); color:#111; }
+/* top bar */
+.top{position:sticky;top:0;z-index:10;background:rgba(255,255,255,.78);backdrop-filter:saturate(180%) blur(20px);-webkit-backdrop-filter:saturate(180%) blur(20px);border-bottom:1px solid var(--line)}
+.top-in{max-width:1080px;margin:0 auto;padding:12px 20px;display:flex;align-items:center;gap:12px}
+.brand{display:flex;align-items:center;gap:10px;font-family:var(--fd);font-weight:700;font-size:17px;letter-spacing:-.01em;text-decoration:none}
+.mark{display:grid;grid-template-columns:1fr 1fr;gap:2px;width:20px;height:20px}
+.mark i{border-radius:4px}
+.mark i:nth-child(1){background:var(--orange)}.mark i:nth-child(2){background:var(--green)}.mark i:nth-child(3){background:var(--blue)}.mark i:nth-child(4){background:var(--gold)}
+.top-links{margin-left:auto;display:flex;gap:6px}
+.tlink{font-size:14px;font-weight:600;color:var(--muted);text-decoration:none;padding:6px 10px;border-radius:8px}
+.tlink:hover{color:var(--ink);background:var(--surface-2)}
 
-    .q { border:1px solid rgba(255,255,255,.06); border-radius:14px; padding:16px; margin:14px 0; }
-    .q h3 { margin:0 0 10px; font-size:18px; }
-    .opt { display:grid; grid-template-columns:1fr 120px; gap:12px; align-items:center; padding:8px 10px; border-radius:10px; }
-    .opt:nth-child(odd) { background:rgba(255,255,255,.02); }
-    select { width:100%; padding:8px 10px; border-radius:10px; border:1px solid rgba(255,255,255,.14); background:#0f172a; color:var(--text); }
-    select:focus { outline: 3px solid var(--focus); outline-offset: 2px; }
-    .q-msg { color:#fecaca; font-size:13px; margin-top:6px; display:none; }
+.wrap{max-width:760px;margin:0 auto;padding:40px 20px 80px}
+body.list .wrap{max-width:860px}
 
-    .btns { display:flex; gap:12px; margin-top:16px; flex-wrap:wrap; }
-    button { padding:10px 16px; border-radius:12px; border:0; cursor:pointer; font-weight:700; }
-    .primary { background:var(--accent); color:#002433; }
-    .ghost   { background:transparent; border:1px solid rgba(255,255,255,.14); color:var(--text); }
-    .muted   { background:transparent; color:var(--muted); border:1px dashed rgba(255,255,255,.14); }
+/* hero */
+.hero{text-align:center;margin-bottom:28px}
+.eyebrow{display:inline-flex;gap:8px;align-items:center;font-size:13px;font-weight:600;color:var(--muted);background:var(--surface);border:1px solid var(--line);padding:5px 12px;border-radius:99px;margin-bottom:18px}
+.dots{display:inline-flex;gap:4px}.dots i{width:8px;height:8px;border-radius:50%}
+.dots i:nth-child(1){background:var(--orange)}.dots i:nth-child(2){background:var(--green)}.dots i:nth-child(3){background:var(--blue)}.dots i:nth-child(4){background:var(--gold)}
+.hero h1{font-size:clamp(34px,6vw,52px);font-weight:800}
+.hero h1 .g{background:linear-gradient(90deg,var(--orange),#e5447a 35%,var(--blue) 70%,var(--green));-webkit-background-clip:text;background-clip:text;color:transparent}
+.hero p{color:var(--muted);font-size:18px;max-width:52ch;margin:12px auto 0}
 
-    /* Share tools + card */
-    .share-tools { display:none; gap:12px; margin-top:12px; flex-wrap:wrap; }
-    .share-card { 
-      display:none; 
-      margin-top:16px; 
-      border-radius:16px; 
-      padding:18px; 
-      background:linear-gradient(180deg,#0f172a, #0b1220); 
-      border:1px solid rgba(255,255,255,.06);
-      width:100%; 
-      max-width:900px; 
-      margin-left:auto; 
-      margin-right:auto;
-    }
-    .share-title { font-weight:800; font-size:20px; margin:0 0 10px; }
-    .share-line { display:flex; gap:16px; align-items:center; flex-wrap:wrap; margin:8px 0 10px; }
-    .share-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:8px; margin-top:6px; }
-    .score { background:rgba(255,255,255,.06); border-radius:10px; padding:10px; text-align:center; }
-    .score .lbl { font-size:12px; color:var(--muted); }
-    .score .val { font-size:18px; font-weight:800; margin-top:4px; }
+/* progress */
+.prog{display:flex;align-items:center;gap:14px;margin:0 4px 14px}
+body.step .wrap:not(:has(.hero)){padding-top:22px}
+.prog-txt{font-size:13px;font-weight:600;color:var(--muted);white-space:nowrap;font-variant-numeric:tabular-nums}
+.bar{flex:1;height:12px;border-radius:99px;background:rgba(255,255,255,.75);box-shadow:inset 0 0 0 1.5px rgba(0,0,0,.14),0 0 0 1.5px rgba(255,255,255,.7);position:relative;overflow:visible}
+.bar i{position:relative;display:block;height:100%;min-width:12px;background:linear-gradient(90deg,#3a3a3c,#000);border-radius:99px;transition:width .45s cubic-bezier(.2,.8,.2,1);box-shadow:0 0 10px rgba(0,0,0,.35),0 0 22px rgba(0,0,0,.22);overflow:hidden}
+.bar i::after{content:"";position:absolute;inset:0;background:linear-gradient(120deg,transparent 0%,rgba(255,255,255,.45) 35%,rgba(255,255,255,.12) 50%,transparent 65%);transform:translateX(-120%);animation:shimmer 2.2s linear infinite}
+@keyframes shimmer{to{transform:translateX(120%)}}
+@media (prefers-reduced-motion:reduce){.bar i::after{animation:none}}
 
-    .snapshots { 
-      margin-top:14px; 
-      display:grid; 
-      grid-template-columns:1fr; 
-      gap:14px; 
-    }
-    @media (min-width: 800px){ .snapshots { grid-template-columns:1fr 1fr; } }
-    .snap { background:rgba(255,255,255,.04); border:1px solid rgba(255,255,255,.06); border-radius:12px; padding:12px; }
-    .snap h4 { display:flex; align-items:center; gap:8px; margin:0 0 6px; font-size:14px; }
-    .snap p { margin:0; color:var(--muted); line-height:1.5; font-size:14px; }
+/* question card */
+.card{background:var(--surface);border-radius:22px;box-shadow:var(--shadow);border:1px solid rgba(60,60,67,.06)}
+.q{padding:30px 30px 24px}
+.qnum{font-size:13px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin-bottom:8px}
+.q h2{font-size:26px;font-weight:700}
+.howto{font-size:14px;color:var(--muted);margin-top:8px}
+.opts{display:grid;gap:10px;margin-top:22px}
+.opt{display:flex;align-items:center;gap:14px;width:100%;text-align:left;background:var(--surface);border:1.5px solid var(--line-strong);border-radius:14px;padding:15px 16px;font-size:17px;line-height:1.35;transition:border-color .15s,background .15s,transform .1s}
+.opt:hover{border-color:rgba(60,60,67,.4)}
+.opt:active{transform:scale(.99)}
+.opt .rk{flex:none;width:34px;height:34px;border-radius:50%;border:1.5px dashed var(--line-strong);display:grid;place-items:center;font-weight:800;font-size:16px;color:transparent;font-variant-numeric:tabular-nums}
+.opt.on{border-color:var(--ink);background:#fafafa}
+.opt.on .rk{border:0;background:var(--ink);color:#fff}
+.opt .tag{margin-left:auto;font-size:12px;font-weight:600;color:var(--muted);white-space:nowrap}
+.q-foot{display:flex;align-items:center;gap:10px;margin-top:22px;padding-top:18px;border-top:1px solid var(--line)}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:44px;padding:0 20px;border-radius:99px;border:1px solid var(--line-strong);background:var(--surface);font-weight:700;font-size:15px;white-space:nowrap;text-decoration:none}
+.btn:hover{background:#f6f6f8}
+.btn.primary{background:var(--ink);border-color:var(--ink);color:#fff}
+.btn.primary:hover{background:#000}
+.btn.primary[disabled]{background:#c7c7cc;border-color:#c7c7cc;cursor:default}
+.btn.plain{border-color:transparent;background:none;color:var(--muted);padding:0 10px}
+.btn.plain:hover{color:var(--ink)}
+.btn svg{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.sp{flex:1}
+.fine{text-align:center;color:var(--muted);font-size:13px;margin-top:22px}
+.fine a{color:var(--muted)}
+.lock{display:inline-flex;gap:6px;align-items:center}
+.lock svg{width:14px;height:14px;fill:none;stroke:currentColor;stroke-width:2}
 
-    .share-foot { margin-top:12px; font-size:12px; color:var(--muted); text-align:center; }
+/* list layout */
+.lq{padding:24px 26px;margin-bottom:14px}
+.lq h2{font-size:20px;display:flex;gap:12px;align-items:baseline}
+.lq h2 .n{flex:none;font-size:13px;font-weight:700;color:var(--muted);width:28px;height:28px;border-radius:50%;background:var(--surface-2);display:inline-grid;place-items:center;letter-spacing:0;transform:translateY(-2px)}
+.lq.done h2 .n{background:var(--ink);color:#fff}
+.lrow{display:grid;grid-template-columns:1fr auto;gap:16px;align-items:center;padding:11px 0;border-top:1px solid var(--line)}
+.lrow:first-of-type{margin-top:14px}
+.lrow p{font-size:16px;line-height:1.4}
+.seg{display:inline-grid;grid-template-columns:repeat(4,40px);background:var(--surface-2);border-radius:10px;padding:2px;gap:2px}
+.seg button{border:0;background:none;height:32px;border-radius:8px;font-weight:700;font-size:15px;color:var(--ink);font-variant-numeric:tabular-nums}
+.seg button[aria-pressed=true]{background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.14),0 0 0 .5px rgba(0,0,0,.04)}
+.seg button.used{color:#aeaeb2}
+.scale{display:flex;justify-content:flex-end;gap:0;font-size:11px;font-weight:600;color:var(--muted);letter-spacing:.02em;margin:-4px 0 0}
+.dock{position:sticky;bottom:16px;z-index:5;margin-top:10px;display:flex;align-items:center;gap:14px;padding:10px 10px 10px 20px;border-radius:99px;background:rgba(255,255,255,.82);backdrop-filter:saturate(180%) blur(20px);-webkit-backdrop-filter:saturate(180%) blur(20px);box-shadow:0 8px 30px rgba(40,40,80,.14);border:1px solid rgba(255,255,255,.9)}
+.dock .prog-txt{color:var(--ink)}
+.dock .bar{max-width:280px}
 
-    .footer { color: var(--muted); font-size: 12px; margin-top: 18px; text-align: center; }
-  </style>
+/* results */
+.res{padding:36px 32px 28px;text-align:center;overflow:hidden;position:relative}
+.res-orb{width:120px;height:120px;border-radius:50%;margin:0 auto 18px;position:relative;box-shadow:0 18px 40px -10px var(--c)}
+.res-orb::after{content:"";position:absolute;inset:0;border-radius:50%;background:radial-gradient(circle at 32% 28%,rgba(255,255,255,.55),transparent 55%)}
+.res .kick{font-size:13px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.res h2{font-size:clamp(38px,7vw,56px);font-weight:800;margin-top:6px}
+.res .sub{color:var(--muted);font-size:18px;margin-top:8px}
+.res .sub b{color:var(--ink)}
+.bars{display:grid;gap:12px;margin:28px auto 0;max-width:520px;text-align:left}
+.brow{display:grid;grid-template-columns:70px 1fr 34px;gap:12px;align-items:center;font-size:15px;font-weight:600}
+.brow .tr{height:12px;border-radius:99px;background:rgba(60,60,67,.08);overflow:hidden}
+.brow .tr i{display:block;height:100%;border-radius:99px}
+.brow .v{text-align:right;font-variant-numeric:tabular-nums;color:var(--muted)}
+.snaps{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:18px}
+.snap{border-radius:18px;padding:18px;background:var(--t);text-align:left}
+.snap h3{font-size:17px;display:flex;align-items:center;gap:8px}
+.snap h3 i{width:12px;height:12px;border-radius:50%;background:var(--c)}
+.snap p{font-size:14.5px;color:#3a3a3c;margin-top:6px;line-height:1.45}
+.snaps.lit .snap{opacity:.55}
+.snaps.lit .snap.pri,.snaps.lit .snap.sec{opacity:1}
+.snap.pri,.snap.sec{outline:3px solid var(--c)!important;outline-offset:-3px;box-shadow:0 10px 26px -12px var(--c)}
+.snap .you{margin-left:auto;font-size:11px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:#fff;background:var(--ink);border-radius:99px;padding:3px 9px}
+.snap.sec .you{background:#fff;color:var(--ink)}
+.actions{display:flex;flex-wrap:wrap;gap:10px;justify-content:center;margin-top:20px}
+.sec-h{font-size:13px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin:30px 4px 0}
 
+
+/* intro / name */
+.intro{padding:30px;text-align:left}
+.intro label{display:block;font-size:13px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin-bottom:8px}
+.intro input{width:100%;font:inherit;font-size:20px;font-weight:600;padding:14px 16px;border-radius:14px;border:1.5px solid var(--line-strong);background:#fff;outline:none}
+.intro input:focus{border-color:var(--ink)}
+.intro .row{display:flex;gap:10px;align-items:center;margin-top:18px}
+/* teacher menu */
+.tmenu{position:relative}
+.tbtn{border:1px solid var(--line-strong);background:#fff;border-radius:99px;font-size:13px;font-weight:700;padding:5px 12px;display:inline-flex;gap:6px;align-items:center}
+.tbtn svg{width:17px;height:17px}
+.tpop{position:absolute;right:0;top:calc(100% + 8px);width:260px;background:rgba(255,255,255,.96);backdrop-filter:blur(20px);border:1px solid var(--line);border-radius:16px;box-shadow:0 18px 40px rgba(20,20,50,.16);padding:6px;display:none}
+.tmenu.open .tpop{display:block}
+.tpop button{display:block;width:100%;text-align:left;border:0;background:none;padding:10px 12px;border-radius:10px}
+.tpop button:hover{background:var(--surface-2)}
+.tpop b{display:block;font-size:15px}
+.tpop span{display:block;font-size:13px;color:var(--muted);line-height:1.35}
+.tpop .hd{font-size:11px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--muted);padding:6px 12px 2px}
+/* name on results */
+.nm{display:inline-block;margin-top:14px;padding:8px 22px;border-radius:16px;border:3px solid var(--sec);background:var(--sec-t);font-family:var(--fd);font-weight:800;font-size:clamp(34px,8vw,46px);letter-spacing:-.02em;color:var(--pri);line-height:1.2;max-width:100%;overflow-wrap:anywhere}
+.partial{display:inline-block;margin-top:14px;font-size:13px;font-weight:600;color:#8a5a00;background:rgba(255,204,0,.18);border-radius:99px;padding:4px 12px}
+
+/* results styles */
+.stylesw{display:flex;align-items:center;justify-content:center;gap:10px;margin:0 0 14px;font-size:13px;font-weight:700;color:var(--muted)}
+.seg2{display:inline-flex;background:var(--surface-2);border-radius:10px;padding:2px;gap:2px}
+.seg2 button{border:0;background:none;padding:6px 14px;border-radius:8px;font-weight:700;font-size:13px}
+.seg2 button[aria-pressed=true]{background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.14)}
+.artA svg,.artB svg,.matC svg{display:block;width:100%;height:100%}
+.artA{width:230px;height:281px;margin:0 auto;border-radius:20px;overflow:hidden;box-shadow:0 22px 44px -18px rgba(20,20,40,.45),0 0 0 1px rgba(0,0,0,.06);transform:rotate(-2deg)}
+.nmA{margin-top:-24px;position:relative;box-shadow:0 8px 20px -8px rgba(0,0,0,.25)}
+.resB{padding:0;text-align:left}
+.artB{height:260px;border-bottom:4px solid #1d1d1f}
+.bBody{padding:0 30px 28px}
+.nmB{margin-top:-34px;position:relative;box-shadow:0 8px 20px -8px rgba(0,0,0,.25);background:#fff}
+.bGrid{display:grid;grid-template-columns:1fr 1.2fr;gap:28px;align-items:center;margin-top:14px}
+.resB .kick{text-align:left}.resB h2{margin-top:4px}.resB .bars{margin:0}
+.resB .actions{justify-content:flex-start}.resB .partial{margin-top:18px}
+.resC{background:#faf8f3}
+.frameC{width:290px;margin:0 auto;padding:14px;background:var(--sec);border-radius:6px;box-shadow:0 26px 50px -22px rgba(20,20,40,.55),inset 0 0 0 2px rgba(0,0,0,.18)}
+.matC{background:#fffdf7;padding:16px;box-shadow:inset 0 2px 6px rgba(0,0,0,.18)}
+.matC svg{aspect-ratio:360/440;height:auto}
+.placard{display:inline-block;margin:26px auto 0;padding:14px 26px;background:#fff;border-left:6px solid var(--sec);box-shadow:0 2px 10px rgba(0,0,0,.08);text-align:left;max-width:100%}
+.plName{font-family:var(--fd);font-weight:800;font-size:34px;letter-spacing:-.02em;line-height:1.1;overflow-wrap:anywhere}
+.plTitle{font-size:16px;margin-top:4px}.plMed{font-size:13px;color:var(--muted)}
+
+/* hand-drawn marker loop (secondary color) */
+.mk{position:relative;display:inline-block}
+.mk>svg.loop{position:absolute;inset:-18px -30px;width:calc(100% + 60px);height:calc(100% + 36px);overflow:visible;pointer-events:none}
+.loop path{fill:none;stroke-linecap:round;stroke-linejoin:round;vector-effect:non-scaling-stroke}
+.nmB{margin:0!important;border:0!important;background:#fff!important;transform:rotate(-2deg);padding:6px 18px!important;border-radius:6px!important}
+.nmWrap{display:inline-block;margin:-30px 0 26px 26px;position:relative}
+
+
+/* "what it means" prompt: only shows while the color descriptions are off-screen */
+.bLeft{position:relative}
+.jump{position:absolute;right:0;top:-31px;display:none;flex-direction:column;align-items:center;gap:14px;border:0;background:none;padding:0;color:var(--ink)}
+.jump.show{display:flex}
+.bLeft:has(.jump.show) h2{padding-right:72px}
+.jump .jc{width:46px;height:46px;border-radius:50%;background:var(--ink);color:#fff;display:grid;place-items:center;box-shadow:0 8px 20px -6px rgba(0,0,0,.45);animation:nudge 1.8s ease-in-out infinite}
+.jump svg{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:2.4;stroke-linecap:round;stroke-linejoin:round}
+.jump .jl{font-size:11px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:var(--muted);text-align:center;line-height:1.15}
+@keyframes nudge{0%,100%{transform:translateY(0)}50%{transform:translateY(5px)}}
+@media (prefers-reduced-motion:reduce){.jump .jc{animation:none}}
+
+/* color words in the result headline */
+.cw{color:var(--cc)}
+/* marker loop: thin white edge so it shows on any art color */
+/* teacher menu: force results locked until 5 questions */
+.tpop button.off b{color:var(--muted)}
+.snap-shot .actions,.snap-shot .jump{display:none!important}
+.toast{position:fixed;left:50%;bottom:24px;transform:translate(-50%,20px);opacity:0;z-index:50;background:var(--ink);color:#fff;font-size:14px;font-weight:600;padding:11px 18px;border-radius:99px;box-shadow:0 10px 30px rgba(0,0,0,.25);transition:opacity .25s,transform .25s;pointer-events:none;max-width:calc(100vw - 32px);text-align:center}
+.toast.show{opacity:1;transform:translate(-50%,0)}
+@media (max-width:400px){.brand{font-size:15px;gap:8px;white-space:nowrap}.top-in{padding:12px 14px;gap:8px}.tlink{font-size:13px;padding:6px 6px}}
+@media (max-width:600px){
+  .wrap{padding:24px 14px 60px}
+  .hero{margin-bottom:20px}.hero p{font-size:16px}
+  .eyebrow{margin-bottom:14px}
+  .q{padding:22px 18px 18px}.q h2{font-size:22px}
+  .opt{font-size:16px;padding:13px 14px}
+  .opt .tag{display:none}
+  .lq{padding:18px 16px}
+  .lrow{grid-template-columns:1fr;gap:8px}
+  .seg{grid-template-columns:repeat(4,1fr);width:100%}
+  .dock{bottom:10px;padding-left:16px}
+  .res{padding:28px 18px 22px}
+  .res-orb{width:88px;height:88px}
+  .snaps{grid-template-columns:1fr;gap:20px}
+
+  .mk>svg.loop{inset:-16px -22px!important;width:calc(100% + 44px)!important}
+  .tlink.hide-sm{display:none}
+  .q-foot .btn.plain span{display:none}
+  .intro{padding:22px 18px}
+  .artB{height:200px}.bBody{padding:0 18px 22px}
+  .bGrid{grid-template-columns:1fr;gap:16px}
+  .artA{width:200px;height:244px}.frameC{width:240px;padding:11px}.matC{padding:12px}.plName{font-size:30px}
+  .tbtn span{display:none}
+  .dock .bar{display:none}
+  .fine .dotsep{display:none}.fine .lock{display:flex;justify-content:center;margin-bottom:4px}
+}
+</style>
 <!-- Search & link previews -->
 <link rel="canonical" href="https://www.robsonedu.com/ColorsPersonality.html">
 <meta property="og:type" content="website">
@@ -133,443 +290,336 @@
 </script>
 </head>
 <body>
-  <div class="wrap">
-    <div class="title">Colors Personality Assessment</div>
-    <p class="desc">
-      Rank each set of statements with <strong>4</strong> (most like you), <strong>3</strong>, <strong>2</strong>, and <strong>1</strong> (least like you).
-      Each value can be used <em>once per question</em>. <a href="https://docs.google.com/document/d/103QJAz6NErvZO7if-GUeKb3Utnu2dhTYgKIJFKnSN04/edit?usp=sharing" target="_blank" style="color: #bababaff;"> Printable version here.</a>
-    </p>
+<header class="top"><div class="top-in">
+  <a class="brand" href="index.html"><span class="mark"><i></i><i></i><i></i><i></i></span>Colors Personality</a>
+  <nav class="top-links">
+    <a class="tlink hide-sm" href="https://docs.google.com/document/d/103QJAz6NErvZO7if-GUeKb3Utnu2dhTYgKIJFKnSN04/edit?usp=sharing" target="_blank" rel="noopener">Printable version</a>
+    <a class="tlink" href="index.html">RobsonEDU</a>
+    <div class="tmenu" id="tmenu"><button class="tbtn" id="tbtn" aria-haspopup="true"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"><path d="M10 2.5c.6 3.6 1.9 4.9 5.5 5.5-3.6.6-4.9 1.9-5.5 5.5-.6-3.6-1.9-4.9-5.5-5.5 3.6-.6 4.9-1.9 5.5-5.5z"/><path d="M15.5 13v4M13.5 15h4" stroke-linecap="round"/></svg><span>Teacher</span></button>
+      <div class="tpop" role="menu">
+        <div class="hd">Teacher tools</div>
+        <button id="tPreview" role="menuitem"><b>Preview a sample card</b><span>Shows a made-up result for training or demos.</span></button>
+        <button id="tForce" role="menuitem"><b>Show results now</b><span>Out of time? Unlocks after 5 questions.</span></button>
+      </div></div>
+  </nav>
+</div></header>
 
-    <div class="legend" aria-hidden="true">
-      <span class="chip orange">A = Orange</span>
-      <span class="chip green">B = Green</span>
-      <span class="chip blue">C = Blue</span>
-      <span class="chip gold">D = Gold</span>
+<main class="wrap" id="app"></main>
+
+<script src="https://unpkg.com/html-to-image@1.11.11/dist/html-to-image.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/dom-to-image-more@3.3.0/dist/dom-to-image-more.min.js"></script>
+<script>
+const COLORS={A:'Orange',B:'Green',C:'Blue',D:'Gold'};
+const CV={Orange:['var(--orange)','var(--orange-t)'],Green:['var(--green)','var(--green-t)'],Blue:['var(--blue)','var(--blue-t)'],Gold:['var(--gold)','var(--gold-t)']};
+const SNAP={Orange:'Witty, bold, spontaneous; loves variety, action, freedom.',Green:'Analytical, logical, curious; values competence and ideas.',Blue:'Warm, empathetic, idealistic; values harmony and relationships.',Gold:'Dependable, organized, responsible; values structure and tradition.'};
+const Q=[
+["When I make decisions:",["I do it quickly and go with the first impressions.","I think about it, consider the options and then decide.","I listen to my feelings and consider how my decisions will affect others.","I take it seriously and always try to make the right decision."]],
+["The best way for others to show me they care about me is to:",["Do fun things with me.","Give me space to be myself.","Spend time with me doing whatever.","Do what I want to do; not let me down or go back on their word."]],
+["When I’m with my friends, I like to provide:",["The excitement; the fun; the jokes.","Questions; answers; a logical way of looking at things.","Concern for others; a lot of caring.","The planning; a sense of security; a good standard."]],
+["I like to:",["Act on a moment’s notice; do spontaneous things.","Provide answers or give thought to people’s questions.","Help maintain a sense of harmony and togetherness.","Be responsible, dependable, and helpful to others."]],
+["One thing I am really good at is:",["Acting bravely.","Thinking.","Being caring.","Organizing."]],
+["Friends who know me best would say that I am:",["Competitive.","Reserved, thoughtful.","Caring, friendly.","Neat, extra prepared."]],
+["My basic approach to life is:",["To take one day at a time and have fun.","To figure out a purpose in life.","To help others and be happy and succeed.","To plan for the future and make it as good as possible."]],
+["When I am feeling discouraged or “down in the dumps”:",["I often become irritable, mad, or sometimes rude.","I withdraw, don’t talk very much, and try to think my way out of the problem.","I feel emotional, sad, and usually like to talk it over with someone close to me.","I try to figure out what’s causing the problem and fix it."]],
+["I feel good about myself when:",["I can do things that are difficult.","I can solve problems or figure things out.","I can help other people.","I am appreciated or rewarded for things I do."]],
+["Teachers who saw me when I wasn’t at my best might describe me as:",["Rowdy or a little wild.","Judgemental.","Talkative.","Someone who wants things my way; dominant; bossy."]],
+["Teachers who like me (and in whose class I do well) would describe me as:",["Charming, social, confident, someone who is fun to have around.","Thoughtful, someone who has good answers, someone who likes to figure out problems.","Nice, friendly, someone who gets along with other students and is helpful to the teacher and others.","Neat, organized, prepared, someone who does assignments and is a good student."]]
+];
+const L=['A','B','C','D'];
+const P=new URLSearchParams(location.search);
+const layout='step';
+document.body.classList.add(layout);
+let ans=Q.map(()=>({})); // {A:4,...}
+let cur=0, view='quiz', name='', started=false;
+const TEXT={Orange:'#e07a00',Green:'#1f9a3e',Blue:'#0a6fe8',Gold:'#c99a00'};
+const app=document.getElementById('app');
+const esc=s=>s.replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
+const doneQ=a=>Object.keys(a).length===4;
+const nDone=()=>ans.filter(doneQ).length;
+const ico={back:'<svg viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6"/></svg>',next:'<svg viewBox="0 0 24 24"><path d="M9 6l6 6-6 6"/></svg>',undo:'<svg viewBox="0 0 24 24"><path d="M3 7v6h6"/><path d="M21 17a9 9 0 0 0-15-6.7L3 13"/></svg>',lock:'<svg viewBox="0 0 24 24"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>',dl:'<svg viewBox="0 0 24 24"><path d="M12 3v12"/><path d="M7 10l5 5 5-5"/><path d="M5 21h14"/></svg>',copy:'<svg viewBox="0 0 24 24"><rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg>',mail:'<svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 7l9 6 9-6"/></svg>'};
+
+function hero(){return `<section class="hero">
+  <div class="eyebrow"><span class="dots"><i></i><i></i><i></i><i></i></span>11 questions · about 5 minutes</div>
+  <h1>Discover your <span class="g">true colors</span></h1>
+  <p>For each question, rank the four statements from most like you to least like you. There are no wrong answers.</p>
+</section>`}
+function fine(){return `<p class="fine"><span class="lock">${ico.lock}Free, no sign-in. Answers stay on this device.</span><span class="dotsep"> · </span><a href="https://docs.google.com/document/d/103QJAz6NErvZO7if-GUeKb3Utnu2dhTYgKIJFKnSN04/edit?usp=sharing" target="_blank" rel="noopener">Printable version</a></p>`}
+
+function renderIntro(){
+  app.innerHTML=hero()+`
+  <section class="card intro">
+    <label for="nm">Your name</label>
+    <input id="nm" type="text" autocomplete="off" maxlength="40" placeholder="First name" value="${esc(name)}">
+    <div class="row"><span class="sp"></span><button class="btn primary" id="go">Start${ico.next}</button></div>
+  </section>`+fine();
+  const i=document.getElementById('nm');
+  const start=()=>{name=i.value.trim();started=true;renderStep();scrollTo(0,0)};
+  go.onclick=start; i.onkeydown=e=>{if(e.key==='Enter')start()};
+}
+function renderStep(){
+  const a=ans[cur], used=Object.keys(a).length;
+  const nextRank=4-used;
+  const tags={4:'Most like me',1:'Least like me'};
+  app.innerHTML=`
+  <div class="prog"><span class="prog-txt">Question ${cur+1} of ${Q.length}</span><span class="bar"><i style="width:${(nDone()/Q.length)*100}%"></i></span></div>
+  <section class="card q">
+    <div class="qnum">Question ${cur+1}</div>
+    <h2>${esc(Q[cur][0])}</h2>
+    <p class="howto">${used<4?`Tap the statement that is <b>${nextRank===4?'most':nextRank===1?'least':'next most'}</b> like you.`:'All set. Tap a statement to change it.'}</p>
+    <div class="opts">${Q[cur][1].map((t,i)=>{const r=a[L[i]];return `<button class="opt ${r?'on':''}" data-l="${L[i]}"><span class="rk">${r||''}</span><span>${esc(t)}</span>${r&&tags[r]?`<span class="tag">${tags[r]}</span>`:''}</button>`}).join('')}</div>
+    <div class="q-foot">
+      <button class="btn" id="back">${ico.back}Back</button>
+      <button class="btn plain" id="clr" ${used?'':'style="visibility:hidden"'}>${ico.undo}<span>Start over</span></button>
+      <span class="sp"></span>
+      <button class="btn primary" id="next" ${used<4?'disabled':''}>${cur===Q.length-1?'See my color':'Next'}${ico.next}</button>
     </div>
-
-    <div class="card" id="quizCard" role="region" aria-label="Colors Personality Assessment">
-      <form id="quizForm" novalidate></form>
-
-      <div class="btns">
-        <button type="button" class="primary" id="submitBtn">See My Color</button>
-        <button type="button" class="ghost" id="resetBtn">Reset</button>
-        <!-- Preview button for quick testing -->
-        <button type="button" class="muted" id="previewBtn" title="Show a sample result card">Preview Card</button>
-      </div>
-
-      <div id="errorBox" class="err" role="alert" style="color:#fecaca;display:none;margin-top:8px;"></div>
-
-      <!-- Download / Copy / Email -->
-      <div id="shareTools" class="share-tools">
-        <button type="button" class="ghost" id="downloadImgBtn">Download Image</button>
-        <button type="button" class="ghost" id="copySummaryBtn">Copy Summary</button>
-        <button type="button" class="ghost" id="emailBtn">Email My Results</button>
-      </div>
-
-      <!-- Screenshot-friendly card: mirrors the form’s look & includes snapshots -->
-      <div id="shareCard" class="share-card">
-        <div class="share-title">My Colors Personality Result</div>
-        <div class="share-line" id="shareLine"></div>
-        <div class="share-grid" id="shareGrid"></div>
-
-        <!-- Color snapshots baked into the card (two-column, same blurbs as form) -->
-        <div class="snapshots">
-          <div class="snap">
-            <h4><span class="chip orange">Orange</span> Snapshot</h4>
-            <p>Witty, bold, spontaneous; loves variety, action, freedom.</p>
-          </div>
-          <div class="snap">
-            <h4><span class="chip green">Green</span> Snapshot</h4>
-            <p>Analytical, logical, curious; values competence and ideas.</p>
-          </div>
-          <div class="snap">
-            <h4><span class="chip blue">Blue</span> Snapshot</h4>
-            <p>Warm, empathetic, idealistic; values harmony and relationships.</p>
-          </div>
-          <div class="snap">
-            <h4><span class="chip gold">Gold</span> Snapshot</h4>
-            <p>Dependable, organized, responsible; values structure and tradition.</p>
-          </div>
-        </div>
-
-        <div class="share-foot">Tip: Screenshot this card or use “Download Image”.</div>
-      </div>
-
-      <div class="desc" style="margin-top:10px">No sign-in required. Scoring and sharing happen locally in your browser. <a href="https://docs.google.com/document/d/103QJAz6NErvZO7if-GUeKb3Utnu2dhTYgKIJFKnSN04/edit?usp=sharing" target="_blank" style="color: #bababaff;"> Print and learn more about personality colors.</a></div>
-    </div>
-
-    <div class="card" style="margin-top:16px">
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
-        <div>
-          <h3 style="margin:0 0 6px">Color Snapshots</h3>
-          <p class="desc"><span class="chip orange">Orange</span> Witty, bold, spontaneous; loves variety, action, freedom.</p>
-          <p class="desc"><span class="chip green">Green</span> Analytical, logical, curious; values competence and ideas.</p>
-          <p class="desc"><span class="chip blue">Blue</span> Warm, empathetic, idealistic; values harmony and relationships.</p>
-          <p class="desc"><span class="chip gold">Gold</span> Dependable, organized, responsible; values structure and tradition.</p>
-        </div>
-        <div>
-          <h3 style="margin:0 0 6px">What You’ll Get</h3>
-          <p class="desc">Instant primary & secondary color, totals for each color, a shareable summary card, image download (same layout), and a one-click email draft.</p>
-        </div>
-      </div>
-      <div class="footer">Built for classroom use—no data leaves the page unless the user emails it.</div>
-    </div>
-  </div>
-
-  <!-- Export DOM to image (pixel-perfect card) -->
-  <script src="https://unpkg.com/html-to-image@1.11.11/dist/html-to-image.min.js"></script>
-  <!-- Fallback library in case the first one errors out on some browsers -->
-  <script src="https://cdn.jsdelivr.net/npm/dom-to-image-more@3.3.0/dist/dom-to-image-more.min.js"></script>
-
-  <script>
-    const letterToColor = { A: 'Orange', B: 'Green', C: 'Blue', D: 'Gold' };
-
-    const questions = [
-      { title:"1) When I make decisions:", opts:{
-        A:"I do it quickly and go with the first impressions.",
-        B:"I think about it, consider the options and then decide.",
-        C:"I listen to my feelings and consider how my decisions will affect others.",
-        D:"I take it seriously and always try to make the right decision."
-      }},
-      { title:"2) The best way for others to show me they care about me is to:", opts:{
-        A:"Do fun things with me.",
-        B:"Give me space to be myself.",
-        C:"Spend time with me doing whatever.",
-        D:"Do what I want to do; not let me down or go back on their word."
-      }},
-      { title:"3) When I’m with my friends, I like to provide:", opts:{
-        A:"The excitement; the fun; the jokes.",
-        B:"Questions; answers; a logical way of looking at things.",
-        C:"Concern for others; a lot of caring.",
-        D:"The planning; a sense of security; a good standard."
-      }},
-      { title:"4) I like to:", opts:{
-        A:"Act on a moment’s notice; do spontaneous things.",
-        B:"Provide answers or give thought to people’s questions.",
-        C:"Help maintain a sense of harmony and togetherness.",
-        D:"Be responsible, dependable, and helpful to others."
-      }},
-      { title:"5) One thing I am really good at is:", opts:{
-        A:"Acting bravely.",
-        B:"Thinking.",
-        C:"Being caring.",
-        D:"Organizing."
-      }},
-      { title:"6) Friends who know me best would say that I am:", opts:{
-        A:"Competitive.",
-        B:"Reserved, thoughtful.",
-        C:"Caring, friendly.",
-        D:"Neat, extra prepared."
-      }},
-      { title:"7) My basic approach to life is:", opts:{
-        A:"To take one day at a time and have fun.",
-        B:"To figure out a purpose in life.",
-        C:"To help others and be happy and succeed.",
-        D:"To plan for the future and make it as good as possible."
-      }},
-      { title:"8) When I am feeling discouraged or “down in the dumps”:", opts:{
-        A:"I often become irritable, mad, or sometimes rude.",
-        B:"I withdraw, don’t talk very much, and try to think my way out of the problem.",
-        C:"I feel emotional, sad, and usually like to talk it over with someone close to me.",
-        D:"I try to figure out what’s causing the problem and fix it."
-      }},
-      { title:"9) I feel good about myself when:", opts:{
-        A:"I can do things that are difficult.",
-        B:"I can solve problems or figure things out.",
-        C:"I can help other people.",
-        D:"I am appreciated or rewarded for things I do."
-      }},
-      { title:"10) Teachers at school who saw me when I wasn’t on my best might describe me as:", opts:{
-        A:"Rowdy or a little wild.",
-        B:"Judgemental.",
-        C:"Talkative.",
-        D:"Someone who wants things my way; dominant; bossy."
-      }},
-      { title:"11) Teachers at school (who like me and in whose class I do pretty well) would probably describe me as:", opts:{
-        A:"Charming, social, confident, someone who is fun to have around.",
-        B:"Thoughtful, someone who has good answers, someone who likes to figure out problems.",
-        C:"Nice, friendly, someone who gets along with other students and is helpful to the teacher and others.",
-        D:"Neat, organized, prepared, someone who does assignments and is a good student."
-      }},
-    ];
-
-    const quizForm = document.getElementById('quizForm');
-    const errorBox = document.getElementById('errorBox');
-    const submitBtn = document.getElementById('submitBtn');
-    const resetBtn = document.getElementById('resetBtn');
-    const previewBtn = document.getElementById('previewBtn');
-
-    const shareTools = document.getElementById('shareTools');
-    const shareCard = document.getElementById('shareCard');
-    const shareLine = document.getElementById('shareLine');
-    const shareGrid = document.getElementById('shareGrid');
-    const downloadImgBtn = document.getElementById('downloadImgBtn');
-    const copySummaryBtn = document.getElementById('copySummaryBtn');
-    const emailBtn = document.getElementById('emailBtn');
-
-    function makeSelect(name, letter) {
-      const sel = document.createElement('select');
-      sel.name = `${name}_${letter}`;
-      sel.setAttribute('aria-label', `${name} option ${letter} rank`);
-      const blank = document.createElement('option');
-      blank.value = ''; blank.textContent = '—';
-      sel.appendChild(blank);
-      [4,3,2,1].forEach(v => {
-        const o = document.createElement('option');
-        o.value = String(v); o.textContent = v;
-        sel.appendChild(o);
-      });
-      sel.addEventListener('change', () => updateQuestion(name));
-      return sel;
+  </section>`+fine();
+  app.querySelectorAll('.opt').forEach(b=>b.onclick=()=>{
+    const l=b.dataset.l;
+    if(a[l]){ // remove this and anything ranked after it
+      const r=a[l]; for(const k in a) if(a[k]<=r) delete a[k];
+    } else {
+      a[l]=4-Object.keys(a).length;
+      if(Object.keys(a).length===3){const last=L.find(x=>!a[x]);a[last]=1;}
     }
+    renderStep();
+  });
+  back.onclick=()=>{if(cur===0){renderIntro()}else{cur--;renderStep()}scrollTo(0,0)};
+  clr.onclick=()=>{ans[cur]={};renderStep()};
+  next.onclick=()=>{if(cur<Q.length-1){cur++;renderStep();scrollTo(0,0)}else{showResults();scrollTo(0,0)}};
+}
 
-    // Live per-question validation + disable duplicates
-    function updateQuestion(qName) {
-      const letters = ['A','B','C','D'];
-      const chosenCount = {};
-      let hasDup = false;
+function renderList(){
+  app.innerHTML=hero()+Q.map((q,qi)=>{const a=ans[qi];const usedR=Object.values(a);
+    return `<section class="card lq ${doneQ(a)?'done':''}"><h2><span class="n">${qi+1}</span>${esc(q[0])}</h2>
+    ${q[1].map((t,i)=>`<div class="lrow"><p>${esc(t)}</p><div class="seg" role="group" aria-label="Rank">${[4,3,2,1].map(v=>`<button data-q="${qi}" data-l="${L[i]}" data-v="${v}" aria-pressed="${a[L[i]]===v}" class="${a[L[i]]!==v&&usedR.includes(v)?'used':''}">${v}</button>`).join('')}</div></div>`).join('')}
+    </section>`}).join('')+`
+  <div class="dock"><span class="prog-txt">${nDone()} of ${Q.length} answered</span><span class="bar"><i style="width:${nDone()/Q.length*100}%"></i></span><span class="sp"></span><button class="btn primary" id="see" ${nDone()<Q.length?'disabled':''}>See my color</button></div>`+fine();
+  app.querySelectorAll('.seg button').forEach(b=>b.onclick=()=>{
+    const a=ans[+b.dataset.q],l=b.dataset.l,v=+b.dataset.v;
+    for(const k in a) if(a[k]===v) delete a[k];
+    a[l]=v; renderList();
+  });
+  see.onclick=showResults;
+}
 
-      letters.forEach(L => {
-        const el = quizForm.elements[`${qName}_${L}`];
-        el.style.outline = '';
-        const val = el.value;
-        if (val) chosenCount[val] = (chosenCount[val] || 0) + 1;
-      });
+function compute(){
+  const t={Orange:0,Green:0,Blue:0,Gold:0};
+  const done=ans.filter(doneQ);done.forEach(a=>L.forEach(l=>t[COLORS[l]]+=a[l]));
+  const s=Object.entries(t).sort((x,y)=>y[1]-x[1]);
+  const top=s[0][1], primary=s.filter(x=>x[1]===top).map(x=>x[0]);
+  let secondary=[]; if(primary.length===1){const n=s.find(x=>x[1]<top)?.[1];secondary=s.filter(x=>x[1]===n).map(x=>x[0]);}
+  return {t,primary,secondary,n:done.length};
+}
+// ---------- Cubist art generator (original, seeded by name + scores) ----------
+const HEX={Orange:'#ff9500',Green:'#30b350',Blue:'#0a7aff',Gold:'#ffcc00'};
+const SHADE={Orange:['#ffb347','#e07a00'],Green:['#6fd18a','#1f8a3a'],Blue:['#5aa6ff','#0857c7'],Gold:['#ffe066','#e0a800']};
+function rng(seedStr){let h=1779033703^seedStr.length;for(let i=0;i<seedStr.length;i++){h=Math.imul(h^seedStr.charCodeAt(i),3432918353);h=h<<13|h>>>19}
+  return function(){h=Math.imul(h^h>>>16,2246822507);h=Math.imul(h^h>>>13,3266489909);h^=h>>>16;return (h>>>0)/4294967296}}
+function weightedPicker(r,R){ // area share ~ score^2, plus a little cream and ink
+  const cs=['Orange','Green','Blue','Gold'];const w=cs.map(c=>Math.pow(r.t[c]||1,2));
+  const tot=w.reduce((a,b)=>a+b,0);
+  return ()=>{const x=R();if(x<.08)return '#f3ead8';if(x<.12)return '#1d1d1f';let y=R()*tot;for(let i=0;i<4;i++){y-=w[i];if(y<=0){const c=cs[i];const v=R();return v<.6?HEX[c]:SHADE[c][v<.8?0:1]}}return HEX[cs[0]]}}
+function splitPoly(poly,a,b){ // split convex polygon by line a->b
+  const side=p=>(b[0]-a[0])*(p[1]-a[1])-(b[1]-a[1])*(p[0]-a[0]);
+  const L=[],Rt=[];for(let i=0;i<poly.length;i++){const p=poly[i],q=poly[(i+1)%poly.length],sp=side(p),sq=side(q);
+    (sp>=0?L:Rt).push(p);if(sp*sq<0){const t=sp/(sp-sq);const x=[p[0]+t*(q[0]-p[0]),p[1]+t*(q[1]-p[1])];L.push(x);Rt.push(x)}}
+  return [L,Rt].filter(x=>x.length>2)}
+const area=p=>Math.abs(p.reduce((s,a,i)=>{const b=p[(i+1)%p.length];return s+a[0]*b[1]-b[0]*a[1]},0))/2;
+const pts=p=>p.map(x=>x[0].toFixed(1)+','+x[1].toFixed(1)).join(' ');
+const defs=id=>`<defs><filter id="paper${id}" x="0" y="0" width="100%" height="100%"><feTurbulence type="fractalNoise" baseFrequency=".9" numOctaves="2" seed="3" result="n"/><feColorMatrix in="n" type="saturate" values="0"/><feComponentTransfer><feFuncA type="table" tableValues="0 .10"/></feComponentTransfer><feComposite in2="SourceGraphic" operator="in"/><feBlend in="SourceGraphic" mode="multiply"/></filter>
+<pattern id="hatch${id}" width="7" height="7" patternUnits="userSpaceOnUse" patternTransform="rotate(35)"><rect width="7" height="7" fill="#f3ead8"/><path d="M0 0v7" stroke="#1d1d1f" stroke-width="2"/></pattern>
+<pattern id="dots${id}" width="9" height="9" patternUnits="userSpaceOnUse"><rect width="9" height="9" fill="#fff"/><circle cx="4.5" cy="4.5" r="2" fill="#1d1d1f"/></pattern></defs>`;
 
-      letters.forEach(L => {
-        const el = quizForm.elements[`${qName}_${L}`];
-        const val = el.value;
-        if (val && chosenCount[val] > 1) {
-          hasDup = true;
-          el.style.outline = '3px solid #fb7185';
-          el.style.outlineOffset = '2px';
-          el.title = 'Duplicate rank in this question. Choose each rank once.';
-        } else {
-          el.title = '';
-        }
-      });
+// Fractured composition: planes split by straight cuts, bold ink lines, a few motifs
+function artComposition(r,who,W=600,H=420){
+  const R=rng((who||'x')+JSON.stringify(r.t)),id=Math.floor(R()*1e6);
+  let polys=[[[0,0],[W,0],[W,H],[0,H]]];
+  for(let k=0;k<22;k++){polys.sort((a,b)=>area(b)-area(a));const p=polys.shift();
+    const cx=p.reduce((s,x)=>s+x[0],0)/p.length,cy=p.reduce((s,x)=>s+x[1],0)/p.length,ang=R()*Math.PI;
+    const a=[cx-Math.cos(ang)*999,cy-Math.sin(ang)*999],b=[cx+Math.cos(ang)*999,cy+Math.sin(ang)*999];polys.push(...splitPoly(p,a,b))}
+  const P=r.primary[0],S=r.secondary[0]||r.primary[1]||P,pc=HEX[P],sc=HEX[S];
+  const cs=['Orange','Green','Blue','Gold'],tot=cs.reduce((a,c)=>a+(r.t[c]||0),0)||1;
+  // motifs (sized now so their area counts toward the color shares)
+  const sx=W*(.25+R()*.5),sy=H*(.25+R()*.3),sr=H*(.17+R()*.06);
+  const ex=W*(R()<.5?.18:.78),ey=H*(.62+R()*.18);
+  const gx=W*(.64+R()*.18),gy=H*.6;
+  // two small planes become pattern texture; everything else is shared out by score
+  const bySize=polys.map((p,i)=>[i,area(p)]).sort((a,b)=>a[1]-b[1]);
+  const pat={};pat[bySize[Math.floor(bySize.length*.35)][0]]=`url(#hatch${id})`;pat[bySize[Math.floor(bySize.length*.5)][0]]=`url(#dots${id})`;
+  const patA=Object.keys(pat).reduce((a,i)=>a+area(polys[i]),0);
+  const colorA=W*H-patA;
+  const target={},got={};cs.forEach(c=>{target[c]=colorA*(r.t[c]||0)/tot;got[c]=0});
+  // credit the motifs: the sun is primary, the moon is secondary; they sit on top of the planes,
+  // so take their area out of the plane budget proportionally
+  // measure what is actually visible: sample a grid, find each point's plane, skip points under the sun or moon
+  const inPoly=(q,x,y)=>{let sg=0;for(let i=0;i<q.length;i++){const a=q[i],b=q[(i+1)%q.length],c=(b[0]-a[0])*(y-a[1])-(b[1]-a[1])*(x-a[0]);if(c!==0){const t=Math.sign(c);if(sg&&t!==sg)return false;sg=t}}return true};
+  const mr=H*.19,rot=-Math.PI/2+(R()-.5)*.5,gD='M'+Array.from({length:10},(_,k)=>{const rr=k%2?mr*.46:mr,a=rot+k*Math.PI/5;return (gx+rr*Math.cos(a)).toFixed(1)+' '+(gy+rr*Math.sin(a)).toFixed(1)}).join('L')+'z';
+  let inGuitar;try{if(typeof document==='undefined')throw 0;const cx=document.createElement('canvas').getContext('2d'),g2=new Path2D(gD);inGuitar=(x,y)=>cx.isPointInPath(g2,x,y)}catch(e){inGuitar=(x,y)=>(x-gx)**2+(y-gy)**2<=(mr*.62)**2}
+  const vis=polys.map(()=>0),zone=polys.map(()=>0);let sunV=0,gV=0,N=0;const st=6;const inZone=(x,y)=>x<W*.56&&y>H*.55;
+  for(let y=st/2;y<H;y+=st)for(let x=st/2;x<W;x+=st){N++;
+    if((x-sx)**2+(y-sy)**2<=sr*sr){sunV++;continue}
+    if(inGuitar(x,y)){gV++;continue}
+    if((x-ex-6)**2+(y-ey)**2<=225){gV++;continue}
+    if(Math.abs(x-ex)<=46&&Math.abs(y-ey)<=19*(1-((x-ex)/46)**2)){N--;continue}
+    for(let i=0;i<polys.length;i++)if(inPoly(polys[i],x,y)){vis[i]++;if(inZone(x,y))zone[i]++;break}}
+  const visTot=N-Object.keys(pat).reduce((a,i)=>a+vis[i],0);
+  cs.forEach(c=>{target[c]=visTot*(r.t[c]||0)/tot;got[c]=0});
+  {const b=visTot*.025;target[P]+=b;cs.filter(c=>c!==P).forEach(c=>target[c]-=b/3)} // primary always reads largest
+  got[P]+=sunV;got[S]+=gV;
+  const fill={},col={};
+  const order=polys.map((p,i)=>i).filter(i=>!pat[i]).sort((a,b)=>vis[b]-vis[a]);
+  const ok=(i,c)=>!(c===S&&S!==P&&zone[i]>0);
+  order.forEach(i=>{let best=null,bd=-1e18;cs.forEach(c=>{if(!(r.t[c]>0)||!ok(i,c))return;const d=target[c]-got[c];if(d>bd){bd=d;best=c}});col[i]=best;got[best]+=vis[i]});
+  // refine: move or swap planes while it brings every color closer to its share
+  const err=()=>cs.reduce((e,c)=>e+(got[c]-target[c])**2,0);
+  for(let pass=0;pass<4;pass++){
+    order.forEach(i=>{cs.forEach(c=>{if(c===col[i]||!(r.t[c]>0)||!ok(i,c))return;const e0=err(),o=col[i];got[o]-=vis[i];got[c]+=vis[i];if(err()<e0)col[i]=c;else{got[c]-=vis[i];got[o]+=vis[i]}})});
+    order.forEach(i=>order.forEach(j=>{if(col[i]===col[j]||!ok(i,col[j])||!ok(j,col[i]))return;const e0=err(),ci=col[i],cj=col[j];got[ci]+=vis[j]-vis[i];got[cj]+=vis[i]-vis[j];if(err()<e0){col[i]=cj;col[j]=ci}else{got[ci]-=vis[j]-vis[i];got[cj]-=vis[i]-vis[j]}}));
+  }
+  order.forEach(i=>{const c=col[i],v=R();fill[i]=v<.55?HEX[c]:SHADE[c][v<.8?0:1]});
+  let s=`<svg viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid slice">${defs(id)}<g filter="url(#paper${id})">`;
+  polys.forEach((p,i)=>{s+=`<polygon points="${pts(p)}" fill="${pat[i]||fill[i]}"/>`});
+  polys.forEach(p=>s+=`<polygon points="${pts(p)}" fill="none" stroke="#1d1d1f" stroke-width="4" stroke-linejoin="round"/>`);
+  s+=`<circle cx="${sx}" cy="${sy}" r="${sr}" fill="${pc}" stroke="#1d1d1f" stroke-width="5"/><path d="M${sx-sr} ${sy}A${sr} ${sr} 0 0 0 ${sx+sr} ${sy}z" fill="${SHADE[P][1]}" opacity=".55"/>`;
+  s+=`<path d="M${ex-46} ${ey}Q${ex} ${ey-38} ${ex+46} ${ey}Q${ex} ${ey+38} ${ex-46} ${ey}z" fill="#fff" stroke="#1d1d1f" stroke-width="5"/><circle cx="${ex+6}" cy="${ey}" r="15" fill="${sc}" stroke="#1d1d1f" stroke-width="4"/><circle cx="${ex+8}" cy="${ey-2}" r="5" fill="#1d1d1f"/>`;
+  s+=`<path d="${gD}" fill="${sc}" stroke="#1d1d1f" stroke-width="5" stroke-linejoin="round"/>`;
+  return s+`</g></svg>`;
+}
 
-      letters.forEach(L => {
-        const sel = quizForm.elements[`${qName}_${L}`];
-        Array.from(sel.options).forEach(opt => {
-          if (!opt.value) return;
-          const val = opt.value;
-          const thisHasVal = (sel.value === val);
-          opt.disabled = !thisHasVal && !!chosenCount[val];
-        });
-      });
+// Cubist portrait: frontal + profile face split down the middle, offset eyes
+function artPortrait(r,who,W=360,H=440){
+  const R=rng((who||'x')+'p'+JSON.stringify(r.t)),pick=weightedPicker(r,R),id=Math.floor(R()*1e6),j=(n)=>(R()-.5)*n;
+  const P=r.primary[0],S=r.secondary[0]||r.primary[1]||P,pc=HEX[P],sc=HEX[S],pd=SHADE[P][1],sl=SHADE[S][0];
+  const others=['Orange','Green','Blue','Gold'].filter(c=>c!==P&&c!==S);
+  let s=`<svg viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid slice">${defs(id)}<g filter="url(#paper${id})">`;
+  // background planes
+  let polys=[[[0,0],[W,0],[W,H],[0,H]]];
+  for(let k=0;k<7;k++){polys.sort((a,b)=>area(b)-area(a));const p=polys.shift();const cx=W*(.2+R()*.6),cy=H*(.2+R()*.6),ang=R()*Math.PI;
+    polys.push(...splitPoly(p,[cx-Math.cos(ang)*999,cy-Math.sin(ang)*999],[cx+Math.cos(ang)*999,cy+Math.sin(ang)*999]))}
+  const bg=[HEX[others[0]],SHADE[others[0]][0],HEX[others[1]],SHADE[others[1]][1],'#f3ead8',sl,`url(#hatch${id})`,'#f3ead8'];
+  polys.forEach((p,i)=>s+=`<polygon points="${pts(p)}" fill="${bg[i%bg.length]}" stroke="#1d1d1f" stroke-width="3"/>`);
+  const cx=W/2+j(16);
+  // neck + shoulders
+  s+=`<path d="M${cx-34} ${H*.7}L${cx+30} ${H*.7}L${cx+40} ${H*.84}L${W*.95} ${H}L${W*.05} ${H}L${cx-46} ${H*.84}z" fill="${sc}" stroke="#1d1d1f" stroke-width="5" stroke-linejoin="round"/>`;
+  s+=`<path d="M${cx} ${H*.84}L${cx-60} ${H}M${cx} ${H*.84}L${cx+70} ${H}" stroke="#1d1d1f" stroke-width="4"/>`;
+  // hair
+  s+=`<path d="M${cx-110} ${H*.42}C${cx-130} ${H*.12} ${cx+60} ${H*.02} ${cx+112} ${H*.24}L${cx+120} ${H*.5}L${cx+60} ${H*.3}L${cx-60} ${H*.24}z" fill="#1d1d1f"/>`;
+  // face: left (profile) half and right (frontal) half
+  const top=H*.2,chin=H*.72;
+  s+=`<path d="M${cx} ${top}C${cx-70} ${top} ${cx-96} ${H*.34} ${cx-92} ${H*.48}L${cx-118} ${H*.5}L${cx-90} ${H*.56}C${cx-80} ${H*.66} ${cx-40} ${chin} ${cx} ${chin}z" fill="${pc}" stroke="#1d1d1f" stroke-width="5" stroke-linejoin="round"/>`;
+  s+=`<path d="M${cx} ${top}C${cx+66} ${top} ${cx+92} ${H*.36} ${cx+86} ${H*.5}C${cx+80} ${H*.64} ${cx+44} ${chin} ${cx} ${chin}z" fill="${pd}" stroke="#1d1d1f" stroke-width="5"/>`;
+  // a plane of secondary across the cheek
+  s+=`<path d="M${cx+8} ${H*.47}L${cx+80} ${H*.42}L${cx+70} ${H*.6}L${cx+14} ${H*.62}z" fill="${sc}" stroke="#1d1d1f" stroke-width="3" opacity=".9"/>`;
+  // eyes: profile eye (left, higher) and frontal eye (right, lower)
+  const ey1=H*.37+j(10),ey2=H*.43+j(10);
+  s+=`<path d="M${cx-74} ${ey1}L${cx-40} ${ey1-12}L${cx-38} ${ey1+12}z" fill="#fff" stroke="#1d1d1f" stroke-width="4" stroke-linejoin="round"/><circle cx="${cx-48}" cy="${ey1}" r="6" fill="#1d1d1f"/>`;
+  s+=`<path d="M${cx+18} ${ey2}Q${cx+44} ${ey2-24} ${cx+70} ${ey2}Q${cx+44} ${ey2+20} ${cx+18} ${ey2}z" fill="#fff" stroke="#1d1d1f" stroke-width="4"/><circle cx="${cx+44}" cy="${ey2}" r="10" fill="${sc}" stroke="#1d1d1f" stroke-width="3"/><circle cx="${cx+45}" cy="${ey2}" r="4" fill="#1d1d1f"/>`;
+  // brows
+  s+=`<path d="M${cx-80} ${ey1-22}L${cx-30} ${ey1-30}M${cx+16} ${ey2-28}Q${cx+46} ${ey2-44} ${cx+76} ${ey2-26}" stroke="#1d1d1f" stroke-width="5" fill="none" stroke-linecap="round"/>`;
+  // nose: long line down the split + nostril
+  s+=`<path d="M${cx} ${H*.32}L${cx-6} ${H*.54}L${cx+16} ${H*.56}" stroke="#1d1d1f" stroke-width="5" fill="none" stroke-linejoin="round" stroke-linecap="round"/>`;
+  // lips two-tone
+  const my=H*.63;
+  s+=`<path d="M${cx-30} ${my}Q${cx-10} ${my-12} ${cx} ${my-4}Q${cx+12} ${my-12} ${cx+34} ${my}Q${cx} ${my+16} ${cx-30} ${my}z" fill="#e5447a" stroke="#1d1d1f" stroke-width="4"/><path d="M${cx-30} ${my}L${cx+34} ${my}" stroke="#1d1d1f" stroke-width="3"/>`;
+  // ear swirl
+  s+=`<path d="M${cx+86} ${H*.44}c18 -6 22 26 2 30" fill="${pc}" stroke="#1d1d1f" stroke-width="4"/>`;
+  return s+`</g></svg>`;
+}
 
-      const qDiv = document.getElementById(`${qName}_container`);
-      let msg = qDiv.querySelector('.q-msg');
-      if (!msg) { msg = document.createElement('div'); msg.className = 'q-msg'; qDiv.appendChild(msg); }
-      if (hasDup) { msg.textContent = 'Each rank (4, 3, 2, 1) must be used once in this question.'; msg.style.display = 'block'; }
-      else { msg.textContent = ''; msg.style.display = 'none'; }
-    }
+let RSTYLE='B'; // Banner chosen
+function marker(color,seed,w=5,sq=1){
+  const R=rng('mk'+seed);
+  const loop=(t0,turns,n,rx,ry,dx,dy,wob)=>{const pts=[];for(let i=0;i<=n;i++){const t=t0+turns*Math.PI*2*i/n,c=Math.cos(t),s=Math.sin(t),k=1+(R()-.5)*wob;
+      pts.push([50+dx+rx*k*Math.sign(c)*Math.abs(c)**sq,50+dy+ry*k*Math.sign(s)*Math.abs(s)**sq+i/n*2.5]);}
+    let d=`M${pts[0][0].toFixed(2)},${pts[0][1].toFixed(2)}`;
+    for(let i=0;i<pts.length-1;i++){const p0=pts[i-1]||pts[i],p1=pts[i],p2=pts[i+1],p3=pts[i+2]||p2;
+      d+=` C${(p1[0]+(p2[0]-p0[0])/6).toFixed(2)},${(p1[1]+(p2[1]-p0[1])/6).toFixed(2)} ${(p2[0]-(p3[0]-p1[0])/6).toFixed(2)},${(p2[1]-(p3[1]-p1[1])/6).toFixed(2)} ${p2[0].toFixed(2)},${p2[1].toFixed(2)}`;}
+    return d;};
+  const t0=Math.PI*(1.05+R()*.15); // start at upper left
+  const P=(d,sw,op,extra='')=>`<path d="${d}" stroke="${color}" stroke-width="${sw}" opacity="${op}" ${extra}/>`;
+  let g='';
+  // main pass + second pass slightly off
+  g+=P(loop(t0,1.12,28,48,45,0,0,.025),w*.62,.95);
+  g+=P(loop(t0+.25,1.0,28,47,43.5,.8,1.4,.03),w*.38,.8);
+  // dry-brush hairlines
+  g+=P(loop(t0-.1,1.05,28,49.5,47,-.4,-.6,.03),.9,.7);
+  g+=P(loop(t0+.6,.9,24,46,42,1.2,2,.03),.7,.55,'stroke-dasharray="14 3 2 4 30 2"');
+  g+=P(loop(t0,1.0,28,48.6,46,.3,.9,.02),.6,.6,'stroke-dasharray="3 2 40 3 1 3"');
+  // heavy tapered swipe where the pen lands
+  [[.22,w*1.5,.95],[.17,w*1.9,.95],[.11,w*2.2,.9]].forEach(([tr,sw,op],i)=>g+=P(loop(t0+.02*i,tr,8,47.5-i*.4,44.5-i*.6,-.2,-.8+i*.3,.01),sw,op));
+  g+=P(loop(t0-.08,.3,10,49,46.5,0,-1.6,.01),w*.5,.7);
+  return `<svg class="loop" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">${g}</svg>`;
+}
+function showResults(sample){
+  view='res';
+  const r=sample||compute(), p=r.primary[0], max=r.n*4||44;
+  if(!r.n){return renderStep();}
+  const sc=r.secondary[0]||r.primary[1]||p;
+  const who=sample?(name||'Jordan'):name;
+  const nm=cls=>who?`<div class="nm ${cls||''}" style="--pri:${TEXT[p]};--sec:${CV[sc][0]};--sec-t:${CV[sc][1]}">${esc(who)}</div>`:'';
+  const cw=c=>`<span class="cw" style="--cc:${TEXT[c]}">${c}</span>`;
+  const head=r.primary.map(cw).join(' + ');
+  const sub=r.secondary.length?`with a splash of ${(a=>a.length>1?a.slice(0,-1).join(', ')+' and '+a[a.length-1]:a[0])(r.secondary.map(c=>`<b>${cw(c)}</b>`))}`:'A true blend';
+  const bars=`<div class="bars">${['Orange','Green','Blue','Gold'].map(c=>`<div class="brow"><span>${c}</span><span class="tr"><i style="width:${r.t[c]/max*100}%;background:${CV[c][0]}"></i></span><span class="v">${r.t[c]}</span></div>`).join('')}</div>`;
+  const note=sample?'<div class="partial">Sample card</div>':r.n<Q.length?`<div class="partial">Based on ${r.n} of ${Q.length} questions</div>`:'';
+  const acts=`<div class="actions"><button class="btn primary" id="dlBtn">${ico.dl}Download image</button><button class="btn" id="cpBtn">${ico.copy}Copy summary</button><button class="btn" id="emBtn">${ico.mail}Email results</button></div>`;
+  let card;
+  if(RSTYLE==='A') card=`<section class="card res resA" id="shareCard">
+      <div class="artA">${artPortrait(r,who)}</div>${nm('nmA')}
+      <div class="kick" style="margin-top:16px">Primary color</div><h2>${head}</h2><p class="sub">${sub}</p>${bars}${note}${acts}</section>`;
+  else if(RSTYLE==='B') card=`<section class="card res resB" id="shareCard">
+      <div class="artB">${artComposition(r,who,900,320)}</div>
+      <div class="bBody">${who?`<div class="nmWrap mk">${nm('nmB')}${marker(CV[sc][0],who+p)}</div>`:''}
+        <div class="bGrid"><div class="bLeft"><button class="jump" id="jump" type="button" aria-label="See what your colors mean"><span class="jc"><svg viewBox="0 0 24 24"><path d="M12 5v14"/><path d="M6 13l6 6 6-6"/></svg></span><span class="jl">What it<br>means</span></button><div class="kick">Primary color</div><h2>${head}</h2><p class="sub">${sub}</p></div><div class="bRight">${bars}</div></div>
+        ${note}${acts}</div></section>`;
+  else card=`<section class="card res resC" id="shareCard">
+      <div class="frameC" style="--sec:${CV[sc][0]}"><div class="matC">${artPortrait(r,who)}</div></div>
+      <div class="placard" style="--sec:${CV[sc][0]}">
+        ${who?`<div class="plName" style="color:${TEXT[p]}">${esc(who)}</div>`:''}
+        <div class="plTitle"><i>${head}${r.secondary.length?' with '+r.secondary.join(' and '):''}</i>, ${new Date().getFullYear()}</div>
+        <div class="plMed">Personality on paper · ${r.n} questions</div>
+      </div>${bars}${note}${acts}</section>`;
+  const sw=`<div class="stylesw"><span>Card style</span><div class="seg2">${['A','B','C'].map(k=>`<button aria-pressed="${RSTYLE===k}" data-k="${k}">${{A:'Portrait',B:'Banner',C:'Gallery'}[k]}</button>`).join('')}</div></div>`;
+  app.innerHTML=card+`
+  <div class="sec-h" id="meaning">Your colors</div>
+  <div class="snaps lit">${['Orange','Green','Blue','Gold'].sort((a,b)=>(r.primary.includes(b)*2+r.secondary.includes(b))-(r.primary.includes(a)*2+r.secondary.includes(a))).map(c=>{const k=r.primary.includes(c)?'pri':r.secondary.includes(c)?'sec':'';return `<div class="snap ${k}" style="--c:${CV[c][0]};--t:${CV[c][1]}"><h3><i></i>${c}${k?`<span class="you">${k==='pri'?'Primary':'Secondary'}</span>`:''}</h3><p>${SNAP[c]}</p></div>`}).join('')}</div>
+  <p class="fine"><button class="btn plain" onclick="ans=Q.map(()=>({}));cur=0;name='';renderIntro();scrollTo(0,0)">${ico.undo}Take it again</button></p>`;
+  // ---- result actions: download image, copy summary, email (nothing is sent anywhere by the page) ----
+  const summary=()=>{const t=['Orange','Green','Blue','Gold'].map(c=>`${c} ${r.t[c]}`).join(', ');
+    return `${who?who+"'s ":''}Colors Personality Result\nPrimary: ${r.primary.join(' / ')}${r.secondary.length?` | Secondary: ${r.secondary.join(' / ')}`:''}\nTotals: ${t}${r.n<Q.length?`\n(Based on ${r.n} of ${Q.length} questions)`:''}`};
+  document.getElementById('dlBtn').onclick=async e=>{const b=e.currentTarget,node=document.getElementById('shareCard'),lbl=b.innerHTML;b.disabled=true;b.innerHTML=`${ico.dl}Making image…`;
+    const opts={pixelRatio:2,cacheBust:true,backgroundColor:'#ffffff',filter:n=>!(n.classList&&(n.classList.contains('actions')||n.classList.contains('jump')))};
+    const file=`colors-personality-${(who||'result').toLowerCase().replace(/[^a-z0-9]+/g,'-')}.png`;
+    node.classList.add('snap-shot');
+    try{if(document.fonts&&document.fonts.ready)await document.fonts.ready;
+      let url;try{url=await window.htmlToImage.toPng(node,opts)}catch(x){url=await window.domtoimage.toPng(node,opts)}
+      const a=document.createElement('a');a.href=url;a.download=file;document.body.appendChild(a);a.click();a.remove();rTrack('Colors Download Image');
+    }catch(x){toast('Could not make the image in this browser. Try a screenshot.')}
+    node.classList.remove('snap-shot');
+    b.disabled=false;b.innerHTML=lbl};
+  document.getElementById('cpBtn').onclick=async e=>{const t=summary();let ok=false;
+    try{await navigator.clipboard.writeText(t);ok=true}catch(x){const ta=document.createElement('textarea');ta.value=t;document.body.appendChild(ta);ta.select();try{ok=document.execCommand('copy')}catch(y){}ta.remove()}
+    toast(ok?'Summary copied':'Could not copy. Try again.');if(ok)rTrack('Colors Copy Summary')};
+  document.getElementById('emBtn').onclick=()=>{rTrack('Colors Email Results');location.href=`mailto:?subject=${encodeURIComponent(`${who?who+"'s":'My'} Colors Personality Result`)}&body=${encodeURIComponent(summary()+'\n\nShared from www.robsonedu.com')}`};
+  if(!sample)rTrack(r.n<Q.length?'Colors Results Early':'Colors Quiz Finished',null,true);
+  // show the "what it means" prompt only while the descriptions are off-screen
+  const jb=document.getElementById('jump'),mn=document.getElementById('meaning');
+  if(jb&&mn){jb.onclick=()=>{mn.scrollIntoView({behavior:'smooth',block:'start'});jb.classList.remove('show')};
+    const vis=()=>{const r=mn.getBoundingClientRect();return r.top<innerHeight-60};
+    if(!vis())jb.classList.add('show');
+    if('IntersectionObserver' in window){const io=new IntersectionObserver(es=>{if(document.querySelector('.snap-shot'))return;if(es.some(e=>e.isIntersecting)){jb.classList.remove('show');io.disconnect()}});io.observe(mn)}}
+  app.querySelectorAll('.seg2 button').forEach(b=>b.onclick=()=>{RSTYLE=b.dataset.k;showResults(sample)});
+}
 
-    function render() {
-      quizForm.innerHTML = '';
-      questions.forEach((q, idx) => {
-        const qName = `Q${idx+1}`;
-        const qDiv = document.createElement('div');
-        qDiv.className = 'q';
-        qDiv.id = `${qName}_container`;
-
-        const h = document.createElement('h3');
-        h.textContent = q.title;
-        qDiv.appendChild(h);
-
-        Object.entries(q.opts).forEach(([letter, text]) => {
-          const row = document.createElement('div');
-          row.className = 'opt';
-          const label = document.createElement('div');
-          label.innerHTML = `<strong>${letter}.</strong> ${text}`;
-          const sel = makeSelect(qName, letter);
-          row.appendChild(label);
-          row.appendChild(sel);
-          qDiv.appendChild(row);
-        });
-
-        const msg = document.createElement('div');
-        msg.className = 'q-msg';
-        qDiv.appendChild(msg);
-
-        quizForm.appendChild(qDiv);
-      });
-
-      shareCard.style.display = 'none';
-      shareTools.style.display = 'none';
-      errorBox.style.display = 'none';
-      errorBox.textContent = '';
-    }
-
-    function validateAll() {
-      for (let i=0;i<questions.length;i++) {
-        const qName = `Q${i+1}`;
-        const letters = ['A','B','C','D'];
-        const vals = letters.map(L => quizForm.elements[`${qName}_${L}`].value).filter(Boolean);
-        if (vals.length !== 4) return { ok:false, msg:`Question ${i+1}: please assign 4, 3, 2, and 1 (no blanks).` };
-        if (new Set(vals).size !== 4) { updateQuestion(qName); return { ok:false, msg:`Question ${i+1}: each rank must be unique.` }; }
-      }
-      return { ok:true };
-    }
-
-    function compute() {
-      const totals = { Orange:0, Green:0, Blue:0, Gold:0 };
-      const perQuestion = [];
-      questions.forEach((q, i) => {
-        const row = {};
-        ['A','B','C','D'].forEach(L => {
-          const val = Number(quizForm.elements[`Q${i+1}_${L}`].value);
-          row[L] = val;
-          totals[letterToColor[L]] += val;
-        });
-        perQuestion.push(row);
-      });
-
-      const sorted = Object.entries(totals).sort((a,b)=>b[1]-a[1]);
-      const topScore = sorted[0][1];
-      const primary = sorted.filter(([c,s])=>s===topScore).map(([c])=>c);
-
-      let secondary = [];
-      if (primary.length === 1) {
-        const nextScore = sorted.find(([c,s])=>s<topScore)?.[1] ?? null;
-        secondary = sorted.filter(([c,s])=>s===nextScore).map(([c])=>c);
-      }
-      return { totals, primary, secondary, perQuestion };
-    }
-
-    // Build the on-page share card (same layout used for download)
-    function buildShareCard(r) {
-      const pill = c => `<span class="chip ${c.toLowerCase()}">${c}</span>`;
-      const primary = r.primary.length ? r.primary.map(pill).join(' ') : '—';
-      const secondary = r.secondary.length ? r.secondary.map(pill).join(' ') : '—';
-
-      shareLine.innerHTML = `<strong>Primary:</strong> ${primary} &nbsp;&nbsp; <strong>Secondary:</strong> ${secondary}`;
-
-      shareGrid.innerHTML = '';
-      ['Orange','Green','Blue','Gold'].forEach(c => {
-        const div = document.createElement('div');
-        div.className = 'score';
-        div.innerHTML = `<div class="lbl">${c}</div><div class="val">${r.totals[c]}</div>`;
-        shareGrid.appendChild(div);
-      });
-
-      shareCard.style.display = 'block';
-      shareCard.scrollIntoView({behavior:'smooth', block:'center'});
-    }
-
-    function buildPlainSummary(r) {
-      const totals = `Orange ${r.totals.Orange}, Green ${r.totals.Green}, Blue ${r.totals.Blue}, Gold ${r.totals.Gold}`;
-      const primary = r.primary.join(' / ') || '—';
-      const secondary = r.secondary.join(' / ') || '—';
-      return `Colors Personality Result — Primary: ${primary} | Secondary: ${secondary}
-Totals: ${totals}`;
-    }
-
-    function emailResults(r) {
-      const subject = encodeURIComponent('My Colors Personality Result');
-      const body = encodeURIComponent(buildPlainSummary(r) + '\n\n(Shared from the classroom quiz)');
-      window.location.href = `mailto:?subject=${subject}&body=${body}`;
-    }
-
-    // ---- Robust DOM->PNG with fallback ----
-    async function downloadCardPNG(node) {
-      // Ensure fonts are loaded (prevents early capture glitches)
-      if (document.fonts && document.fonts.ready) {
-        try { await document.fonts.ready; } catch {}
-      }
-      const opts = {
-        pixelRatio: 2,
-        cacheBust: true,
-        backgroundColor: '#0f172a',
-        style: { margin: 0, transform: 'none' }
-      };
-
-      // Try html-to-image first
-      try {
-        if (!window.htmlToImage || !window.htmlToImage.toPng) throw new Error('html-to-image not available');
-        const dataUrl = await window.htmlToImage.toPng(node, opts);
-        triggerDownload(dataUrl);
-        return;
-      } catch (e1) {
-        console.warn('html-to-image failed:', e1);
-      }
-
-      // Fallback: dom-to-image-more
-      try {
-        if (!window.domtoimage || !window.domtoimage.toPng) throw new Error('dom-to-image-more not available');
-        const dataUrl = await window.domtoimage.toPng(node, opts);
-        triggerDownload(dataUrl);
-        return;
-      } catch (e2) {
-        console.warn('dom-to-image-more failed:', e2);
-        alert('Sorry — could not generate the image in this browser. Try another browser or take a screenshot.');
-      }
-    }
-
-    function triggerDownload(dataUrl) {
-      const link = document.createElement('a');
-      link.href = dataUrl;
-      link.download = `colors-personality-result-${new Date().toISOString().replace(/[:.]/g,'-')}.png`;
-      link.click();
-    }
-
-    // Actions
-    submitBtn.addEventListener('click', () => {
-      errorBox.style.display = 'none';
-      const v = validateAll();
-      if (!v.ok) { errorBox.textContent = v.msg; errorBox.style.display = 'block'; return; }
-      const r = compute();
-      buildShareCard(r);
-      shareTools.style.display = 'flex';
-      submitBtn.dataset.hadResult = '1';
-      submitBtn.dataset.result = JSON.stringify(r);
-    });
-
-    resetBtn.addEventListener('click', render);
-
-    // Preview without answering (sample data)
-    previewBtn.addEventListener('click', () => {
-      const sample = {
-        totals: { Orange:30, Green:26, Blue:22, Gold:18 },
-        primary: ['Orange'],
-        secondary: ['Green'],
-        perQuestion: []
-      };
-      buildShareCard(sample);
-      shareTools.style.display = 'flex';
-      submitBtn.dataset.hadResult = '1';
-      submitBtn.dataset.result = JSON.stringify(sample);
-    });
-
-    // Download PNG: export the actual DOM card (pixel-perfect) with fallback
-    downloadImgBtn.addEventListener('click', async () => {
-      if (submitBtn.dataset.hadResult !== '1') return;
-      const wasHidden = (shareCard.style.display === 'none');
-      if (wasHidden) shareCard.style.display = 'block';
-      try {
-        await downloadCardPNG(shareCard);
-      } finally {
-        if (wasHidden) shareCard.style.display = 'none';
-      }
-    });
-
-    copySummaryBtn.addEventListener('click', async () => {
-      if (submitBtn.dataset.hadResult !== '1') return;
-      const r = JSON.parse(submitBtn.dataset.result);
-      await navigator.clipboard.writeText(buildPlainSummary(r));
-      copySummaryBtn.textContent = 'Copied!';
-      setTimeout(()=> copySummaryBtn.textContent = 'Copy Summary', 1200);
-    });
-
-    emailBtn.addEventListener('click', () => {
-      if (submitBtn.dataset.hadResult !== '1') return;
-      const r = JSON.parse(submitBtn.dataset.result);
-      emailResults(r);
-    });
-
-    // Init
-    render();
-  </script>
+tbtn.onclick=e=>{e.stopPropagation();tmenu.classList.toggle('open')};
+document.addEventListener('click',()=>tmenu.classList.remove('open'));
+tPreview.onclick=()=>{showResults({t:{Orange:39,Green:32,Blue:21,Gold:18},primary:['Orange'],secondary:['Green'],n:11});scrollTo(0,0)};
+const MIN_FORCE=5;
+tForce.onclick=()=>{if(nDone()<MIN_FORCE){toast(`Answer at least ${MIN_FORCE} questions first (${nDone()} done).`);return}tmenu.classList.remove('open');showResults();scrollTo(0,0)};
+tbtn.addEventListener('click',()=>{const d=nDone(),ok=d>=MIN_FORCE;tForce.classList.toggle('off',!ok);tForce.querySelector('span').textContent=ok?`Out of time? Scores the ${d} finished questions.`:`Unlocks after ${MIN_FORCE} questions (${d} done so far).`});
+function toast(t){let el=document.getElementById('toast');if(!el){el=document.createElement('div');el.id='toast';el.className='toast';el.setAttribute('role','status');document.body.appendChild(el)}el.textContent=t;el.classList.add('show');clearTimeout(el._t);el._t=setTimeout(()=>el.classList.remove('show'),2600)}
+renderIntro();
+</script>
 </body>
 </html>
