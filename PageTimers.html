@@ -104,6 +104,27 @@
     .tool-row { grid-template-columns: repeat(2, minmax(0, 1fr)); }
     .theme-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   }
+  /* ---------- How-to content ---------- */
+  html { scroll-behavior: smooth; }
+  .tp-note-wide { grid-column: 1 / -1; margin: -23px 0 0; text-align: left; }
+  @media (max-width: 736px) { .tp-note-wide { text-align: left; margin-top: 0; } }
+  .tp-hero ul.actions { flex-wrap: nowrap; margin-bottom: 0; }
+  .tp-hero ul.actions li { padding-right: 0.8em; }
+  .tp-hero ul.actions li:last-child { padding-right: 0; }
+  @media (max-width: 736px) { .tp-hero ul.actions { flex-wrap: wrap; } .tp-hero ul.actions li { padding-right: 0; } }
+  .tp-hero ul.actions .button { padding: 0 1.3em; letter-spacing: 0.2em; }
+  @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+  .howto { scroll-margin-top: 20px; }
+  .howto { margin: 64px 0 48px; padding-top: 8px; border-top: solid 2px #f2849e; }
+  .howto h2 { margin-top: 1.6em; }
+  .howto h3 { margin: 1.6em 0 0.4em; font-size: 1.1em; text-transform: none; letter-spacing: 0; font-weight: 700; }
+  .howto .lead { font-size: 1.1em; }
+  .howto .my-class { border-left: 4px solid #f2849e; background: rgba(242,132,158,0.07); border-radius: 0 0.5rem 0.5rem 0; padding: 1.3em 1.6em 0.4em; margin: 1.5em 0 2em; }
+  .howto .my-class h2 { margin-top: 0; font-size: 1em; }
+  .howto ol li, .howto ul li { margin-bottom: 0.4em; }
+  .howto td:first-child { font-weight: 600; white-space: nowrap; }
+  .howto .privacy-note { font-size: 0.95em; color: #777; }
+  @media (max-width: 736px) { .howto td:first-child { white-space: normal; } }
   </style>
 
 <!-- Search & link previews -->
@@ -172,10 +193,11 @@
             <h2 class="tp-title">Timer PLUS: All in One Tool</h2>
             <p>Every RobsonEDU timer, now in one place. Run a countdown, give partners equal turns, step through a lesson routine, set class bells, or time with a stopwatch, with 35+ themes and a classroom music player. Your settings and routines are saved on your device.</p>
             <ul class="actions">
-              <li><a href="PageTimerPlus.html" class="button primary">Open Timer PLUS</a></li>
+              <li><a href="PageTimerPlus.html" class="button primary small">Open Timer PLUS</a></li>
+              <li><a href="#how-to" class="button small">How to use it</a></li>
             </ul>
-            <p class="tp-note">New here? Press the <strong>?</strong> button in Timer PLUS for a quick tour. For even more usability, <a href="https://docs.google.com/document/d/1Zbu1rMa0OyI_rcKiobL84ipw7_EOrRrDA1KUxoiLY4I/edit?usp=sharing" target="_blank" rel="noopener noreferrer"><strong>follow these instructions</strong></a> to save it as an <strong>app</strong> on your device.</p>
           </div>
+          <p class="tp-note tp-note-wide">New here? Press <strong>?</strong> in Timer PLUS for a quick tour. Want to download Timer PLUS as an app? <a href="https://docs.google.com/document/d/1Zbu1rMa0OyI_rcKiobL84ipw7_EOrRrDA1KUxoiLY4I/edit?usp=sharing" target="_blank" rel="noopener noreferrer"><strong>Follow these instructions</strong></a>.</p>
         </section>
 
         <!-- Jump to a tool -->
@@ -243,6 +265,75 @@
           <a class="theme-card" href="PageTimerPlus.html?theme=spring"><img src="images/THUMBSpring.jpg" alt="Spring theme" loading="lazy"><span>Spring</span></a>
           <a class="theme-card" href="PageTimerPlus.html?theme=summer"><img src="images/THUMBSummerBreak.jpg" alt="Summer Break theme" loading="lazy"><span>Summer Break</span></a>
         </div>
+
+        <!-- How to use Timer PLUS -->
+        <section class="howto" id="how-to">
+          <h2>How to Use Timer PLUS</h2>
+          <p class="lead">Timer PLUS is a free classroom timer for teachers, built to be seen by the whole class. Run a countdown for bellwork, a turn timer for partner talk, a bar timer for team talk, a full routine that moves through each step of your lesson, alarms for the time of day, or a stopwatch. Pick from over 35 themes. Full screen, split-screen with a tab, or even float it over your Google Slides or PowerPoint. No sign-in, no ads.</p>
+          <p>What sets our timers apart is the seamless operation. The preset buttons are a game changer. You are in the flow of teaching and you say, &ldquo;You have 2 minutes for this Quickwrite.&rdquo; You tap the 2:00 preset button and the timer auto-starts. While they are working, you realize they need 30 more seconds, so you tap +30 sec. No time lost for the in-the-moment adjustment. Similarly, if students are finishing earlier than you expect, you can tap :30 and tell them time is almost up, again without disruption. You can set custom time intervals easily. There are many themes, from aesthetic to motion to seasonal, all in one place. Use the music button to play background music while the timer is running, with the built-in classroom-safe playlist, or link your favorite YouTube playlist.</p>
+
+          <div class="my-class">
+            <h2>How I use it in my classroom</h2>
+            <p>I use visible timers for almost everything. Many teachers keep time on a watch, a phone, or in their head. The problem? Students can't see it. A visible timer keeps both the students and the teacher on track.</p>
+            <p>Bellwork gets a timer because it helps students and the room get settled, focused and ready for learning. Turn and talks get a timer too. Instead of &ldquo;Discuss with your partner&rdquo; and a conversation that keeps going and going, on topic or not, the timer adds accountability to the task.</p>
+            <p>I teach with a chunked, gradual release model. I model a math problem. Students try the next one on their own. Then they share with a partner. Instead of giving students 20 minutes to work problems independently, I run a structured stop-and-go workshop, and timers are a must. Time can easily get away from the teacher. A visible timer adds urgency, efficiency and accountability.</p>
+          </div>
+
+          <h2>Get started in five steps</h2>
+          <ol>
+            <li><strong>Open Timer PLUS</strong> and pick a theme. A quick tour runs the first time; press <strong>?</strong> to replay it.</li>
+            <li><strong>Pick a tool</strong> from the dock: Timer, Turn, Bar, Routines, Alarm or Stopwatch. The number keys 1&ndash;6 switch tools too.</li>
+            <li><strong>Set the time.</strong> Tap a quick preset or press Set to choose your own. Need more? Tap +30 sec while it runs.</li>
+            <li><strong>Start.</strong> Press Start or the Space bar to start and pause. Press R to reset.</li>
+            <li><strong>Put it where students can see it.</strong> Press <strong>F</strong> for full screen, or <strong>P</strong> to pop it out so it floats over your slides.</li>
+          </ol>
+
+          <h2>Which timer should I use?</h2>
+          <div class="table-wrapper">
+            <table>
+              <tbody>
+                <tr><td>Timer</td><td>A big countdown for bellwork, independent work, cleanup and transitions. A warning sound plays near the end.</td></tr>
+                <tr><td>Turn</td><td>Partner and team talk. Choose 2, 3 or 4 turns and a time for each; the timer moves from turn to turn so everyone gets equal time.</td></tr>
+                <tr><td>Bar</td><td>A bar that shrinks as time runs out. Easy to read from across the room.</td></tr>
+                <tr><td>Routines</td><td>Chunked lessons and everyday procedures. Build steps, and Timer PLUS runs them in order. Auto-advance and repeat are built in.</td></tr>
+                <tr><td>Alarm</td><td>Reminders at a set time of day: lunch, specials, dismissal. Choose the days, a label and a snooze length.</td></tr>
+                <tr><td>Stopwatch</td><td>Timing how long something takes, with laps. Great for fluency or racing your own transition time.</td></tr>
+              </tbody>
+            </table>
+          </div>
+
+          <h2>Teacher questions</h2>
+
+          <h3>Why use a visible timer instead of my watch or phone?</h3>
+          <p>Because students can't see your watch. When the time is on the board, students pace themselves, start faster and stay on task. And you stay on schedule, because time can easily get away from the teacher.</p>
+
+          <h3>How do I keep a timer on screen while I present my slides?</h3>
+          <p>Press <strong>P</strong> (Pop-Out). The timer opens in a small window that floats on top of Google Slides, PowerPoint and other apps. Drag its corner to resize it. Close it any time to bring the timer back. Pop-Out works best in Chrome or Edge.</p>
+
+          <h3>How long should a turn and talk be?</h3>
+          <p>Short. Start with 30 seconds to a minute per partner and adjust. We believe it's better to give not enough time than too much. When there isn't time to waste, you'll get better participation because of the sense of urgency. The Turn timer gives each partner the same amount of time and moves to the next speaker on its own, so one student doesn't do all the talking.</p>
+
+          <h3>How do I use Routines?</h3>
+          <p>For common, repeated procedures: start of day, end of day, going to lunch, cleanup time. Build your steps once. An end-of-day example: Clear desk 2:00, Wipe desk 1:00, Get and pack bag 2:00. Turn on auto-advance and it moves from step to step on its own. Save it to My Routines and load it tomorrow.</p>
+
+          <h3>How do I time a stop-and-go workshop lesson?</h3>
+          <p>Split-screen the timer with your instructions or worksheet. For example: model the first problem for 3:00 while explaining your thinking, students try it for 1:30, partner share for 1:00. Then a class share-out, so you can check for understanding. Use the presets to add and reduce time as needed. If you find a standard flow you like, you can even save it as a routine in Routines.</p>
+
+          <h3>Can I play music while the timer runs?</h3>
+          <p>Yes. Press <strong>M</strong> for Music. It plays the built-in classroom playlist, and you can add your own YouTube playlist links.</p>
+
+          <h3>Can it go off at a certain time of day?</h3>
+          <p>Yes. Use <strong>Alarm</strong>. Set the time, pick the days (weekdays, every day, or your own), add a label like &ldquo;Lunch&rdquo; and choose a snooze length.</p>
+
+          <h3>Where are my settings and routines saved?</h3>
+          <p>In your browser, on your own device. There's no sign-in, and nothing is sent to RobsonEDU.</p>
+
+          <p class="privacy-note">Timer PLUS is free, ad-free and needs no sign-in. Your settings stay on your device. <a href="privacy.html">Read how we handle privacy.</a></p>
+          <ul class="actions">
+            <li><a href="PageTimerPlus.html" class="button primary">Open Timer PLUS</a></li>
+            <li><a href="#header" class="button"><span class="icon solid fa-arrow-up" aria-hidden="true"></span> Back to top</a></li>
+          </ul>
+        </section>
 
       </div>
     </div>
