@@ -118,8 +118,11 @@
 
   /* ---------- How-to content ---------- */
   html { scroll-behavior: smooth; }
-  .tp-hero ul.actions { flex-wrap: wrap; row-gap: 0.9em; }
-  .tp-hero ul.actions li { padding-right: 1em; }
+  .tp-hero ul.actions { flex-wrap: nowrap; margin-bottom: 1.2em; }
+  .tp-hero ul.actions li { padding-right: 0.8em; }
+  .tp-hero ul.actions li:last-child { padding-right: 0; }
+  @media (max-width: 736px) { .tp-hero ul.actions { flex-wrap: wrap; } .tp-hero ul.actions li { padding-right: 0; } }
+  .tp-hero ul.actions .button { padding: 0 1.3em; letter-spacing: 0.2em; }
   @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
   .howto { scroll-margin-top: 20px; }
   .howto { margin: 64px 0 48px; padding-top: 8px; border-top: solid 2px #f2849e; }
@@ -200,8 +203,8 @@
             <h2 class="tp-title">SELECTr PLUS: All in One Tool</h2>
             <p>Every RobsonEDU selector, now in one place. Call on students with a spinning wheel, a flip drum, numbers, fun Who's First prompts, or seat colors, and make random groups in one click, with four themes and a built-in timer. Your classes and settings are saved on your device.</p>
             <ul class="actions">
-              <li><a href="SelectorsPlusLANDING.html" class="button primary">Open SELECTr PLUS</a></li>
-              <li><a href="#how-to" class="button">How to use it</a></li>
+              <li><a href="SelectorsPlusLANDING.html" class="button primary small">Open SELECTr PLUS</a></li>
+              <li><a href="#how-to" class="button small">How to use it</a></li>
             </ul>
             <p class="tp-note">New here? A quick tour runs the first time you open SELECTr PLUS, and you can replay it from Settings. For even more usability, <a href="https://docs.google.com/document/d/1Zbu1rMa0OyI_rcKiobL84ipw7_EOrRrDA1KUxoiLY4I/edit?usp=sharing" target="_blank" rel="noopener noreferrer"><strong>follow these instructions</strong></a> to save it as an <strong>app</strong> on your device.</p>
           </div>
