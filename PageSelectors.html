@@ -117,7 +117,12 @@
 
 
   /* ---------- How-to content ---------- */
-  .howto { margin: 10px 0 48px; }
+  html { scroll-behavior: smooth; }
+  .tp-hero ul.actions { flex-wrap: wrap; row-gap: 0.9em; }
+  .tp-hero ul.actions li { padding-right: 1em; }
+  @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+  .howto { scroll-margin-top: 20px; }
+  .howto { margin: 64px 0 48px; padding-top: 8px; border-top: solid 2px #f2849e; }
   .howto h2 { margin-top: 1.6em; }
   .howto h3 { margin: 1.6em 0 0.4em; font-size: 1.1em; text-transform: none; letter-spacing: 0; font-weight: 700; }
   .howto .lead { font-size: 1.1em; }
@@ -196,6 +201,7 @@
             <p>Every RobsonEDU selector, now in one place. Call on students with a spinning wheel, a flip drum, numbers, fun Who's First prompts, or seat colors, and make random groups in one click, with four themes and a built-in timer. Your classes and settings are saved on your device.</p>
             <ul class="actions">
               <li><a href="SelectorsPlusLANDING.html" class="button primary">Open SELECTr PLUS</a></li>
+              <li><a href="#how-to" class="button">How to use it</a></li>
             </ul>
             <p class="tp-note">New here? A quick tour runs the first time you open SELECTr PLUS, and you can replay it from Settings. For even more usability, <a href="https://docs.google.com/document/d/1Zbu1rMa0OyI_rcKiobL84ipw7_EOrRrDA1KUxoiLY4I/edit?usp=sharing" target="_blank" rel="noopener noreferrer"><strong>follow these instructions</strong></a> to save it as an <strong>app</strong> on your device.</p>
           </div>
@@ -220,6 +226,35 @@
           <a class="theme-card" href="SelectorsPlus.html?theme=neon"><img src="images/THUMBSelectrPlusNEON.png" alt="Neon theme" loading="lazy"><span>Neon</span></a>
           <a class="theme-card" href="SelectorsPlus.html?theme=blue"><img src="images/THUMBSelectrPlusBlue.png" alt="Light Blue theme" loading="lazy"><span>Light Blue</span></a>
           <a class="theme-card" href="SelectorsPlus.html?theme=sketch"><img src="images/THUMBSelectrPlusSKETCH.png" alt="Sketchbook theme" loading="lazy"><span>Sketchbook</span></a>
+        </div>
+
+        <!-- Original Selectors -->
+        <h2 id="original-selectors">Original Selectors</h2>
+        <div class="thumb-grid">
+          <section class="tool-card" id="number">
+            <h2>Number Selector</h2>
+            <a href="SelectorNumber.html"><img src="images/THUMBNumberSelector.jpg" alt="Number Selector"></a>
+          </section>
+
+          <section class="tool-card" id="name-selector">
+            <h2>Name Selector</h2>
+            <a href="SelectorName.html"><img src="images/THUMBNameSelector.jpg" alt="Name Selector"></a>
+          </section>
+
+          <section class="tool-card" id="color">
+            <h2>Color Selector</h2>
+            <a href="SelectorColor.html"><img src="images/THUMBColorSelector.jpg" alt="Color Selector"></a>
+          </section>
+
+          <section class="tool-card" id="color6">
+            <h2>6-Color Selector</h2>
+            <a href="SelectorColor6.html"><img src="images/THUMBColorSelector6.jpg" alt="Six Color Selector"></a>
+          </section>
+
+          <section class="tool-card" id="who-goes-first">
+            <h2>Who Goes First?</h2>
+            <a href="SelectorWhoGoesFirst.html"><img src="images/THUMBWhoGoesFirst.jpg" alt="Who Goes First? Selector"></a>
+          </section>
         </div>
 
         <!-- How to use SELECTr PLUS -->
@@ -281,37 +316,9 @@
           <p class="privacy-note">SELECTr PLUS is free, ad-free and needs no sign-in. Student names stay on your device. <a href="privacy.html">Read how we handle privacy.</a></p>
           <ul class="actions">
             <li><a href="SelectorsPlusLANDING.html" class="button primary">Open SELECTr PLUS</a></li>
+            <li><a href="#header" class="button"><span class="icon solid fa-arrow-up" aria-hidden="true"></span> Back to top</a></li>
           </ul>
         </section>
-
-        <!-- Original Selectors -->
-        <h2 id="original-selectors">Original Selectors</h2>
-        <div class="thumb-grid">
-          <section class="tool-card" id="number">
-            <h2>Number Selector</h2>
-            <a href="SelectorNumber.html"><img src="images/THUMBNumberSelector.jpg" alt="Number Selector"></a>
-          </section>
-
-          <section class="tool-card" id="name-selector">
-            <h2>Name Selector</h2>
-            <a href="SelectorName.html"><img src="images/THUMBNameSelector.jpg" alt="Name Selector"></a>
-          </section>
-
-          <section class="tool-card" id="color">
-            <h2>Color Selector</h2>
-            <a href="SelectorColor.html"><img src="images/THUMBColorSelector.jpg" alt="Color Selector"></a>
-          </section>
-
-          <section class="tool-card" id="color6">
-            <h2>6-Color Selector</h2>
-            <a href="SelectorColor6.html"><img src="images/THUMBColorSelector6.jpg" alt="Six Color Selector"></a>
-          </section>
-
-          <section class="tool-card" id="who-goes-first">
-            <h2>Who Goes First?</h2>
-            <a href="SelectorWhoGoesFirst.html"><img src="images/THUMBWhoGoesFirst.jpg" alt="Who Goes First? Selector"></a>
-          </section>
-        </div>
       </div>
     </div>
 
