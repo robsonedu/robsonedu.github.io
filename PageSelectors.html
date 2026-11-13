@@ -118,7 +118,9 @@
 
   /* ---------- How-to content ---------- */
   html { scroll-behavior: smooth; }
-  .tp-hero ul.actions { flex-wrap: nowrap; margin-bottom: 1.2em; }
+  .tp-note-wide { grid-column: 1 / -1; margin: -12px 0 0; text-align: center; }
+  @media (max-width: 736px) { .tp-note-wide { text-align: left; margin-top: 0; } }
+  .tp-hero ul.actions { flex-wrap: nowrap; margin-bottom: 0; }
   .tp-hero ul.actions li { padding-right: 0.8em; }
   .tp-hero ul.actions li:last-child { padding-right: 0; }
   @media (max-width: 736px) { .tp-hero ul.actions { flex-wrap: wrap; } .tp-hero ul.actions li { padding-right: 0; } }
@@ -206,8 +208,9 @@
               <li><a href="SelectorsPlusLANDING.html" class="button primary small">Open SELECTr PLUS</a></li>
               <li><a href="#how-to" class="button small">How to use it</a></li>
             </ul>
-            <p class="tp-note">New here? A quick tour runs the first time you open SELECTr PLUS, and you can replay it from Settings. For even more usability, <a href="https://docs.google.com/document/d/1Zbu1rMa0OyI_rcKiobL84ipw7_EOrRrDA1KUxoiLY4I/edit?usp=sharing" target="_blank" rel="noopener noreferrer"><strong>follow these instructions</strong></a> to save it as an <strong>app</strong> on your device.</p>
           </div>
+
+          <p class="tp-note tp-note-wide">New here? A quick tour runs the first time you open SELECTr PLUS, and you can replay it from Settings. For even more usability, <a href="https://docs.google.com/document/d/1Zbu1rMa0OyI_rcKiobL84ipw7_EOrRrDA1KUxoiLY4I/edit?usp=sharing" target="_blank" rel="noopener noreferrer"><strong>follow these instructions</strong></a> to save it as an <strong>app</strong> on your device.</p>
         </section>
 
         <!-- Jump to a tool -->
