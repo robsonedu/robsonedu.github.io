@@ -16,8 +16,8 @@
 </script>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Timer PLUS: Free Classroom Timer | RobsonEDU</title>
-<meta name="description" content="Timer PLUS: a free, ad-free classroom timer for teachers. Countdown, turn and bar timers, routines, alarms and a stopwatch, with dozens of themes. No sign-in.">
+<title>TIMEr PLUS: Free Classroom Timer | RobsonEDU</title>
+<meta name="description" content="TIMEr PLUS: a free, ad-free classroom timer for teachers. Countdown, turn and bar timers, routines, alarms and a stopwatch, with dozens of themes. No sign-in.">
 <link rel="icon" type="image/png" href="images/FaviconCircleR.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -683,8 +683,8 @@ body.music-video #pane-bar .bars-wrap{max-width:calc(100vw - 580px);}
 <link rel="canonical" href="https://www.robsonedu.com/PageTimerPlus.html">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="RobsonEDU">
-<meta property="og:title" content="Timer PLUS: Free Classroom Timer | RobsonEDU">
-<meta property="og:description" content="Timer PLUS: a free, ad-free classroom timer for teachers. Countdown, turn and bar timers, routines, alarms and a stopwatch, with dozens of themes. No sign-in.">
+<meta property="og:title" content="TIMEr PLUS: Free Classroom Timer | RobsonEDU">
+<meta property="og:description" content="TIMEr PLUS: a free, ad-free classroom timer for teachers. Countdown, turn and bar timers, routines, alarms and a stopwatch, with dozens of themes. No sign-in.">
 <meta property="og:url" content="https://www.robsonedu.com/PageTimerPlus.html">
 <meta property="og:image" content="https://www.robsonedu.com/images/TimerPlusHero1.jpg">
 <meta name="twitter:card" content="summary_large_image">
@@ -692,7 +692,7 @@ body.music-video #pane-bar .bars-wrap{max-width:calc(100vw - 580px);}
 {
  "@context": "https://schema.org",
  "@type": "WebApplication",
- "name": "Timer PLUS",
+ "name": "TIMEr PLUS",
  "url": "https://www.robsonedu.com/PageTimerPlus.html",
  "description": "Free classroom timer for teachers: countdown, turn and bar timers, routines, alarms and a stopwatch, with dozens of themes.",
  "applicationCategory": "EducationalApplication",
@@ -1092,7 +1092,7 @@ let assetBase = ASSET_BASE;
 const IMG = p => assetBase + 'images/' + p;
 const AUD = p => assetBase + 'audio/' + p;
 const DEFAULT_THEME = 'topo';
-/* A school link (?theme=<hidden theme>) locks Timer PLUS to that theme: no Themes button, and nothing is saved over the teacher's public theme */
+/* A school link (?theme=<hidden theme>) locks TIMEr PLUS to that theme: no Themes button, and nothing is saved over the teacher's public theme */
 const LOCKED_THEME = (()=>{ try{ return new URLSearchParams(location.search).get('theme'); }catch(e){ return null; } })();
 
 /* =====================================================================
@@ -2457,7 +2457,7 @@ const Tour = (()=>{
   TOURS.alarm = [
     {title:'Add an alarm', text:'Press + to add an alarm. Pick a time, the days it repeats, a label, and a sound.', target:'#aAddBtn', before:toTool('alarm')},
     {title:'Your alarms', text:'Turn each alarm on or off with its switch. Tap an alarm to change it, or press Edit to delete one.', target:'#aCard', before:toTool('alarm')},
-    {title:'Keep this page open', text:'The next alarm shows here. Alarms ring only while Timer PLUS is open in a tab.', target:'#aNext', before:toTool('alarm')}
+    {title:'Keep this page open', text:'The next alarm shows here. Alarms ring only while TIMEr PLUS is open in a tab.', target:'#aNext', before:toTool('alarm')}
   ];
   TOURS.stopwatch = [
     {title:'Count up', text:'Play starts counting up, pause stops it, and Reset puts it back to zero.', target:()=>$('#pane-stopwatch [data-act=start]').parentElement, before:toTool('stopwatch')},
@@ -2670,7 +2670,7 @@ html.tp-tucked .tp-tuck,html.tp-tucked .corner-btn,html.tp-tucked .vdock{visibil
 /* =====================================================================
    POP-OUT — opens the timer in a small always-on-top window
    (Document Picture-in-Picture: Chrome and Edge 116+, Firefox 151+ on desktop).
-   The window runs its own copy of Timer PLUS in mini mode, starting on
+   The window runs its own copy of TIMEr PLUS in mini mode, starting on
    the same tool and theme. Other browsers get a normal pop-up window.
    ===================================================================== */
 (function(){
@@ -2716,11 +2716,11 @@ html.tp-tucked .tp-tuck,html.tp-tucked .corner-btn,html.tp-tucked .vdock{visibil
     }
     pop = w;
     var d = w.document;
-    d.title = 'Timer PLUS';
+    d.title = 'TIMEr PLUS';
     d.body.innerHTML = '';
     d.body.style.cssText = 'margin:0;background:#000;overflow:hidden;';
     var f = d.createElement('iframe');
-    f.title = 'Timer PLUS';
+    f.title = 'TIMEr PLUS';
     f.setAttribute('allow', 'autoplay; fullscreen');
     f.style.cssText = 'border:0;display:block;width:100vw;height:100vh;';
     f.addEventListener('load', function(){
