@@ -117,6 +117,27 @@
         grid-template-columns: 1fr;
       }
     }
+  /* ---------- How-to content ---------- */
+  html { scroll-behavior: smooth; }
+  .tp-note-wide { grid-column: 1 / -1; margin: -23px 0 0; text-align: left; }
+  @media (max-width: 736px) { .tp-note-wide { text-align: left; margin-top: 0; } }
+  .tp-hero ul.actions { flex-wrap: nowrap; margin-bottom: 0; }
+  .tp-hero ul.actions li { padding-right: 0.8em; }
+  .tp-hero ul.actions li:last-child { padding-right: 0; }
+  @media (max-width: 736px) { .tp-hero ul.actions { flex-wrap: wrap; } .tp-hero ul.actions li { padding-right: 0; } }
+  .tp-hero ul.actions .button { padding: 0 1.3em; letter-spacing: 0.2em; }
+  @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+  .howto { scroll-margin-top: 20px; }
+  .howto { margin: 64px 0 48px; padding-top: 8px; border-top: solid 2px #f2849e; }
+  .howto h2 { margin-top: 1.6em; }
+  .howto h3 { margin: 1.6em 0 0.4em; font-size: 1.1em; text-transform: none; letter-spacing: 0; font-weight: 700; }
+  .howto .lead { font-size: 1.1em; }
+  .howto .my-class { border-left: 4px solid #f2849e; background: rgba(242,132,158,0.07); border-radius: 0 0.5rem 0.5rem 0; padding: 1.3em 1.6em 0.4em; margin: 1.5em 0 2em; }
+  .howto .my-class h2 { margin-top: 0; font-size: 1em; }
+  .howto ol li, .howto ul li { margin-bottom: 0.4em; }
+  .howto td:first-child { font-weight: 600; white-space: nowrap; }
+  .howto .privacy-note { font-size: 0.95em; color: #777; }
+  @media (max-width: 736px) { .howto td:first-child { white-space: normal; } }
   </style>
 
 <!-- Search & link previews -->
@@ -194,11 +215,12 @@
             <h2 class="tp-title">Grouping Studio: Seating Charts &amp; Groups</h2>
             <p><strong>Build your room once. Make balanced seating charts and groups in a few clicks.</strong> Add your roster, and Mixed, Similar or Random groups drop straight into your tables. Swap students, present names only to the class, print a copy for a sub, and run timed stations.</p>
             <ul class="actions">
-              <li><a href="grouping-studio.html" class="button primary">Open Grouping Studio</a></li>
+              <li><a href="grouping-studio.html" class="button primary small">Open Grouping Studio</a></li>
+              <li><a href="#how-to" class="button small">How to use it</a></li>
             </ul>
             <p class="tp-trust">Free. No sign-in. Student data stays on your device.</p>
-            <p class="tp-note">New here? A short tour starts the first time you open Grouping Studio, with a sample class to explore.</p>
           </div>
+          <p class="tp-note tp-note-wide">New here? A short tour with a sample class starts the first time you open the tool.</p>
         </section>
 
         <!-- Jump to a section -->
@@ -213,6 +235,76 @@
         </div>
 
         <p><strong>Looking for grouping ideas?</strong> See <a href="PageGrouping.html">Grouping Strategies</a> for strategic and random grouping approaches, the Grouping README and the original Google Sheets grouping tool.</p>
+
+        <!-- How to use Grouping Studio -->
+        <section class="howto" id="how-to">
+          <h2>How to Use Grouping Studio</h2>
+          <p class="lead">Grouping Studio: Seating Charts &amp; Groups is a free seating chart and group maker for teachers. Build your room once, add your class list and data, and make balanced groups and seating charts in a few clicks. Mixed, Similar or Random. When you present a chart to the class, it shows names only. Print it easily, and run timed station rotations. No sign-in, no ads, and student data stays on your device.</p>
+
+          <div class="my-class">
+            <h2>How I use it in my classroom</h2>
+            <p>I built Grouping Studio because it's the tool I always wanted. I manually created mixed seating charts based on ability scores and personality types. It took a lot of time to make a chart for my classes, but the impact on behavior and learning outcomes was significant. However, it was time consuming. The downside was that if I wanted to make short-term or on-the-fly changes, that created a significant issue. For example, there were times when I wanted to do similar-ability groups for a single lesson or activity, but I couldn't find the time to make all new seating charts for one lesson here and there. I also wanted to make quick groups for station rotations at different times, but again, the time. With this tool, I could literally do all of those things on the fly, when needed, with a simple click.</p>
+            <p>To group students by academic ability, you can use summative test scores, reading levels or other classroom data. For behavior, you can use your own observations of characteristics like who's more or less talkative, or work ethic, or even something like a personality assessment. We use the <a href="ColorsPersonality.html">Colors Personality Assessment</a> because it goes a bit deeper in terms of who is a supporter, analyst, organizer or energizer. You can use these personality characteristics to really strategize and maximize your groups.</p>
+            <p>Mixed-ability grouping is great to tie into your seating chart when using cooperative learning and Kagan strategies like RoundRobin, RallyCoach or RoundTable. Having a system to organize student interaction has amazing benefits for efficiency and classroom management. I like to use Similar groups when differentiating instruction for station rotations or leveled practice. I even like Similar groups for projects or other group or cooperative work. There's even a Random grouping option for things like debates or Socratic Seminar&ndash;type activities. I like using two random groups to set up the inside and outside circles for class discussion.</p>
+          </div>
+
+          <h2>Get started in five steps</h2>
+          <ol>
+            <li><strong>Build your room.</strong> Start from a ready-made layout or drag in desks, pods and tables. Add the board and door so the tool knows where the front is.</li>
+            <li><strong>Add your class.</strong> Paste your class list or import it from Google Sheets. Add the data you want to group by, such as a test score or reading level.</li>
+            <li><strong>Make groups (optional).</strong> Choose Mixed, Similar or Random, and check how balanced the groups came out.</li>
+            <li><strong>Make the seating chart.</strong> Groups drop straight into your tables. Swap any two students with a tap.</li>
+            <li><strong>Present it.</strong> Show the class the chart with names only, or print a copy for a sub.</li>
+          </ol>
+          <p>For every button and option, see the full <a href="RobsonEDU-Grouping-Studio-User-Guide.pdf" target="_blank" rel="noopener noreferrer">User Guide</a> or the one-page <a href="RobsonEDU-Grouping-Studio-Quick-Start.pdf" target="_blank" rel="noopener noreferrer">Quick Start</a>.</p>
+
+          <h2>Which grouping should I use?</h2>
+          <div class="table-wrapper">
+            <table>
+              <tbody>
+                <tr><td>Mixed</td><td>Cooperative learning and team work. Every group gets a spread: in groups of 4, one high, one medium high, one medium low and one low student.</td></tr>
+                <tr><td>Similar</td><td>Small-group instruction, intervention or enrichment. Students are grouped in bands, highs together and lows together.</td></tr>
+                <tr><td>Random</td><td>Fresh partners and community building. A fair shuffle that still follows your seating rules.</td></tr>
+                <tr><td>Room layout size</td><td>When the groups will be seated: groups match your tables, even a mix of 4s and 6s.</td></tr>
+                <tr><td>Pick a group size</td><td>Partner work and activities away from the tables: every group is the same size.</td></tr>
+              </tbody>
+            </table>
+          </div>
+
+          <h2>Teacher questions</h2>
+
+          <h3>How do I make balanced groups?</h3>
+          <p>Add a score or level to your class list, then choose Mixed and group by it. You can balance more criteria underneath it, like a second score or gender. Check cards at the top show how balanced the groups came out. (User Guide, section 4)</p>
+
+          <h3>Can I make a seating chart by reading level or test scores?</h3>
+          <p>Yes. Add the scores to your roster, go to Seating Chart and choose Mixed or Similar. You don't have to make groups first. The tool goes straight from your roster to a full seating chart. (User Guide, sections 3 and 5)</p>
+
+          <h3>How do I set up Kagan team seats?</h3>
+          <p>Tables in Grouping Studio carry team seat labels (1A, 2B, 3A, 4B). With Mixed groups, the highest-ranked student sits in 1A and the lowest in 4B, diagonal from each other, so shoulder partners and face partners line up. (User Guide, sections 2 and 5)</p>
+
+          <h3>How do I keep two students apart, or seat a student near the front?</h3>
+          <p>Add seating rules on the Roster page. Keep students apart, keep a student near the front or near the door, and note supports such as an IEP or 504. Every grouping and chart follows your rules. (User Guide, section 3)</p>
+
+          <h3>Can I show the chart to my class without showing scores?</h3>
+          <p>Yes. Present view shows names only, with a reveal animation, and can flip to show the room from the front or the back. Your data stays hidden. (User Guide, section 6)</p>
+
+          <h3>Can I print a seating chart for a sub?</h3>
+          <p>Yes. Print from Present view to get a clean copy of the chart for a substitute or your sub folder. (User Guide, section 6)</p>
+
+          <h3>Can I import my class list from Google Sheets?</h3>
+          <p>Yes. Click Import from Google Sheets on the Roster page and pick your sheet. The tool can open only the file you choose, and the list goes straight to your browser. Copy and paste works too, with no sign-in. (User Guide, section 3)</p>
+
+          <h3>Where is my class data saved?</h3>
+          <p>In your browser, on your own device. Nothing is sent to RobsonEDU. Download a backup about once a month from Settings, so you can move your data to another computer or restore it. (User Guide, section 9)</p>
+
+          <p class="privacy-note">Grouping Studio is free, ad-free and needs no sign-in. Student data stays on your device. <a href="privacy.html">Read how we handle privacy.</a></p>
+          <ul class="actions">
+            <li><a href="grouping-studio.html" class="button primary">Open Grouping Studio</a></li>
+            <li><a href="RobsonEDU-Grouping-Studio-User-Guide.pdf" class="button" target="_blank" rel="noopener noreferrer">User Guide</a></li>
+            <li><a href="#header" class="button"><span class="icon solid fa-arrow-up" aria-hidden="true"></span> Back to top</a></li>
+          </ul>
+        </section>
+
       </div>
     </div>
 
