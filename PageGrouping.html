@@ -100,6 +100,9 @@
       transition: transform 0.2s ease;
     }
 
+    /* Keep the Fixed Seating image in its real shape (white space fills the 16:9 frame) */
+    #fixed img { object-fit: contain; background: #fff; }
+
     .thumb-grid img:hover {
       transform: scale(1.05);
     }
