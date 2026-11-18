@@ -2369,7 +2369,7 @@ function layoutStage() {
   // Wheel: large, centered left to right, top half in view with the rest tucked below the dock.
   // Drum: fully in view, 90% of the space, centered.
   let main = isWheel
-    ? Math.floor(Math.max(240, Math.min(w, h * 1.8)))
+    ? Math.floor(Math.max(240, h > w ? Math.min(h * 1.8, w * 2.7) : Math.min(w, h * 1.8)))
     : Math.floor(Math.max(180, Math.min(w, h) * 0.9));
   let task = 0;
   const tw = $('#taskWrap');
