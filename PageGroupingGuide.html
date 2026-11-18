@@ -128,6 +128,11 @@
     .coop .intro-grid .intro-img { width: 100%; margin-top: 0.4em; }
     .coop .intro-grid .bestfor { margin: 0; }
     @media (max-width: 736px) { .coop .intro-grid { grid-template-columns: minmax(0,1fr) 110px; gap: 1em; } .coop .intro-grid .intro-img { margin-top: 0; } }
+    .coop .intro-row { display: flex; align-items: stretch; gap: 1.2em; margin: 0 0 1.2em; }
+    .coop .intro-row .bestfor { flex: 1 1 auto; margin: 0; }
+    .coop .intro-row .imgwrap { flex: 0 0 auto; position: relative; align-self: stretch; width: 220px; }
+    @media (max-width: 736px) { .coop .intro-row { gap: 0.8em; } .coop .intro-row .imgwrap { width: 84px; height: 84px; align-self: flex-start; } .coop .intro-row .bestfor { padding: 0.9em 1em 0.1em; } }
+    .coop .intro-row .intro-img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; margin: 0; border-radius: 14px; }
   </style>
 </head>
 <body class="is-preload">
@@ -175,10 +180,9 @@
         </nav>
 
         <section id="strategic" class="th-blue">
-          <div class="intro-grid">
-            <div class="intro-text">
           <h2>Strategic Grouping</h2>
           <p class="tagline">TARGETED. BALANCED. EFFICIENT. MORE CONTROL.</p>
+          <div class="intro-row">
           <div class="bestfor">
           <p><strong>Best For:</strong></p>
           <ul>
@@ -188,8 +192,7 @@
             <li>Activities requiring specific skill levels</li>
           </ul>
           </div>
-            </div>
-            <img class="intro-img" src="images/GroupIconStrategic.png" alt="" width="180">
+            <div class="imgwrap"><img class="intro-img" src="images/GroupIconStrategic.png" alt="" width="180"></div>
           </div>
           <div class="bc">
             <div>
@@ -214,10 +217,9 @@
         </section>
 
         <section id="random" class="tint th-red">
-          <div class="intro-grid">
-            <div class="intro-text">
           <h2>Random Grouping</h2>
           <p class="tagline">QUICK. ADAPTIVE. LOW PREP, NO PREP, ON-THE-FLY.</p>
+          <div class="intro-row">
           <div class="bestfor">
           <p><strong>Best For:</strong></p>
           <ul>
@@ -226,8 +228,7 @@
             <li>Short-term or one-off assignments</li>
           </ul>
           </div>
-            </div>
-            <img class="intro-img" src="images/GroupIconRandom.png" alt="" width="180">
+            <div class="imgwrap"><img class="intro-img" src="images/GroupIconRandom.png" alt="" width="180"></div>
           </div>
           <div class="bc">
             <div>
@@ -360,5 +361,12 @@
   <script src="assets/js/breakpoints.min.js"></script>
   <script src="assets/js/util.js"></script>
   <script src="assets/js/main.js"></script>
+  <script>
+    /* Keep each icon square and exactly as tall as its Best For box */
+    (function(){
+      function fit(){ document.querySelectorAll('.intro-row').forEach(function(r){ var w=r.querySelector('.imgwrap'), b=r.querySelector('.bestfor'); if(w&&b){ w.style.width = window.innerWidth>736 ? Math.min(b.offsetHeight, r.offsetWidth*0.35)+'px' : ''; } }); }
+      window.addEventListener('load',fit); window.addEventListener('resize',fit); fit();
+    })();
+  </script>
 </body>
 </html>
