@@ -78,6 +78,20 @@
       .coop .float-r { float: none; display: block; margin: 0.5em auto 1.5em; }
       .coop .w-tc4 { width: 60%; } .coop .w-canva { width: 100%; } .coop .w-wgf { width: 80%; }
     }
+    /* Stronger headers and contrast (matches the Grouping README) */
+    .coop section > h2 { font-size: 1.7em; font-weight: 900; letter-spacing: 0.1em; color: #3a3a3a; border-left: 6px solid #f2849e; padding-left: 0.6em; line-height: 1.3; }
+    .coop section { border-top: none; padding: 1.6em 0 0.6em; margin-top: 2em; }
+    .coop section.tint { background: #f6f5f8; border-radius: 16px; padding: 1.6em 1.8em 0.8em; }
+    .coop section.tint .card, .coop section.tint .mini, .coop section.tint .box { background: #fff; }
+    .coop section.tint .box { border-left: 4px solid #f2849e; }
+    .coop .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 1.2em; margin: 1em 0 1.4em; align-items: start; }
+    .coop .grid2 .card { margin: 0; }
+    .coop .card h3 { color: #3a3a3a; }
+    .coop .mini { border: solid 1px rgba(0,0,0,0.12); border-radius: 12px; padding: 1.2em 1.4em 0.3em; }
+    .coop .mini h3 { margin: 0 0 0.5em; font-size: 1.05em; color: #f2849e; }
+    .coop .mini ul { margin-bottom: 1em; } .coop .mini p, .coop .mini li { font-size: 0.95em; }
+    .coop h2.clear { margin-top: 1.6em; font-size: 1.3em; font-weight: 900; letter-spacing: 0.08em; color: #3a3a3a; }
+    @media (max-width: 736px) { .coop .grid2 { grid-template-columns: 1fr; } .coop section.tint { padding: 1.2em 1em 0.6em; border-radius: 12px; } }
   </style>
 </head>
 <body class="is-preload">
@@ -138,7 +152,7 @@
           </div>
         </section>
 
-        <section id="teams">
+        <section id="teams" class="tint">
           <h2>Teams: Essential Kagan Teams &amp; Seating</h2>
           <a class="float-r w-tc4" href="PageTeamCards.html"><img src="images/CoopTeamCard4.png" alt="TeamCard 4 table mat: seats 1 to 4 with A/B partners" loading="lazy" decoding="async"></a>
           <p>Kagan strongly advocates for heterogeneous teams of 4 (mixed ability*) to maximize interaction without management chaos. Other variations can include teams of 3, 5, and 6. Larger groups drastically reduce efficacy. <em>*Ability can be based on any criteria such as academic skills, behavior, personality, work ethic, etc.</em></p>
@@ -159,7 +173,8 @@
           <a class="float-r w-canva" href="https://canva.link/5ty10uzbwtugvt3" target="_blank" rel="noopener noreferrer"><img src="images/CoopStructuresDisplay.jpg" alt="Kagan Cooperative Learning Structures: Digital Display Instructions for Class" loading="lazy" decoding="async"></a>
           <p>These <strong>structures require zero extra lesson-planning time</strong>; just insert them into your lesson any time you want students to think, practice, or process content. Basically, any time you want to ask a whole group question and call on raised hands &ndash; that's a perfect time for a structure and share out.</p>
           <p class="clear-after"><a href="https://canva.link/5ty10uzbwtugvt3" target="_blank" rel="noopener noreferrer"><strong>Digital Display Instructions for Class</strong></a><br>Project these step-by-step directions to ensure smooth operation when using a structure.</p>
-          <div class="card clear">
+          <div class="grid2 clear">
+          <div class="card">
             <h3>1. RoundRobin Family</h3>
             <p>Teacher poses a question or topic with multiple possible answers. Then, each person in the team takes a turn to respond verbally.</p>
             <p>Variations:</p>
@@ -206,9 +221,10 @@
             <p>Teacher asks the class to stand up, put their hand up in the air (this means you need a partner), and go pair up with someone from another team.</p>
             <p class="note">Good for a change of pace or energy boost.</p>
           </div>
+          </div>
         </section>
 
-        <section id="management">
+        <section id="management" class="tint">
           <h2>Kagan Classroom Management Essentials</h2>
           <p><strong>Timers!</strong> Use a visible timer for everything. For example, say: "You have 30 seconds to discuss with your partner, A's go first &ndash; on your mark, get set, go!" START THE TIMER. <a href="PageTimers.html"><strong>Find my timers here!</strong></a></p>
           <p><strong>Attention Getter.</strong> Implement a consistent way to gather the attention of everyone in the room. Kagan uses "The Quiet Signal," a universal visual signal (a raised hand). When the teacher raises a hand, students immediately stop talking/stop doing, raise their hand, and look at the teacher. Within 3 seconds, a room of 30 students goes completely silent.</p>
@@ -225,45 +241,52 @@
           </ul>
 
 
-          <h2 class="clear">Common Challenges in Cooperative Learning (and How to Solve Them)</h2>
+          <div class="clear"></div>
+        </section>
+
+        <section id="challenges">
+          <h2>Common Challenges in Cooperative Learning (and How to Solve Them)</h2>
           <p>Not all students mesh seamlessly with cooperative learning. Personality clashes, fear of failure, off-task talking&hellip; teachers frequently encounter structural and social dynamics that can derail cooperative learning.</p>
           <p><em>Here are some common operational and behavioral issues:</em></p>
 
-          <h3>The "Hitchhiker" (Social Loafing)</h3>
-          <p>One or two students actively or passively disengage, allowing highly motivated peers to carry the cognitive load and do the actual work.</p>
+          <div class="grid2">
+            <div class="mini"><h3>The "Hitchhiker" (Social Loafing)</h3>
+<p>One or two students actively or passively disengage, allowing highly motivated peers to carry the cognitive load and do the actual work.</p>
           <p><em>Strategy:</em> Implement individual accountability mechanisms. Use structures like "Numbered Heads Together" where you randomly call a number (1&ndash;4) to answer for the group, meaning the group must ensure everyone understands the material. Alternatively, require color-coded contributions (e.g., each student writes their portion in a specific ink color). Use proximity, positive reinforcement, and/or encouragement to participate in the process. If you run into a roadblock, sometimes that hitchhiker might need to be pulled &ndash; be aware, though, this could be a strategy to avoid working with others.</p>
-
-          <h3>The "Dictator" (The Overbearing Achiever)</h3>
-          <p>A high-achieving student takes over the entire process, refusing to delegate or listen to peer input because they care more about securing an "A" than the collaborative process.</p>
+            </div>
+            <div class="mini"><h3>The "Dictator" (The Overbearing Achiever)</h3>
+<p>A high-achieving student takes over the entire process, refusing to delegate or listen to peer input because they care more about securing an "A" than the collaborative process.</p>
           <p><em>Strategy:</em> Reinforce following the cooperative learning structure steps and double-check the task for PIES. Model coaching and the value in being a team. Try starting with the number or partner so that the high-achieving student is forced to go last in order. The overachiever physically cannot complete the task without actively listening to their peers' assigned resources.</p>
-
-          <h3>The "Reluctant One" (The Introverted or Anxious Student)</h3>
-          <p>The student withdraws, freezes, or experiences high anxiety when forced into rapid, unstructured social interactions. They may understand the content perfectly but are too overwhelmed by group dynamics, sensory input, or fear of judgment to fight for airtime in a loud conversation.</p>
+            </div>
+            <div class="mini"><h3>The "Reluctant One" (The Introverted or Anxious Student)</h3>
+<p>The student withdraws, freezes, or experiences high anxiety when forced into rapid, unstructured social interactions. They may understand the content perfectly but are too overwhelmed by group dynamics, sensory input, or fear of judgment to fight for airtime in a loud conversation.</p>
           <p><em>Strategy:</em> Implement a strict "Think Time" protocol before any group discussion begins. Require all students to write their answers down before sharing; this gives anxious students the chance to process and prepare a script without being put on the spot. Additionally, consider a "give to get" by pairing the student with a friend or someone they are comfortable with. You might also need to do more teambuilding to build the capacity of trust within the team; start with low-stakes activities, and avoid activities that require sharing of personal information or feelings.</p>
-
-          <h3>Off-Task Socializing</h3>
-          <p>Groups use the structured or unstructured time to catch up on personal issues or social gossip, usually because the teacher provided a vague goal without a strict time limit. Students can also have difficulty understanding norms of when to talk to their team vs. when NOT to.</p>
+            </div>
+            <div class="mini"><h3>Off-Task Socializing</h3>
+<p>Groups use the structured or unstructured time to catch up on personal issues or social gossip, usually because the teacher provided a vague goal without a strict time limit. Students can also have difficulty understanding norms of when to talk to their team vs. when NOT to.</p>
           <ul>
             <li><em>Strategy:</em> Be explicit about when talking is allowed vs. not. Say, "We will go from social to non-social. If you just finished a structure, then know the next transition is non-social."</li>
             <li><em>Strategy:</em> Use extreme, artificial time pressure for immediate deliverables. Give students "not enough time." Say, "You have exactly 1 minute to produce two written similarities on your whiteboard. Go." Add process accountability. Tell students and consistently call on random students for share-out. Set a norm that students DO NOT need to talk outside of their team.</li>
             <li><strong><em>Consider:</em></strong> Your seating layout might be contributing to the issue. Sometimes pods or banquet style seating can invite extra off-task socializing. Cooperative learning can still be achieved, even in forward-facing rows, with a clear labeling system in place. See the Fixed Seating Teams image in the <a href="#teams">Teams</a> section of this page.</li>
           </ul>
-
-          <h3>Fake Collaboration (Divide and Conquer)</h3>
-          <p>Students immediately divide a project into separate parts or shortcut the process, work in total isolation, and "staple it together" at the end, defeating the purpose of interaction.</p>
+            </div>
+            <div class="mini"><h3>Fake Collaboration (Divide and Conquer)</h3>
+<p>Students immediately divide a project into separate parts or shortcut the process, work in total isolation, and "staple it together" at the end, defeating the purpose of interaction.</p>
           <p><em>Strategy:</em> Talk to the group directly and remind them of the norms, the process, and the purpose of the cooperative task. Design tasks that require synthesis rather than accumulation. Try to read the group to see what might be the friction point. Is there a personality clash, tension, or something else? There's a deeper reason why the group is avoiding the collaboration.</p>
-
-          <h3>The "Status" Hierarchy</h3>
-          <p>Groups naturally defer to the student perceived as the "smartest" or most popular, treating their ideas as facts while dismissing contributions from students who typically struggle or are English Language Learners.</p>
+            </div>
+            <div class="mini"><h3>The "Status" Hierarchy</h3>
+<p>Groups naturally defer to the student perceived as the "smartest" or most popular, treating their ideas as facts while dismissing contributions from students who typically struggle or are English Language Learners.</p>
           <p><em>Strategy:</em> Use a turn-timer or "Talking Token" system to enforce equity. Each student gets three tokens; they must spend a token to speak and cannot speak again once their tokens are gone until everyone's tokens are spent. Additionally, publicly validate a strong academic contribution from a typically low-status student to elevate their perceived competence.</p>
-
-          <h3>The Speed Gap (Unequal Pacing)</h3>
-          <p>One member lags behind while another zooms forward. Examine the task and how it aligns with PIES. Another speed issue: one group rushes through the assignment and becomes a behavioral distraction, while another group is still stuck on step one.</p>
+            </div>
+            <div class="mini"><h3>The Speed Gap (Unequal Pacing)</h3>
+<p>One member lags behind while another zooms forward. Examine the task and how it aligns with PIES. Another speed issue: one group rushes through the assignment and becomes a behavioral distraction, while another group is still stuck on step one.</p>
           <p><em>Strategy:</em> Provide a scaffold to the struggling group. Sit in with them at the start of the activity to give them some guidance if they are slow starting. Build in relevant "sponge activities" (extension questions or peer-review protocols) that fast-finishers must complete while waiting.</p>
-
-          <h3>Social Skills Deficits</h3>
-          <p>Students lack the vocabulary or social mechanics to be patient, disagree politely, take turns, or build on another's idea, resulting in destructive arguing or awkward silence.</p>
+            </div>
+            <div class="mini"><h3>Social Skills Deficits</h3>
+<p>Students lack the vocabulary or social mechanics to be patient, disagree politely, take turns, or build on another's idea, resulting in destructive arguing or awkward silence.</p>
           <p><em>Strategy:</em> Take time to train students in these skills and give concrete examples or scenarios. Adults have a hard time with this part; most certainly, young people will as well. Post explicit sentence stems on the board or their desks and require their use. Practice scripts like "I agree with [Name] and want to add..." or "I see it differently because..." Treat social skills as academic content that requires direct instruction and role-playing before the group work begins.</p>
+            </div>
+          </div>
 
           <div class="box">
             <h3>5 Tips for Student "Turn &amp; Talk" Structures</h3>
