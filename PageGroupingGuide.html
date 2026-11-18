@@ -90,6 +90,25 @@
     .coop .w-fixed { width: 55%; }
     .coop .colors span { font-weight: 700; }
     @media (max-width: 736px) { .coop .bc { grid-template-columns: 1fr; } .coop .icon-r { width: 84px; } .coop .w-fixed { width: 100%; } }
+    /* Stronger headers and contrast */
+    .coop section > h2 { font-size: 1.35em; font-weight: 900; letter-spacing: 0.1em; color: #3a3a3a; border-left: 6px solid #f2849e; padding-left: 0.6em; line-height: 1.3; }
+    .coop section { border-top: none; padding: 1.6em 0 0.6em; margin-top: 2em; }
+    .coop section.tint { background: #f6f5f8; border-radius: 16px; padding: 1.6em 1.8em 0.8em; }
+    .coop section.tint .bc > div, .coop section.tint .mini { background: #fff; }
+    .coop .tagline { color: #f2849e; }
+    .coop .bestfor { background: rgba(242,132,158,0.08); border-radius: 12px; padding: 1em 1.4em 0.2em; margin: 0 0 1em; overflow: hidden; }
+    .coop section.tint .bestfor { background: #fff; }
+    .coop .bestfor p { margin-bottom: 0.5em; }
+    .coop .bc h3 { color: #f2849e; }
+    .coop .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 1.2em; margin: 1em 0 1.4em; }
+    .coop .grid3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.2em; margin: 1em 0 1.4em; align-items: start; }
+    .coop .mini { border: solid 1px rgba(0,0,0,0.12); border-radius: 12px; padding: 1.2em 1.4em 0.3em; }
+    .coop .mini h3 { margin: 0 0 0.4em; font-size: 1.05em; color: #3a3a3a; }
+    .coop .mini h3 .icon { color: #f2849e; margin-right: 0.3em; border-bottom: none; }
+    .coop .mini .size { font-size: 0.8em; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: #f2849e; margin: -0.2em 0 0.6em; }
+    .coop .mini ul { margin-bottom: 1em; } .coop .mini li { font-size: 0.95em; }
+    @media (max-width: 980px) { .coop .grid3 { grid-template-columns: 1fr; } }
+    @media (max-width: 736px) { .coop .grid2 { grid-template-columns: 1fr; } .coop section.tint { padding: 1.2em 1em 0.6em; border-radius: 12px; } }
   </style>
 </head>
 <body class="is-preload">
@@ -140,6 +159,7 @@
           <h2>Strategic Grouping</h2>
           <img class="icon-r" src="images/GroupIconStrategic.png" alt="" width="120" height="111">
           <p class="tagline">TARGETED. BALANCED. EFFICIENT. MORE CONTROL.</p>
+          <div class="bestfor">
           <p><strong>Best For:</strong></p>
           <ul>
             <li>Learning Content &larr; most recommended method</li>
@@ -147,6 +167,7 @@
             <li>Supports high-stakes learning</li>
             <li>Activities requiring specific skill levels</li>
           </ul>
+          </div>
           <div class="bc">
             <div>
               <h3>Benefits</h3>
@@ -169,16 +190,18 @@
           <p>Build strategic groups from your class data in a few clicks with <a href="PageGroupingStudio.html">Grouping Studio</a>.</p>
         </section>
 
-        <section id="random">
+        <section id="random" class="tint">
           <h2>Random Grouping</h2>
           <img class="icon-r" src="images/GroupIconRandom.png" alt="" width="120" height="123">
           <p class="tagline">QUICK. ADAPTIVE. LOW PREP, NO PREP, ON-THE-FLY.</p>
+          <div class="bestfor">
           <p><strong>Best For:</strong></p>
           <ul>
             <li>Icebreakers and community-building activities</li>
             <li>Low-stakes collaborative tasks</li>
             <li>Short-term or one-off assignments</li>
           </ul>
+          </div>
           <div class="bc">
             <div>
               <h3>Benefits</h3>
@@ -213,67 +236,54 @@
           </ul>
         </section>
 
-        <section id="setups">
+        <section id="setups" class="tint">
           <h2>Types of Grouping Setups</h2>
           <img class="icon-r" src="images/GroupIconSetups.png" alt="" width="120" height="116">
           <p>These can be <strong><em>FIXED</em></strong> or <strong><em>FLEXIBLE</em></strong>. Table Teams/Pods work great as fixed groups that are tied to the seating chart. The other types can work that way, but also function great to incorporate movement and change of pace. For example, students might be in teams of 4 as a table team, but the teacher could have all the "1's" in the group meet to create a temporary mobile quad.</p>
-          <p><strong>Table Teams/Pods:</strong> 3&ndash;5 members. Research shows that groups of more than 5 have lower levels of productivity. In my opinion, 4 in a group is the sweet spot.</p>
-          <ul>
-            <li>Flexible, embedded face/shoulder pairings, structured</li>
-            <li>Best for strategic grouping</li>
-          </ul>
-          <p><strong>Quads/Triads:</strong> 3&ndash;4 members. Same description as above, except not fixed to the seating arrangement.</p>
-          <ul>
-            <li>Supports strategic or random</li>
-          </ul>
-          <p><strong>Pairs:</strong> 2 members. Flexible, focused. Fewer distractions. Good for peer teaching/review.</p>
-          <p><strong>Larger Teams:</strong> 6 or more members. Good for rotations, larger projects, games/competitions.</p>
-          <ul>
-            <li>Complex activities such as Socratic discussions, debates, mock trials, simulations, dramas/acting</li>
-          </ul>
+          <div class="grid2 clear">
+            <div class="mini"><h3><span class="icon solid fa-users" aria-hidden="true"></span> Table Teams/Pods</h3><p class="size">3&ndash;5 members</p><p>Groups of more than 5 tend to be less productive. In my opinion, 4 in a group is the sweet spot.</p><ul><li>Flexible, embedded face/shoulder pairings, structured</li><li>Best for strategic grouping</li></ul></div>
+            <div class="mini"><h3><span class="icon solid fa-user-friends" aria-hidden="true"></span> Quads/Triads</h3><p class="size">3&ndash;4 members</p><p>Same description as above, except not fixed to the seating arrangement.</p><ul><li>Supports strategic or random</li></ul></div>
+            <div class="mini"><h3><span class="icon solid fa-user-friends" aria-hidden="true"></span> Pairs</h3><p class="size">2 members</p><p>Flexible, focused. Fewer distractions. Good for peer teaching/review.</p></div>
+            <div class="mini"><h3><span class="icon solid fa-users" aria-hidden="true"></span> Larger Teams</h3><p class="size">6 or more members</p><p>Good for rotations, larger projects, games/competitions.</p><ul><li>Complex activities such as Socratic discussions, debates, mock trials, simulations, dramas/acting</li></ul></div>
+          </div>
         </section>
 
         <section id="build-strategic">
           <h2>Building Strategic Groups</h2>
-          <h3>1. Academic Ability</h3>
-          <p><strong>Assessment data</strong> &ndash; Use assessment data such as a pre-test, diagnostic, summative, benchmark, grades, etc. to form small groups.</p>
+          <div class="grid2">
+            <div class="mini"><h3>1. Academic Ability</h3><p><strong>Assessment data</strong> &ndash; Use assessment data such as a pre-test, diagnostic, summative, benchmark, grades, etc. to form small groups.</p>
           <ul>
             <li><strong>Mixed ability</strong> groups (heterogeneous) = balance the group with one of each ability level, i.e. high, medium-high, medium-low, and low.</li>
             <li><strong>Similar ability</strong> groups (homogeneous) = a differentiation</li>
           </ul>
-          <p><strong>Grades</strong> &ndash; Use grades as the data. Good for supporting ability with work ethic.</p>
-          <h3>2. Personality</h3>
-          <p><strong>Personality</strong> &ndash; Grouping students based on personality type can help facilitate productive groups. For example, the <a href="PageColors.html">Colors Personality Assessment</a> has:</p>
-          <p class="colors"><span style="color:#e57f12">Orange</span> (energy) | <span style="color:#2a9d43">Green</span> (analytical) | <span style="color:#2f6fe0">Blue</span> (support) | <span style="color:#c99a00">Gold</span> (organize)</p>
-          <h3>3. Blended/Multi</h3>
-          <p>Take it to the next level by blending these two for super-effective grouping.</p>
-          <h3>4. Comfort/Familiarity</h3>
-          <p>Teacher assigned or student choice formed groups. There can be value in grouping students based on familiarity. Good for creative, personal, or complex projects that require students to work closely in and out of class.</p>
+          <p><strong>Grades</strong> &ndash; Use grades as the data. Good for supporting ability with work ethic.</p></div>
+            <div class="mini"><h3>2. Personality</h3><p><strong>Personality</strong> &ndash; Grouping students based on personality type can help facilitate productive groups. For example, the <a href="PageColors.html">Colors Personality Assessment</a> has:</p>
+          <p class="colors"><span style="color:#e57f12">Orange</span> (energy) | <span style="color:#2a9d43">Green</span> (analytical) | <span style="color:#2f6fe0">Blue</span> (support) | <span style="color:#c99a00">Gold</span> (organize)</p></div>
+            <div class="mini"><h3>3. Blended/Multi</h3><p>Take it to the next level by blending these two for super-effective grouping.</p></div>
+            <div class="mini"><h3>4. Comfort/Familiarity</h3><p>Teacher assigned or student choice formed groups. There can be value in grouping students based on familiarity. Good for creative, personal, or complex projects that require students to work closely in and out of class.</p></div>
+          </div>
         </section>
 
-        <section id="build-random">
+        <section id="build-random" class="tint">
           <h2>Building Random Groups</h2>
-          <h3>1. Visual/Color-Based</h3>
-          <ul>
+          <div class="grid3">
+            <div class="mini"><h3>1. Visual/Color-Based</h3><ul>
             <li><strong>Playing Cards</strong> &ndash; Pass out cards and have students match by number, suit, same/different color.</li>
             <li><strong>Color Swatches or Paint Chips</strong> &ndash; Pass out paint sample cards from a hardware store. Then, group by matching shades, warm/cool colors, or even gradient order.</li>
             <li><strong>Stickers/Dots</strong> &ndash; Hand out small colored stickers (on shirts, notebooks, or hands) and have students find their color matches.</li>
             <li><strong>Number Match</strong> &ndash; Students get cards with numbers; they group with the people who have the same number.</li>
             <li><strong>Emoji Cards</strong> &ndash; Print or draw emojis on cards; students find others with the same or related emoji.</li>
-          </ul>
-          <h3>2. Matching Object-Based</h3>
-          <ul>
+          </ul></div>
+            <div class="mini"><h3>2. Matching Object-Based</h3><ul>
             <li><strong>Puzzle Pieces</strong> &ndash; Cut images or quotes into pieces. Students find the others who complete their puzzle.</li>
             <li><strong>LEGO Bricks</strong> &ndash; Give each student a LEGO piece and group them by matching piece type or color.</li>
             <li><strong>Mystery Bag</strong> &ndash; Students pull an object from a bag (eraser, paperclip, mini toy) and group with those who drew the same item.</li>
             <li><strong>Coordinates</strong> &ndash; Hand out cards with coordinates (like B3, A5). Students find the matching "grid" group.</li>
-          </ul>
-          <h3>3. Line-ups</h3>
-          <ul>
+          </ul></div>
+            <div class="mini"><h3>3. Line-ups</h3><ul>
             <li><strong>Students line up</strong> based on some criteria in ascending/descending order like birthday, alphabetical, shoe size, height, etc.</li>
-            <li><strong>Paint sample cards</strong> from a hardware store. Hand out and group by matching shades, warm/cool colors, or even gradient order.</li>
-            <li><strong>Stickers/Dots</strong> &ndash; Hand out small colored stickers (on shirts, notebooks, or hands) and have students find their color matches.</li>
-          </ul>
+          </ul></div>
+          </div>
         </section>
 
         <section id="fixed">
