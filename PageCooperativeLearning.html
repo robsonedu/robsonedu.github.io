@@ -1,0 +1,315 @@
+<!DOCTYPE HTML>
+<html lang="en">
+<head>
+<!-- Privacy-friendly analytics by Plausible: no cookies, and it never sees student names or class data -->
+<script async src="https://plausible.io/js/pa-5Fst0gD4eHLdc8P8C8P6G.js"></script>
+<script>
+  window.plausible=window.plausible||function(){(plausible.q=plausible.q||[]).push(arguments)},plausible.init=plausible.init||function(i){plausible.o=i||{}};
+  plausible.init()
+  /* RobsonEDU: count which tools get used. Only action names go out, never student or class data.
+     rTrack(name, props, once): "once" counts an action one time per page visit. */
+  window.rTrack=function(n,p,once){try{var k=n+JSON.stringify(p||{});if(once){var s=rTrack.s=rTrack.s||{};if(s[k])return;s[k]=1}p?plausible(n,{props:p}):plausible(n)}catch(e){}};
+  document.addEventListener('click',function(e){try{var a=e.target.closest&&e.target.closest('a[href]');if(!a)return;var h=a.getAttribute('href')||'';
+    if(/^mailto:/i.test(h))rTrack('Email Click');
+    else if(/\.pdf([?#]|$)/i.test(h))rTrack('PDF Download',{file:decodeURIComponent(h.split(/[?#]/)[0].split('/').pop())});
+    else if(a.closest('.tc-card'))rTrack('TeamCard Opened',{card:(a.querySelector('img')||{}).alt||''});}catch(x){}},true);
+</script>
+  <title>Cooperative Learning for Teachers: Kagan Structures, PIES and Teams | RobsonEDU</title>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
+  <meta name="description" content="A practical teacher guide to cooperative learning: the PIES principles, teams of 4 with numbers and A/B partners, five high-return Kagan structures, management tips and fixes for common problems.">
+  <link rel="stylesheet" href="assets/css/main.css" />
+  <noscript><link rel="stylesheet" href="assets/css/noscript.css" /></noscript>
+  <link rel="icon" type="image/png" href="images/FaviconCircleR.png">
+  <link rel="icon" type="image/svg+xml" href="images/FaviconCircleR.svg">
+  <link rel="shortcut icon" href="images/FaviconCircleR.ico" type="image/x-icon">
+  <link rel="canonical" href="https://www.robsonedu.com/PageCooperativeLearning.html">
+  <meta property="og:type" content="article">
+  <meta property="og:site_name" content="RobsonEDU">
+  <meta property="og:title" content="Cooperative Learning for Teachers: Kagan Structures, PIES and Teams | RobsonEDU">
+  <meta property="og:description" content="A practical teacher guide to cooperative learning: the PIES principles, teams of 4 with numbers and A/B partners, five high-return Kagan structures, management tips and fixes for common problems.">
+  <meta property="og:url" content="https://www.robsonedu.com/PageCooperativeLearning.html">
+  <meta property="og:image" content="https://www.robsonedu.com/images/CooperativeLearningDoug.png">
+  <meta name="twitter:card" content="summary_large_image">
+  <script type="application/ld+json">
+  {"@context":"https://schema.org","@type":"Article","headline":"Cooperative Learning: Kagan Structures, PIES and Teams",
+   "description":"A practical teacher guide to cooperative learning: the PIES principles, teams of 4 with numbers and A/B partners, five high-return Kagan structures, management tips and fixes for common problems.","url":"https://www.robsonedu.com/PageCooperativeLearning.html","image":"https://www.robsonedu.com/images/CooperativeLearningDoug.png","inLanguage":"en",
+   "author":{"@type":"Person","name":"Allen Robson","url":"https://www.robsonedu.com/about.html","jobTitle":"District Instructional Coach"},
+   "publisher":{"@type":"Organization","name":"RobsonEDU","url":"https://www.robsonedu.com/"},
+   "audience":{"@type":"EducationalAudience","educationalRole":"teacher"}}
+  </script>
+  <style>
+    html { scroll-behavior: smooth; }
+    @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+    .coop h1 { margin-bottom: 0.3em; }
+    .coop .byline { color: #8a8a8a; font-size: 0.9em; margin-bottom: 1.4em; }
+    .coop section { scroll-margin-top: 20px; padding-top: 8px; margin-top: 3em; border-top: solid 2px #f2849e; }
+    .coop section > h2 { margin-top: 1.4em; }
+    .coop h3 { margin: 1.6em 0 0.4em; font-size: 1.1em; text-transform: none; letter-spacing: 0; font-weight: 700; }
+    .coop .lead { font-size: 1.1em; }
+    .coop .jump { display: flex; flex-wrap: wrap; gap: 0.6em; margin: 0 0 1em; padding: 0; list-style: none; }
+    .coop .jump li { padding: 0; }
+    .coop .jump .button { padding: 0 1.3em; letter-spacing: 0.2em; }
+    .coop .box { border-left: 4px solid #f2849e; background: rgba(242,132,158,0.07); border-radius: 0 0.5rem 0.5rem 0; padding: 1.3em 1.6em 0.4em; margin: 1.5em 0 2em; }
+    .coop .box h3 { margin-top: 0; }
+    .coop .card { border: solid 1px rgba(0,0,0,0.12); border-radius: 12px; padding: 1.3em 1.6em 0.4em; margin: 1.5em 0; }
+    .coop .card h3 { margin-top: 0.2em; }
+    .coop .note { font-style: italic; color: #777; }
+    .coop ul li, .coop ol li { margin-bottom: 0.35em; }
+    .coop .pics { display: grid; grid-template-columns: 2fr 1fr 1fr; gap: 1.2em; align-items: center; margin: 1em 0 1.5em; }
+    .coop .pics img, .coop .fig img { width: 100%; height: auto; display: block; border-radius: 8px; }
+    .coop .fig { display: grid; grid-template-columns: minmax(0,1.4fr) minmax(0,1fr); gap: 1.6em; align-items: center; margin: 1.5em 0; }
+    .coop .fig > a { border-bottom: none; }
+    .coop .wgf-row { grid-template-columns: minmax(0,1.6fr) minmax(0,1fr); align-items: start; }
+    .coop .fine { font-size: 0.85em; color: #8a8a8a; margin-top: 2.5em; }
+    @media (max-width: 736px) { .coop .pics { grid-template-columns: 1fr 1fr; } .coop .pics a:first-child { grid-column: 1 / -1; } .coop .fig { grid-template-columns: 1fr; } }
+  </style>
+</head>
+<body class="is-preload">
+  <div id="wrapper">
+    <header id="header">
+      <div class="inner">
+        <a href="index.html">
+          <span class="symbol">
+            <img src="images/Gray%20Redu%20Narrow%20logo.png" alt="Robson EDU Logo" class="logo-large" />
+          </span>
+        </a>
+        <nav><ul><li><a href="#menu">Menu</a></li></ul></nav>
+      </div>
+    </header>
+
+    <nav id="menu">
+      <h2>Menu</h2>
+      <ul>
+        <li><a href="index.html">Home</a></li>
+        <li><a href="PageTimers.html">Timers</a></li>
+        <li><a href="PageSelectors.html">Selectors</a></li>
+        <li><a href="PageGroupingStudio.html">Grouping Studio: Seating Charts &amp; Groups</a></li>
+        <li><a href="PageGrouping.html">Grouping Strategies</a></li>
+        <li><a href="PageCooperativeLearning.html">Cooperative Learning</a></li>
+        <li><a href="PageTeamCards.html">TeamCard Table Mats</a></li>
+        <li><a href="PageColors.html">Colors Personality Assessment</a></li>
+        <li><a href="about.html">About</a></li>
+      </ul>
+    </nav>
+
+    <div id="main">
+      <div class="inner coop">
+        <h1>Cooperative Learning</h1>
+        <p class="byline">Written by <a href="about.html">Allen Robson</a>, District Instructional Coach and former secondary ELA teacher</p>
+        <ul class="jump">
+          <li><a href="#overview" class="button small">Overview &amp; PIES</a></li>
+          <li><a href="#teams" class="button small">Teams</a></li>
+          <li><a href="#structures" class="button small">Structures</a></li>
+          <li><a href="#management" class="button small">Management</a></li>
+          <li><a href="RobsonEDU-Cooperative-Learning.pdf" class="button primary small" target="_blank" rel="noopener noreferrer">Download the PDF</a></li>
+        </ul>
+
+        <section id="overview">
+          <h2>Overview &amp; PIES Principle</h2>
+          <p class="lead"><strong>Cooperative learning</strong> is a structured instructional strategy where small teams of students work together toward a shared academic goal.</p>
+          <p>Unlike traditional "group work" &ndash; where three students watch one overachiever do all the heavy lifting &ndash; cooperative learning is intentionally engineered so that individual success depends on group success, and vice versa. It prioritizes participation and engagement above task completion.</p>
+          <p>For secondary educators (grades 6&ndash;12), cooperative learning leverages teenagers' natural drive for social connection and redirects it toward academic engagement, critical thinking, and skill-building.</p>
+          <p><strong>Kagan Cooperative Learning</strong> is a structural approach to cooperative learning developed by Dr. Spencer Kagan that integrates peer interaction directly into instruction through repeatable, step-by-step instructional tools called <strong>Kagan Structures</strong>.</p>
+          <p>Kagan focuses on <strong>content-free structures</strong> that secondary teachers can drop into any lesson plan in seconds &ndash; whether teaching 6th-grade Math, 9th-grade Science, or 12th-grade English.</p>
+          <p>A Kagan classroom is an active learning experience using a structured way of processing information that ensures <strong>every</strong> student participates and thinks deeply. Visit <a href="https://www.kaganonline.com" target="_blank" rel="noopener noreferrer">kaganonline.com</a> for more information.</p>
+
+          <div class="box">
+            <h3>The Core Framework: Kagan's PIES Principles</h3>
+            <p><strong>Positive Interdependence:</strong> Are students on the same side? Does one student's success help others succeed? The task requires cooperation; one student cannot complete it alone.</p>
+            <p><strong>Individual Accountability:</strong> Must every student perform publicly in front of someone? No one can hide. Every team member must demonstrate their own learning without relying on a team spokesperson.</p>
+            <p><strong>Equal Participation:</strong> Is participation equalized by time or turn? Kagan structures eliminate the classic secondary dynamic where one outspoken student hogs the airtime while others zone out.</p>
+            <p><strong>Simultaneous Interaction:</strong> What percentage of students are overtly engaged at any given second? In a traditional classroom, only 1 out of 30 students speaks at a time (3% engagement). In a Kagan classroom, 50%&ndash;75% of the class is actively talking or writing at the exact same time.</p>
+          </div>
+        </section>
+
+        <section id="teams">
+          <h2>Teams: Essential Kagan Teams &amp; Seating</h2>
+          <p>Kagan strongly advocates for heterogeneous teams of 4 (mixed ability*) to maximize interaction without management chaos. Other variations can include teams of 3, 5, and 6. Larger groups drastically reduce efficacy. <em>*Ability can be based on any criteria such as academic skills, behavior, personality, work ethic, etc.</em></p>
+          <p><strong>Team Seating Arrangement:</strong> Each team consists of one of each: <em>High</em> &ndash; <em>High-Medium</em> &ndash; <em>Low-Medium</em> &ndash; and <em>Low</em> performing student, numbered 1&ndash;4.</p>
+          <p><strong>Partner Management (A/B):</strong><br>
+            <em>Shoulder Partners:</em> the person sitting directly next to the student.<br>
+            <em>Face Partners:</em> the person sitting directly across from the student.</p>
+          <p>A table labeling system is critical. It can be a printed single table mat or individual labels/stickers for each desk. <a href="PageTeamCards.html">Check out my TeamCard table mats you can print.</a></p>
+          <p>Works with a variety of seating layouts. Here are some common setups:</p>
+          <div class="pics">
+            <a href="images/Fixed-Seating-Teams.jpg" target="_blank" rel="noopener noreferrer"><img src="images/Fixed-Seating-Teams.jpg" alt="Fixed seating teams: single desk pods, table teams, circles, rows and a team of 6, with seat numbers and A/B partners" loading="lazy" decoding="async"></a>
+            <a href="PageTeamCards.html"><img src="images/CoopTeamCard4.png" alt="TeamCard 4 table mat: seats 1 to 4 with A/B partners" loading="lazy" decoding="async"></a>
+            <a href="PageTeamCards.html"><img src="images/CoopTeamCard6.png" alt="TeamCard 6 table mat: seats 1 to 6 with shoulder and flip partners" loading="lazy" decoding="async"></a>
+          </div>
+        </section>
+
+        <section id="structures">
+          <h2>Structures: Popular &amp; High Return Kagan Structures</h2>
+          <p>These <strong>structures require zero extra lesson-planning time</strong>; just insert them into your lesson any time you want students to think, practice, or process content. Basically, any time you want to ask a whole group question and call on raised hands &ndash; that's a perfect time for a structure and share out.</p>
+          <div class="fig">
+            <div>
+              <p><a href="https://canva.link/5ty10uzbwtugvt3" target="_blank" rel="noopener noreferrer"><strong>Digital Display Instructions for Class</strong></a><br>Project these step-by-step directions to ensure smooth operation when using a structure.</p>
+            </div>
+            <a href="https://canva.link/5ty10uzbwtugvt3" target="_blank" rel="noopener noreferrer"><img src="images/CoopStructuresDisplay.jpg" alt="Kagan Cooperative Learning Structures: Digital Display Instructions for Class" loading="lazy" decoding="async"></a>
+          </div>
+
+          <div class="card">
+            <h3>1. RoundRobin Family</h3>
+            <p>Teacher poses a question or topic with multiple possible answers. Then, each person in the team takes a turn to respond verbally.</p>
+            <p>Variations:</p>
+            <ul>
+              <li><strong>Single RoundRobin</strong> &ndash; each teammate takes a turn. Round is over after each person shares once.</li>
+              <li><strong>Continuous RoundRobin</strong> &ndash; each teammate takes a turn. Teams do multiple rounds until "Time's up!"</li>
+              <li><strong>Timed RoundRobin</strong> &ndash; each teammate responds for a duration of time.</li>
+            </ul>
+            <p class="note">Good for lengthy verbal responses.</p>
+          </div>
+
+          <div class="card">
+            <h3>2. Pair Share</h3>
+            <p>Teacher poses a question or topic. Teacher picks who starts; the first partner shares the response. Then, the second partner shares.</p>
+            <p>Variations:</p>
+            <ul>
+              <li><strong>Timed Pair Share</strong> &ndash; each partner responds for a duration of time.</li>
+              <li><strong>Think Write Share</strong> &ndash; each partner writes down an answer or response before sharing.</li>
+              <li><strong>Silent Pair Share</strong> &ndash; completely written (non-verbal) version of Pair Share.</li>
+            </ul>
+            <p class="note">Works best with short responses.</p>
+          </div>
+
+          <div class="card">
+            <h3>3. RoundTable Family</h3>
+            <p>In teams, teammates take turns generating written responses, solving problems, or making a contribution to a project.</p>
+            <p>Variations:</p>
+            <ul>
+              <li><strong>Single RoundTable</strong> &ndash; the team does just one round of RoundTable.</li>
+              <li><strong>Continuous RoundTable</strong> &ndash; the team does multiple rounds until the teacher calls "Time's up!"</li>
+              <li><strong>Timed RoundTable</strong> &ndash; each teammate contributes for a specific duration.</li>
+              <li><strong>RoundTable Consensus</strong> &ndash; following each performance, teammates reach consensus.</li>
+            </ul>
+            <p class="note">Options: after each turn, agree or modify/correct; after all turns, pick the best answer; fully agree on one answer to present for the team.</p>
+          </div>
+
+          <div class="card">
+            <h3>4. Quiz-Quiz-Trade</h3>
+            <p>Classmates quiz a partner, get quizzed by the partner, then trade. Continually repeat with new partners.</p>
+          </div>
+
+          <div class="card">
+            <h3>5. Stand Up-Hand Up-Pair Up</h3>
+            <p>Teacher asks the class to stand up, put their hand up in the air (this means you need a partner), and go pair up with someone from another team.</p>
+            <p class="note">Good for a change of pace or energy boost.</p>
+          </div>
+        </section>
+
+        <section id="management">
+          <h2>Kagan Classroom Management Essentials</h2>
+          <p><strong>Timers!</strong> Use a visible timer for everything. For example, say: "You have 30 seconds to discuss with your partner, A's go first &ndash; on your mark, get set, go!" START THE TIMER. <a href="PageTimers.html"><strong>Find my timers here!</strong></a></p>
+          <p><strong>Attention Getter.</strong> Implement a consistent way to gather the attention of everyone in the room. Kagan uses "The Quiet Signal," a universal visual signal (a raised hand). When the teacher raises a hand, students immediately stop talking/stop doing, raise their hand, and look at the teacher. Within 3 seconds, a room of 30 students goes completely silent.</p>
+          <p><strong>Teambuilding &amp; Classbuilding.</strong> Kagan emphasizes spending time each week (5&ndash;10 mins) on non-academic bonding activities (e.g., "Would you rather...?") to build comfort and psychological/emotional safety so secondary students feel comfortable risking wrong answers in front of peers.</p>
+          <p><strong>Follow Steps Consistently.</strong> The steps of a structure are carefully engineered. The exact, step-by-step procedures (using timers, sequence and order, participation roles, etc.) are what guarantee an effective and efficient framework, specifically Equal Participation and Individual Accountability.</p>
+          <p>When you skip or miss a step, the structure can fall apart or fall back into traditional group work.</p>
+          <p><strong>Variety and Novelty.</strong> You'll want to use a structure multiple times until the operation is automatic, but be careful not to overly rely on a structure. If you start to see energy drop or some "going through the motions," it's time to change structures. Get really good at a handful of structures and rotate them out based on situation and need. Mixing and matching is the key!</p>
+          <div class="fig wgf-row">
+            <div>
+              <p>Furthermore, who goes first (1&ndash;4 or partner A/B) can get stale. Options:</p>
+              <ul>
+                <li>Get a set of Uno or playing cards for choosing 1&ndash;4. You randomly or blindly pick a card. Even better, let students pick a card.</li>
+                <li>Spin Numbers in <a href="PageSelectors.html">SELECTr PLUS</a> to pick a seat at random.</li>
+                <li>Check out this <a href="RobsonEDU-Who-Goes-First.pdf" target="_blank" rel="noopener noreferrer">Who Goes First One Pager</a> and roll a d20 die or randomly pick one of your liking.</li>
+              </ul>
+            </div>
+            <a href="RobsonEDU-Who-Goes-First.pdf" target="_blank" rel="noopener noreferrer" style="border-bottom:none"><img class="wgf" src="images/WhoGoesFirst.jpg" alt="Who Goes First? 20 ways to pick who starts, from largest shoe size to most pockets" loading="lazy" decoding="async" style="width:100%;height:auto;border-radius:8px;box-shadow:0 2px 8px rgba(0,0,0,0.15)"></a>
+          </div>
+
+          <h2>Common Challenges in Cooperative Learning (and How to Solve Them)</h2>
+          <p>Not all students mesh seamlessly with cooperative learning. Personality clashes, fear of failure, off-task talking&hellip; teachers frequently encounter structural and social dynamics that can derail cooperative learning.</p>
+          <p><em>Here are some common operational and behavioral issues:</em></p>
+
+          <h3>The "Hitchhiker" (Social Loafing)</h3>
+          <p>One or two students actively or passively disengage, allowing highly motivated peers to carry the cognitive load and do the actual work.</p>
+          <p><em>Strategy:</em> Implement individual accountability mechanisms. Use structures like "Numbered Heads Together" where you randomly call a number (1&ndash;4) to answer for the group, meaning the group must ensure everyone understands the material. Alternatively, require color-coded contributions (e.g., each student writes their portion in a specific ink color). Use proximity, positive reinforcement, and/or encouragement to participate in the process. If you run into a roadblock, sometimes that hitchhiker might need to be pulled &ndash; be aware, though, this could be a strategy to avoid working with others.</p>
+
+          <h3>The "Dictator" (The Overbearing Achiever)</h3>
+          <p>A high-achieving student takes over the entire process, refusing to delegate or listen to peer input because they care more about securing an "A" than the collaborative process.</p>
+          <p><em>Strategy:</em> Reinforce following the cooperative learning structure steps and double-check the task for PIES. Model coaching and the value in being a team. Try starting with the number or partner so that the high-achieving student is forced to go last in order. The overachiever physically cannot complete the task without actively listening to their peers' assigned resources.</p>
+
+          <h3>The "Reluctant One" (The Introverted or Anxious Student)</h3>
+          <p>The student withdraws, freezes, or experiences high anxiety when forced into rapid, unstructured social interactions. They may understand the content perfectly but are too overwhelmed by group dynamics, sensory input, or fear of judgment to fight for airtime in a loud conversation.</p>
+          <p><em>Strategy:</em> Implement a strict "Think Time" protocol before any group discussion begins. Require all students to write their answers down before sharing; this gives anxious students the chance to process and prepare a script without being put on the spot. Additionally, consider a "give to get" by pairing the student with a friend or someone they are comfortable with. You might also need to do more teambuilding to build the capacity of trust within the team; start with low-stakes activities, and avoid activities that require sharing of personal information or feelings.</p>
+
+          <h3>Off-Task Socializing</h3>
+          <p>Groups use the structured or unstructured time to catch up on personal issues or social gossip, usually because the teacher provided a vague goal without a strict time limit. Students can also have difficulty understanding norms of when to talk to their team vs. when NOT to.</p>
+          <ul>
+            <li><em>Strategy:</em> Be explicit about when talking is allowed vs. not. Say, "We will go from social to non-social. If you just finished a structure, then know the next transition is non-social."</li>
+            <li><em>Strategy:</em> Use extreme, artificial time pressure for immediate deliverables. Give students "not enough time." Say, "You have exactly 1 minute to produce two written similarities on your whiteboard. Go." Add process accountability. Tell students and consistently call on random students for share-out. Set a norm that students DO NOT need to talk outside of their team.</li>
+            <li><strong><em>Consider:</em></strong> Your seating layout might be contributing to the issue. Sometimes pods or banquet style seating can invite extra off-task socializing. Cooperative learning can still be achieved, even in forward-facing rows, with a clear labeling system in place. See the Fixed Seating Teams image in the <a href="#teams">Teams</a> section of this page.</li>
+          </ul>
+
+          <h3>Fake Collaboration (Divide and Conquer)</h3>
+          <p>Students immediately divide a project into separate parts or shortcut the process, work in total isolation, and "staple it together" at the end, defeating the purpose of interaction.</p>
+          <p><em>Strategy:</em> Talk to the group directly and remind them of the norms, the process, and the purpose of the cooperative task. Design tasks that require synthesis rather than accumulation. Try to read the group to see what might be the friction point. Is there a personality clash, tension, or something else? There's a deeper reason why the group is avoiding the collaboration.</p>
+
+          <h3>The "Status" Hierarchy</h3>
+          <p>Groups naturally defer to the student perceived as the "smartest" or most popular, treating their ideas as facts while dismissing contributions from students who typically struggle or are English Language Learners.</p>
+          <p><em>Strategy:</em> Use a turn-timer or "Talking Token" system to enforce equity. Each student gets three tokens; they must spend a token to speak and cannot speak again once their tokens are gone until everyone's tokens are spent. Additionally, publicly validate a strong academic contribution from a typically low-status student to elevate their perceived competence.</p>
+
+          <h3>The Speed Gap (Unequal Pacing)</h3>
+          <p>One member lags behind while another zooms forward. Examine the task and how it aligns with PIES. Another speed issue: one group rushes through the assignment and becomes a behavioral distraction, while another group is still stuck on step one.</p>
+          <p><em>Strategy:</em> Provide a scaffold to the struggling group. Sit in with them at the start of the activity to give them some guidance if they are slow starting. Build in relevant "sponge activities" (extension questions or peer-review protocols) that fast-finishers must complete while waiting.</p>
+
+          <h3>Social Skills Deficits</h3>
+          <p>Students lack the vocabulary or social mechanics to be patient, disagree politely, take turns, or build on another's idea, resulting in destructive arguing or awkward silence.</p>
+          <p><em>Strategy:</em> Take time to train students in these skills and give concrete examples or scenarios. Adults have a hard time with this part; most certainly, young people will as well. Post explicit sentence stems on the board or their desks and require their use. Practice scripts like "I agree with [Name] and want to add..." or "I see it differently because..." Treat social skills as academic content that requires direct instruction and role-playing before the group work begins.</p>
+
+          <div class="box">
+            <h3>5 Tips for Student "Turn &amp; Talk" Structures</h3>
+            <ol>
+              <li>Use a timer! 60 seconds or less for most instances. Use one with an ending sound!</li>
+              <li>Tell them who goes first!</li>
+              <li>Verbally remind them when time is up. Say, "Back with me in 3, 2, 1&hellip; Thank you."</li>
+              <li>Accountability. Tell them on the front end that they will have to share what was said after time is up.</li>
+              <li>Positive reinforcement. Compliment those doing the right thing, making a good point, displaying good social skills, etc.</li>
+            </ol>
+          </div>
+
+          <ul class="actions">
+            <li><a href="RobsonEDU-Cooperative-Learning.pdf" class="button primary" target="_blank" rel="noopener noreferrer">Download the PDF</a></li>
+            <li><a href="#header" class="button"><span class="icon solid fa-arrow-up" aria-hidden="true"></span> Back to top</a></li>
+          </ul>
+          <p class="fine">Kagan, Kagan Structures and the structure names on this page belong to Kagan Publishing &amp; Professional Development. RobsonEDU is not affiliated with Kagan. Learn more at <a href="https://www.kaganonline.com" target="_blank" rel="noopener noreferrer">kaganonline.com</a>.</p>
+        </section>
+      </div>
+    </div>
+
+    <footer id="footer">
+      <div class="inner">
+        <section>
+          <h2>Get in touch</h2>
+          <form method="post" action="https://formspree.io/f/xyzpwrlp">
+            <div class="fields">
+              <div class="field half"><input type="text" name="name" id="name" placeholder="Name" /></div>
+              <div class="field half"><input type="email" name="email" id="email" placeholder="Email" /></div>
+              <div class="field"><textarea name="message" id="message" placeholder="Message"></textarea></div>
+            </div>
+            <ul class="actions"><li><input type="submit" value="Send" class="primary" /></li></ul>
+          </form>
+        </section>
+        <section>
+          <h2>Follow</h2>
+          <ul class="icons">
+            <li><a href="mailto:kallenrobson@gmail.com" class="icon solid style2 fa-envelope" target="_blank" rel="noopener noreferrer"><span class="label">Email</span></a></li>
+            <li><a href="https://www.facebook.com/allen.robson/" class="icon brands style2 fa-facebook-f" target="_blank" rel="noopener noreferrer"><span class="label">Facebook</span></a></li>
+            <li><a href="https://www.instagram.com/all_robs/profilecard/?igsh=cnpraHU4eG5lYzJs" class="icon brands style2 fa-instagram" target="_blank" rel="noopener noreferrer"><span class="label">Instagram</span></a></li>
+          </ul>
+        </section>
+        <ul class="copyright">
+          <li>&copy; RobsonEDU. All rights reserved</li><li><a href="privacy.html">Privacy</a></li><li>Design: <a href="http://html5up.net">HTML5 UP</a></li>
+        </ul>
+      </div>
+    </footer>
+  </div>
+
+  <script src="assets/js/jquery.min.js"></script>
+  <script src="assets/js/browser.min.js"></script>
+  <script src="assets/js/breakpoints.min.js"></script>
+  <script src="assets/js/util.js"></script>
+  <script src="assets/js/main.js"></script>
+</body>
+</html>
