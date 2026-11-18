@@ -109,6 +109,21 @@
     .coop .mini ul { margin-bottom: 1em; } .coop .mini li { font-size: 0.95em; }
     @media (max-width: 980px) { .coop .grid3 { grid-template-columns: 1fr; } }
     @media (max-width: 736px) { .coop .grid2 { grid-template-columns: 1fr; } .coop section.tint { padding: 1.2em 1em 0.6em; border-radius: 12px; } }
+    /* Strategic = blue, Random = red */
+    .coop .intro-row { display: grid; grid-template-columns: minmax(0,1fr) 180px; gap: 1.4em; align-items: center; margin: 0 0 1.2em; }
+    .coop .intro-row .bestfor { margin: 0; height: 100%; box-sizing: border-box; }
+    .coop .intro-img { width: 180px; height: auto; display: block; border-radius: 16px; box-shadow: 0 6px 18px rgba(0,0,0,0.12); }
+    .coop .th-blue > h2 { border-left-color: #3d8fe0; }
+    .coop .th-blue .tagline, .coop .th-blue .bc h3 { color: #2f7fd0; }
+    .coop .th-blue .bestfor { background: rgba(61,143,224,0.09); }
+    .coop .th-blue .bc > div { border-color: rgba(61,143,224,0.35); }
+    .coop .th-red > h2 { border-left-color: #e8443a; }
+    .coop .th-red .tagline, .coop .th-red .bc h3 { color: #d93a30; }
+    .coop section.tint.th-red .bestfor { background: #fff; border-left: 4px solid #e8443a; }
+    .coop .th-red .bc > div { border-color: rgba(232,68,58,0.35); }
+    .coop .th-blue .bestfor { border-left: 4px solid #3d8fe0; }
+    .tool-link.c-blue .icon { color: #3d8fe0; } .tool-link.c-red .icon { color: #e8443a; }
+    @media (max-width: 736px) { .coop .intro-row { grid-template-columns: minmax(0,1fr) 96px; gap: 0.9em; } .coop .intro-img { width: 96px; border-radius: 12px; } }
   </style>
 </head>
 <body class="is-preload">
@@ -145,8 +160,8 @@
         <p class="byline">Written by <a href="about.html">Allen Robson</a>, District Instructional Coach and secondary ELA teacher</p>
         <a class="hero-img" href="images/GroupingStrategiesInfographic.jpg" target="_blank" rel="noopener noreferrer"><img src="images/GroupingStrategiesInfographic.jpg" alt="Classroom Grouping Strategies: strategic groups (targeted, balanced, efficient) versus random groups (quick, adaptive, low prep), with group setups from pairs to larger teams" width="1600" height="900"></a>
         <nav class="tool-row eight" aria-label="Sections on this page">
-          <a class="tool-link" href="#strategic"><span class="icon solid fa-bullseye" aria-hidden="true"></span><strong>Strategic</strong><small>Targeted and balanced</small></a>
-          <a class="tool-link" href="#random"><span class="icon solid fa-random" aria-hidden="true"></span><strong>Random</strong><small>Quick, low prep</small></a>
+          <a class="tool-link c-blue" href="#strategic"><span class="icon solid fa-bullseye" aria-hidden="true"></span><strong>Strategic</strong><small>Targeted and balanced</small></a>
+          <a class="tool-link c-red" href="#random"><span class="icon solid fa-random" aria-hidden="true"></span><strong>Random</strong><small>Quick, low prep</small></a>
           <a class="tool-link" href="#blended"><span class="icon solid fa-sync-alt" aria-hidden="true"></span><strong>Blended</strong><small>Use both methods</small></a>
           <a class="tool-link" href="#setups"><span class="icon solid fa-users" aria-hidden="true"></span><strong>Group Setups</strong><small>Pods, quads, pairs</small></a>
           <a class="tool-link" href="#build-strategic"><span class="icon solid fa-layer-group" aria-hidden="true"></span><strong>Build Strategic</strong><small>Ability, personality</small></a>
@@ -155,10 +170,10 @@
           <a class="tool-link pdf" href="RobsonEDU-Grouping-README.pdf" target="_blank" rel="noopener noreferrer"><span class="icon solid fa-file-pdf" aria-hidden="true"></span><strong>Download PDF</strong><small>Print or save</small></a>
         </nav>
 
-        <section id="strategic">
+        <section id="strategic" class="th-blue">
           <h2>Strategic Grouping</h2>
-          <img class="icon-r" src="images/GroupIconStrategic.png" alt="" width="120" height="111">
           <p class="tagline">TARGETED. BALANCED. EFFICIENT. MORE CONTROL.</p>
+          <div class="intro-row">
           <div class="bestfor">
           <p><strong>Best For:</strong></p>
           <ul>
@@ -167,6 +182,8 @@
             <li>Supports high-stakes learning</li>
             <li>Activities requiring specific skill levels</li>
           </ul>
+          </div>
+          <img class="intro-img" src="images/GroupIconStrategic.png" alt="" width="180">
           </div>
           <div class="bc">
             <div>
@@ -190,10 +207,10 @@
           <p>Build strategic groups from your class data in a few clicks with <a href="PageGroupingStudio.html">Grouping Studio</a>.</p>
         </section>
 
-        <section id="random" class="tint">
+        <section id="random" class="tint th-red">
           <h2>Random Grouping</h2>
-          <img class="icon-r" src="images/GroupIconRandom.png" alt="" width="120" height="123">
           <p class="tagline">QUICK. ADAPTIVE. LOW PREP, NO PREP, ON-THE-FLY.</p>
+          <div class="intro-row">
           <div class="bestfor">
           <p><strong>Best For:</strong></p>
           <ul>
@@ -201,6 +218,8 @@
             <li>Low-stakes collaborative tasks</li>
             <li>Short-term or one-off assignments</li>
           </ul>
+          </div>
+          <img class="intro-img" src="images/GroupIconRandom.png" alt="" width="180">
           </div>
           <div class="bc">
             <div>
