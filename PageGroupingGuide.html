@@ -44,7 +44,7 @@
     .coop h1 { margin-bottom: 0.3em; }
     .coop .byline { color: #8a8a8a; font-size: 0.9em; margin-bottom: 1.4em; }
     .coop section { scroll-margin-top: 20px; padding-top: 8px; margin-top: 3em; border-top: solid 2px #f2849e; }
-    .coop section > h2 { margin-top: 1.4em; }
+    .coop section > h2, .coop .intro-text > h2 { margin-top: 1.4em; }
     .coop h3 { margin: 1.6em 0 0.4em; font-size: 1.1em; text-transform: none; letter-spacing: 0; font-weight: 700; }
     .coop .lead { font-size: 1.1em; }
     .coop .box { border-left: 4px solid #f2849e; background: rgba(242,132,158,0.07); border-radius: 0 0.5rem 0.5rem 0; padding: 1.3em 1.6em 0.4em; margin: 1.5em 0 2em; }
@@ -91,7 +91,7 @@
     .coop .colors span { font-weight: 700; }
     @media (max-width: 736px) { .coop .bc { grid-template-columns: 1fr; } .coop .icon-r { width: 84px; } .coop .w-fixed { width: 100%; } }
     /* Stronger headers and contrast */
-    .coop section > h2 { font-size: 1.35em; font-weight: 900; letter-spacing: 0.1em; color: #3a3a3a; border-left: 6px solid #f2849e; padding-left: 0.6em; line-height: 1.3; }
+    .coop section > h2, .coop .intro-text > h2 { font-size: 1.35em; font-weight: 900; letter-spacing: 0.1em; color: #3a3a3a; border-left: 6px solid #f2849e; padding-left: 0.6em; line-height: 1.3; }
     .coop section { border-top: none; padding: 1.6em 0 0.6em; margin-top: 2em; }
     .coop section.tint { background: #f6f5f8; border-radius: 16px; padding: 1.6em 1.8em 0.8em; }
     .coop section.tint .bc > div, .coop section.tint .mini { background: #fff; }
@@ -113,17 +113,21 @@
     .coop .intro-row { display: grid; grid-template-columns: minmax(0,1fr) 180px; gap: 1.4em; align-items: center; margin: 0 0 1.2em; }
     .coop .intro-row .bestfor { margin: 0; height: 100%; box-sizing: border-box; }
     .coop .intro-img { width: 180px; height: auto; display: block; border-radius: 16px; box-shadow: 0 6px 18px rgba(0,0,0,0.12); }
-    .coop .th-blue > h2 { border-left-color: #3d8fe0; }
+    .coop .th-blue > h2, .coop .th-blue .intro-text > h2 { border-left-color: #3d8fe0; }
     .coop .th-blue .tagline, .coop .th-blue .bc h3 { color: #2f7fd0; }
     .coop .th-blue .bestfor { background: rgba(61,143,224,0.09); }
     .coop .th-blue .bc > div { border-color: rgba(61,143,224,0.35); }
-    .coop .th-red > h2 { border-left-color: #e8443a; }
+    .coop .th-red > h2, .coop .th-red .intro-text > h2 { border-left-color: #e8443a; }
     .coop .th-red .tagline, .coop .th-red .bc h3 { color: #d93a30; }
     .coop section.tint.th-red .bestfor { background: #fff; border-left: 4px solid #e8443a; }
     .coop .th-red .bc > div { border-color: rgba(232,68,58,0.35); }
     .coop .th-blue .bestfor { border-left: 4px solid #3d8fe0; }
     .tool-link.c-blue .icon { color: #3d8fe0; } .tool-link.c-red .icon { color: #e8443a; }
     @media (max-width: 736px) { .coop .intro-row { grid-template-columns: minmax(0,1fr) 96px; gap: 0.9em; } .coop .intro-img { width: 96px; border-radius: 12px; } }
+    .coop .intro-grid { display: grid; grid-template-columns: minmax(0,1fr) 270px; gap: 2em; align-items: start; margin-bottom: 1.2em; }
+    .coop .intro-grid .intro-img { width: 100%; margin-top: 0.4em; }
+    .coop .intro-grid .bestfor { margin: 0; }
+    @media (max-width: 736px) { .coop .intro-grid { grid-template-columns: minmax(0,1fr) 110px; gap: 1em; } .coop .intro-grid .intro-img { margin-top: 0; } }
   </style>
 </head>
 <body class="is-preload">
@@ -171,9 +175,10 @@
         </nav>
 
         <section id="strategic" class="th-blue">
+          <div class="intro-grid">
+            <div class="intro-text">
           <h2>Strategic Grouping</h2>
           <p class="tagline">TARGETED. BALANCED. EFFICIENT. MORE CONTROL.</p>
-          <div class="intro-row">
           <div class="bestfor">
           <p><strong>Best For:</strong></p>
           <ul>
@@ -183,7 +188,8 @@
             <li>Activities requiring specific skill levels</li>
           </ul>
           </div>
-          <img class="intro-img" src="images/GroupIconStrategic.png" alt="" width="180">
+            </div>
+            <img class="intro-img" src="images/GroupIconStrategic.png" alt="" width="180">
           </div>
           <div class="bc">
             <div>
@@ -208,9 +214,10 @@
         </section>
 
         <section id="random" class="tint th-red">
+          <div class="intro-grid">
+            <div class="intro-text">
           <h2>Random Grouping</h2>
           <p class="tagline">QUICK. ADAPTIVE. LOW PREP, NO PREP, ON-THE-FLY.</p>
-          <div class="intro-row">
           <div class="bestfor">
           <p><strong>Best For:</strong></p>
           <ul>
@@ -219,7 +226,8 @@
             <li>Short-term or one-off assignments</li>
           </ul>
           </div>
-          <img class="intro-img" src="images/GroupIconRandom.png" alt="" width="180">
+            </div>
+            <img class="intro-img" src="images/GroupIconRandom.png" alt="" width="180">
           </div>
           <div class="bc">
             <div>
