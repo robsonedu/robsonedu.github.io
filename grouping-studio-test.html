@@ -2176,13 +2176,14 @@ function makeStGroups(cls){
   else{b.groups=L.groups.map(g=>g.seats.map(si=>r.seats[L.seats[si].key]).filter(Boolean)).filter(g=>g.length);b.meta=r.meta}
   ui.stpick=null;
 }
-function stSync(cls){const b=cls.st,here=new Set(qPresent(cls)),seen=new Set();b.groups=(b.groups||[]).map(g=>g.filter(id=>{if(!here.has(id)||seen.has(id))return false;seen.add(id);return true})).filter(g=>g.length);if(!b.groups.length){if(here.size>=2)makeStGroups(cls);return}for(const id of here)if(!seen.has(id)){let m=b.groups[0];b.groups.forEach(g=>{if(g.length<m.length)m=g});m.push(id)}}
+function stEnsure(c){c.quick=c.quick||{};c.quick.opts=c.quick.opts||{};if(!c.stationsCfg)c.stationsCfg={source:'__cur',names:(c.quick.stations||[]).slice(),work:+(c.rotation&&c.rotation.minutes)||12,transition:60,autoTransition:true};if(!c.st)c.st={groups:(c.quick.groups||[]).map(g=>g.slice()),opts:{mode:c.quick.opts.mode||'mixed',crit:(c.quick.opts.crit||[]).slice(),avoid:true},count:(c.quick.groups||[]).length||6,meta:c.quick.meta||null};return c}
+function stSync(cls){stEnsure(cls);const b=cls.st,here=new Set(qPresent(cls)),seen=new Set();b.groups=(b.groups||[]).map(g=>g.filter(id=>{if(!here.has(id)||seen.has(id))return false;seen.add(id);return true})).filter(g=>g.length);if(!b.groups.length){if(here.size>=2)makeStGroups(cls);return}for(const id of here)if(!seen.has(id)){let m=b.groups[0];b.groups.forEach(g=>{if(g.length<m.length)m=g});m.push(id)}}
 function stationGroups(cls){stSync(cls);return cls.st.groups}
 const stName=(cls,i)=>cls.stationsCfg.names[i]||`Station ${i+1}`;
 const stAt=(gi,r,n)=>((gi+r)%n+n)%n;
-function stCountOf(cls){const c=cls.stationsCfg;if(!c.count)c.count=stationGroups(cls).length||cls.st.count||6;return clamp(+c.count,2,12)}
+function stCountOf(cls){stEnsure(cls);const c=cls.stationsCfg;if(!c.count)c.count=stationGroups(cls).length||cls.st.count||6;return clamp(+c.count,2,12)}
 function stationsHTML(cls){
-  if(!cls)return emptyClassesHTML();
+  if(!cls)return emptyClassesHTML();stEnsure(cls);
   if(qPresent(cls).length<2)return`<div class="page"><div class="page-head"><div><h2>Stations</h2></div></div><div class="empty"><h3>Add students first</h3><p class="muted">Stations rotates your groups through activities with a timer.</p><button class="btn" data-act="tab" data-arg="roster">Go to Roster</button></div></div>`;
   const c=cls.stationsCfg,G=stationGroups(cls),n=G.length,ns=stCountOf(cls),b=cls.st,sc=scoreCard(cls,b),qm=cls.view.colors&&b.opts.mode!=='random'&&b.opts.mode!=='alpha'&&b.opts.crit[0]&&b.opts.crit[0]!=='__g'?qmapFor(cls,b.opts.crit[0]):new Map();
   return`<div class="layout">
