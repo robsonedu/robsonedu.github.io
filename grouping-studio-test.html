@@ -1898,7 +1898,7 @@ function roomViewHTML(){
     ${startLayoutsHTML(room)}
   </aside>
   <section class="stage">
-    <div class="stage-head"><div style="flex:1;min-width:0">${roomBarHTML(room)}<p class="muted">${L.seats.length} seats in ${L.groups.length} groups. Each table is one group unless you link tables together.</p><ul class="roomtips" aria-label="How to edit the room" data-x="roomTips"><li><b>Drag</b> a piece to move it</li><li><b>Drag a box</b> on the floor to select several</li><li><b>Corner dot</b> resizes</li><li><b>Arrow above</b> rotates</li><li><b>Arrow keys</b> nudge</li><li><b>Delete</b> removes</li></ul></div></div>
+    <div class="stage-head"><div style="flex:1;min-width:0">${roomBarHTML(room)}<p class="muted">${L.seats.length} seats in ${L.groups.length} groups. Each table is one group unless you link tables together.</p><ul class="roomtips" aria-label="How to edit the room" data-x="roomTips"><li><b>Drag</b> to move</li><li><b>Drag a box</b> to select several</li><li><b>Corner dot</b> resizes</li><li><b>Arrow above</b> rotates</li><li><b>Arrow keys</b> nudge</li><li><b>Delete</b> removes</li></ul></div></div>
     <div class="roomwrap" data-x="furnBar"><div class="roomscroll">${roomHTML(room,L,{mode:'edit'})}</div>
     <div class="furnfab-wrap${ui.furnOpen?' open':''}"><button class="furnfab" data-fab="toggle" aria-expanded="${!!ui.furnOpen}" aria-controls="furnDock" aria-label="${ui.furnOpen?'Close furniture':'Add furniture'}" data-ftip="${ui.furnOpen?'Close':'Add furniture'}">${ui.furnOpen?'<svg class="fx" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>':'<svg class="fi" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="7.5" height="7.5" rx="1.8"/><rect x="13.5" y="3" width="7.5" height="7.5" rx="1.8"/><rect x="3" y="13.5" width="7.5" height="7.5" rx="1.8"/><path d="M17.25 14v6.5M14 17.25h6.5"/></svg>'}</button>
     <div class="furndock" id="furnDock" role="menu" aria-label="Add to the room"${ui.furnOpen?'':' hidden'}><div class="fd-head"><b>Add to the room</b></div><div class="fd-list">${addBtns}</div><p class="fd-note">New pieces appear in the middle of the room. Drag them into place.</p></div></div></div>
@@ -3569,12 +3569,12 @@ function qcFit(){document.querySelectorAll('#qc-root .qfree[data-nat]').forEach(
 .sched tr>:first-child{width:92px}
 .sched th,.sched td{vertical-align:middle}
 .sched thead th{white-space:normal;overflow-wrap:anywhere;vertical-align:bottom;line-height:1.25}
-.chartbar .newroom-btn{margin-left:auto;flex:none;display:inline-flex;align-items:center;gap:7px;border:0;border-radius:999px;padding:10px 18px 10px 14px;font:inherit;font-size:14px;font-weight:700;color:#fff;cursor:pointer;background:linear-gradient(100deg,#ff4fb8,#a259ff 55%,#3d8bff);box-shadow:0 4px 14px rgba(162,89,255,.3)}
-.chartbar .newroom-btn b{font-size:20px;line-height:1;font-weight:600;margin-top:-2px}
+.chartbar .newroom-btn{margin-left:auto;flex:none;display:inline-flex;align-items:center;gap:.45em;border:0;border-radius:999px;padding:.72em 1.25em .72em 1em;font:inherit;font-size:clamp(12px,calc(.45vw + 8px),15px);font-weight:700;color:#fff;cursor:pointer;background:linear-gradient(100deg,#ff4fb8,#a259ff 55%,#3d8bff);box-shadow:0 4px 14px rgba(162,89,255,.3)}
+.chartbar .newroom-btn b{font-size:1.4em;line-height:1;font-weight:600;margin-top:-2px}
 .chartbar .roomname-in{flex:0 1 460px!important;min-width:120px;width:auto!important}
 .chartbar .newroom-btn:hover{filter:brightness(1.06)}
 .chartbar .newroom-btn:focus-visible{outline:3px solid rgba(162,89,255,.4);outline-offset:2px}
-@media (max-width:600px){.chartbar .newroom-btn{padding:8px 12px 8px 10px;font-size:13px}}
+@media (min-width:901px){.roomtips.fit{flex-wrap:nowrap;overflow:hidden}.roomtips.fit li{flex:none}}
 </style>
 <script>
 (function(){
@@ -3633,6 +3633,14 @@ try{const pg=new URLSearchParams(location.search).get('page');if(S&&ui.tour==nul
 })();
 
 CH.alphaBy=el=>{const c=need();c.alphaBy=el.value==='first'?'first':'last';save();render()};
+/* Room tips: keep them on one row on laptops and desktops. Shrink the text a little, then drop the last tips if there still isn't room. */
+function fitTips(){const u=document.querySelector('.roomtips');if(!u)return;const lis=[...u.children];lis.forEach(l=>{l.style.display='';l.style.fontSize=''});
+  if(innerWidth<=900){u.classList.remove('fit');return}u.classList.add('fit');
+  const hid=lis.filter(l=>getComputedStyle(l).display==='none');const vis=lis.filter(l=>!hid.includes(l));
+  for(let fs=13;fs>=11&&u.scrollWidth>u.clientWidth+1;fs-=.5)vis.forEach(l=>l.style.fontSize=fs+'px');
+  for(let k=vis.length-1;k>2&&u.scrollWidth>u.clientWidth+1;k--)vis[k].style.display='none'}
+{const _r=window.render;window.render=render=function(){const out=_r.apply(this,arguments);try{fitTips()}catch(e){}return out};let tt;addEventListener('resize',()=>{clearTimeout(tt);tt=setTimeout(()=>{try{fitTips()}catch(e){}},80)})}
+
 /* station names: update the rotation table while typing */
 document.addEventListener('input',e=>{const el=e.target;if(!el||el.dataset.ch!=='stname')return;try{CH.stname(el)}catch(x){}});
 </script>
@@ -3755,7 +3763,7 @@ window.roomBarHTML=function(room){const tb=(act,ic,tip,on,dis)=>`<button class="
   const delOn=ui.confirm==='delRoom',many=S.rooms.length>1;
   const title=ui.roomRename?`<input class="roomname-in" id="roomNameIn" data-ch="roomName" value="${esc(room.name)}" aria-label="Layout name" autocomplete="off">`
    :`<h2 class="chart-one">${esc(room.name)}</h2>`;
-  return`<div class="chartbar">${title}<div class="chart-tools" role="toolbar" aria-label="Layout actions">${tb('dupRoom','saveas','Duplicate')}${tb('roomRename','pencil','Rename',ui.roomRename)}${many?`<button class="iconbtn tipbtn danger${delOn?' armed':''}" data-act="delRoom" data-confirm="delRoom" data-tip="${delOn?'Click again to delete':'Delete'}" aria-label="${delOn?'Confirm delete':'Delete layout'}">${svg('trash')}</button>`:''}</div><button class="newroom-btn" data-act="newRoom"><b aria-hidden="true">+</b><span>Build new room</span></button></div>`};
+  return`<div class="chartbar">${title}<div class="chart-tools" role="toolbar" aria-label="Layout actions">${tb('newRoom','plus','New room')}${tb('dupRoom','saveas','Duplicate')}${tb('roomRename','pencil','Rename',ui.roomRename)}${many?`<button class="iconbtn tipbtn danger${delOn?' armed':''}" data-act="delRoom" data-confirm="delRoom" data-tip="${delOn?'Click again to delete':'Delete'}" aria-label="${delOn?'Confirm delete':'Delete layout'}">${svg('trash')}</button>`:''}</div><button class="newroom-btn" data-act="newRoom"><b aria-hidden="true">+</b><span>Build new room</span></button></div>`};
 {const _nr=ACT.newRoom;ACT.newRoom=function(){const before=new Set(S.rooms.map(r=>r.id));_nr.apply(this,arguments);const r=S.rooms.find(x=>!before.has(x.id));if(r){if(r.name==='New layout')r.name='New room';save();ui.roomRename=false;ACT.roomRename()}}}
 ACT.roomRename=()=>{ui.roomRename=!ui.roomRename;render();if(ui.roomRename)setTimeout(()=>{const i=document.getElementById('roomNameIn');if(i){i.focus();i.select()}},0)};
 const _rn=CH.roomName;CH.roomName=el=>{ui.roomRename=false;_rn(el)};
