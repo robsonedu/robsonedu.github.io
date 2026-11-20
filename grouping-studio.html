@@ -825,7 +825,7 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--violet);
 .roster td input.cat{width:13ch}
 .roster td input.num{width:8ch}
 .pop{position:fixed;z-index:120;width:min(340px,calc(100vw - 24px));padding:14px;border-radius:20px;display:grid;gap:12px;background:rgba(255,255,255,.86);-webkit-backdrop-filter:blur(30px) saturate(180%);backdrop-filter:blur(30px) saturate(180%);border:1px solid rgba(255,255,255,.9);box-shadow:0 1px 0 rgba(255,255,255,.9) inset,0 24px 60px rgba(30,30,60,.22),0 4px 12px rgba(30,30,60,.08)}
-.seg.four{grid-template-columns:repeat(4,1fr)}
+.seg.four{grid-template-columns:repeat(4,1fr)}.seg.four.five{grid-template-columns:auto auto auto auto auto;justify-content:stretch}.seg.four.five button{padding:0 2px;font-size:12px;letter-spacing:-.01em;white-space:nowrap;min-width:0}
 .seg.four button{font-size:12px;padding:0 4px}
 .chips{display:flex;flex-wrap:wrap;gap:6px}
 .addmenu{gap:2px;padding:6px;width:min(300px,calc(100vw - 24px))}
@@ -1102,6 +1102,7 @@ select:not(.chartsel):not(.p-titlesel){-webkit-appearance:none;appearance:none;b
 </style>
 
 <div id="app"></div>
+<script>window.QC_BOLT='<svg class="bolt" viewBox="0 0 24 24" aria-hidden="true"><path d="M13.5 2 4.5 13.6h6.2L9.6 22l9.9-12.2h-6.4z"/></svg>'</script>
 <div id="present-root"></div>
 <div id="modal-root"></div>
 <div id="print-root"></div>
@@ -1214,7 +1215,8 @@ function layoutInfo(room){
     else g.seats=ringOrder(g.seats.map(i=>{const st=seats[i];return g.items.length===1?{i,x:st.lx,y:st.ly}:{i,x:st.x,y:st.y}}));
     g.seats.forEach((i,n)=>{seats[i].no=n+1;seats[i].tag=teamTag(n,g.seats.length)})});
   const SN=room.seatNum||{};let auto=0;const used=new Set(Object.values(SN));
-  groups.forEach(g=>g.seats.forEach(i=>{const k=seats[i].key;if(SN[k])seats[i].num=SN[k];else{do{auto++}while(used.has(auto));seats[i].num=auto}}));
+  /* readingNum: number seats left to right, top to bottom within each table */
+  groups.forEach(g=>g.seats.slice().sort((p,q)=>Math.round(seats[p].y)-Math.round(seats[q].y)||seats[p].x-seats[q].x).forEach(i=>{const k=seats[i].key;if(SN[k])seats[i].num=SN[k];else{do{auto++}while(used.has(auto));seats[i].num=auto}}));
   const flag=(lm,prop,fb)=>{const n=seats.length;if(!n)return;const dist=s=>lm?Math.hypot(s.x-lm.x,s.y-lm.y):fb(s);const sorted=seats.slice().sort((a,b)=>dist(a)-dist(b));const th=dist(sorted[Math.max(1,Math.ceil(n*.34))-1]);seats.forEach(s=>s[prop]=dist(s)<=th+.01)};
   const board=room.items.find(i=>i.type==='board'),door=room.items.find(i=>i.type==='door');
   flag(board,'front',s=>s.y);
@@ -1337,7 +1339,7 @@ function bandsOf(list,col){const r=norm(list,col),items=list.map((s,i)=>({id:s.i
 function qmapFor(cls,colId){const m=new Map();const col=cls.columns.find(c=>c.id===colId);if(!col)return m;if(isCat(col)&&col.options){cls.students.forEach(s=>{if(!s.absent&&hasVal(s,col)){const i=col.options.findIndex(o=>catKey(o)===catKey(s.v[col.id]));m.set(s.id,i<0?0:5+i)}});return m}if(isCat(col)){const L=catList(cls,col).slice(0,4).map(x=>x.k);cls.students.forEach(s=>{if(!s.absent&&hasVal(s,col)){const i=L.indexOf(catKey(s.v[col.id]));m.set(s.id,i<0?0:i+1)}});return m}const pres=cls.students.filter(s=>!s.absent);const b=bandsOf(pres,col);b.forEach((v,k)=>m.set(k,v));return m}
 function summ(list,col){const vals=list.filter(s=>hasVal(s,col)).map(s=>String(s.v[col.id]).trim());if(!vals.length)return'—';if(isCat(col)){const c={};vals.forEach(v=>{const k=v;c[k]=(c[k]||0)+1});return Object.entries(c).sort((a,b)=>b[1]-a[1]).map(([k,n])=>n+' '+k).join(', ')}if(vals.every(v=>!isNaN(parseNum(v)))){const m=avg(vals.map(parseNum)),lx=vals.some(v=>/L$/i.test(v));return'avg '+(lx?Math.round(m)+'L':Math.round(m*10)/10)}const sorted=vals.map(v=>v.toUpperCase()).sort();return sorted[0]===sorted[sorted.length-1]?sorted[0]:sorted[0]+'–'+sorted[sorted.length-1]}
 const critName=(cls,id)=>id==='__g'?'gender':(cls.columns.find(c=>c.id===id)||{name:'?'}).name;
-function metaText(cls,meta){if(!meta)return'Arranged by hand';if(meta.mode==='set')return'From groups: '+(meta.name||'untitled');if(meta.crit&&meta.crit.length)return(meta.mode==='similar'?'Similar by ':'Mixed by ')+meta.crit.map((id,i)=>i?critName(cls,id):critName(cls,id)).join(', then ');if(meta.mode==='random')return'Random shuffle';const col=cls.columns.find(c=>c.id===meta.by),bal=meta.bal==='__g'?{name:'gender'}:cls.columns.find(c=>c.id===meta.bal);if(meta.mode==='random'||!col)return'Random shuffle'+(bal?', balanced by '+bal.name:'');return(meta.mode==='similar'?'Similar':'Mixed')+' by '+col.name+(bal?', balanced by '+bal.name:'')}
+function metaText(cls,meta){if(!meta)return'Arranged by hand';if(meta.mode==='alpha')return'Alphabetical by '+(meta.alphaBy==='first'?'first':'last')+' name';if(meta.mode==='set')return'From groups: '+(meta.name||'untitled');if(meta.crit&&meta.crit.length)return(meta.mode==='similar'?'Similar by ':'Mixed by ')+meta.crit.map((id,i)=>i?critName(cls,id):critName(cls,id)).join(', then ');if(meta.mode==='random')return'Random shuffle';const col=cls.columns.find(c=>c.id===meta.by),bal=meta.bal==='__g'?{name:'gender'}:cls.columns.find(c=>c.id===meta.bal);if(meta.mode==='random'||!col)return'Random shuffle'+(bal?', balanced by '+bal.name:'');return(meta.mode==='similar'?'Similar':'Mixed')+' by '+col.name+(bal?', balanced by '+bal.name:'')}
 function cleanup(cls,L){const cur=curOf(cls),seen=new Set();for(const[k,id]of Object.entries(cur.seats)){if(!L.seatByKey.has(k)||!stud(cls,id)||seen.has(id))delete cur.seats[k];else seen.add(id)}}
 function groupsOf(cls,L,cur){return L.groups.map(g=>({label:g.label,ids:g.seats.map(si=>cur.seats[L.seats[si].key]).filter(Boolean)}))}
 
@@ -1354,6 +1356,10 @@ function runGroupingL(cls,L,opt){
   const present=cls.students.filter(s=>!s.absent);
   if(!nS)return{error:'This room has no seats yet. Add tables on the Room tab.'};
   if(!present.length)return{error:'Add students on the Roster tab first.'};
+  if(opt.mode==='alpha'){const by=alphaBy(cls),parts=s=>{const t=String(s.name||'').trim().split(/\s+/);const f=(s.first||t[0]||'').trim(),l=(s.last||(t.length>1?t.slice(1).join(' '):t[0])||'').trim();return by==='first'?[f,l]:[l,f]},cmp=(x,y)=>x.localeCompare(y,undefined,{sensitivity:'base'});
+    const sorted=present.slice().sort((a,b)=>{const A=parts(a),B=parts(b);return cmp(A[0],B[0])||cmp(A[1],B[1])});const take=sorted.slice(0,nS),target=sizePlan(L.groups.map(g=>g.seats.length),take.length),seats={};let p=0;
+    L.groups.forEach((g,gi)=>{g.seats.slice().sort((a,b)=>((L.seats[a].num||0)-(L.seats[b].num||0))||a-b).slice(0,target[gi]).forEach(si=>{if(p<take.length)seats[L.seats[si].key]=take[p++].id})});
+    return{seats,roles:{},unseated:sorted.slice(nS).map(s=>s.id),meta:{mode:'alpha',crit:[],by:'',bal:'',alphaBy:by}}}
   let pool=shuffle(present.slice());
   const unseated=pool.slice(nS).map(s=>s.id);pool=pool.slice(0,nS);
   const N=pool.length;
@@ -1440,7 +1446,10 @@ function checkIssues(cls,L,cur){
   counts.forEach((c,i)=>{if(c===1&&mx>2)list.push({lvl:'warn',t:`${L.groups[i].label} has only one student.`})});
   return{list,flag};
 }
-const TYPE_NAME={mixed:'Mixed',similar:'Similar',random:'Random'};
+const TYPE_NAME={mixed:'Mixed',similar:'Similar',random:'Random',alpha:'Alphabetical'};
+const ALPHA_SEG=[['mixed','Mixed'],['similar','Similar'],['random','Random'],['alpha','A–Z']];
+const alphaBy=c=>c&&c.alphaBy==='first'?'first':'last';
+const alphaHTML=cls=>`<small class="muted">${ui.tab==='arrange'?'Students go in A–Z order, starting with seat 1.':'Group 1 gets the start of the list, then Group 2, and so on.'} Seating rules don’t move anyone.</small><label class="field"><span>Sort by</span><select data-ch="alphaBy"><option value="last"${alphaBy(cls)==='last'?' selected':''}>Last name</option><option value="first"${alphaBy(cls)==='first'?' selected':''}>First name</option></select></label>`;
 function chartType(cls,meta){if(!meta)return'';let m=meta.mode;if(m==='set'){m=meta.gmode;if(!m){const g=cls.groupSets.find(x=>x.name===meta.name);m=g&&g.meta&&g.meta.mode}}return TYPE_NAME[m]?m:''}
 function pairSet(groups){const P=new Set();for(const g of groups||[]){const ids=g.ids.slice().sort();for(let i=0;i<ids.length;i++)for(let j=i+1;j<ids.length;j++)P.add(ids[i]+'|'+ids[j])}return P}
 function repeatSources(cls,curGroups,type,exclude){const ex=exclude===undefined?cls.chartId:exclude;
@@ -1477,19 +1486,19 @@ const chartTitle=cls=>{const h=openChart(cls);return h?(h.label||'Untitled chart
 function recipeOf(cls,h){if(!h)return null;if(h.recipe)return h.recipe;const m=h.meta;if(!m)return null;
   if(m.mode==='set'){const g=cls.groupSets.find(x=>x.name===m.name);if(g&&g.meta&&TYPE_NAME[g.meta.mode])return{mode:g.meta.mode,crit:(g.meta.crit||[]).slice()};return TYPE_NAME[m.gmode]?{mode:m.gmode,crit:[]}:null}
   return TYPE_NAME[m.mode]?{mode:m.mode,crit:(m.crit||[]).slice()}:null}
-function fillCrit(cls,r){if(!r)return r;if(r.mode==='random'||validCrit(cls,r.crit).length)return r;const q=cls.quick&&cls.quick.opts&&validCrit(cls,cls.quick.opts.crit);const c=q&&q.length?q:validCrit(cls,[cls.opts.by]);return Object.assign({},r,{crit:c})}
+function fillCrit(cls,r){if(!r)return r;if(r.mode==='random'||r.mode==='alpha'||validCrit(cls,r.crit).length)return r;const q=cls.quick&&cls.quick.opts&&validCrit(cls,cls.quick.opts.crit);const c=q&&q.length?q:validCrit(cls,[cls.opts.by]);return Object.assign({},r,{crit:c})}
 function lastRecipe(cls){const x=lastRecipe0(cls);if(x)x.r=fillCrit(cls,x.r);return x}
 function lastRecipe0(cls){const h=openChart(cls),r=recipeOf(cls,h);if(r)return{r,from:h};for(const x of cls.history.slice().sort((a,b)=>b.date-a.date)){const rr=recipeOf(cls,x);if(rr)return{r:rr,from:x}}return null}
 function validCrit(cls,crit){return(crit||[]).filter(id=>id==='__g'||cls.columns.some(c=>c.id===id))}
 function recipeText(cls,r){if(!r)return'';const c=validCrit(cls,r.crit);return TYPE_NAME[r.mode]+(r.mode!=='random'&&c.length?' by '+c.map(id=>critName(cls,id)).join(', then '):'')}
 function syncBy(cls,r){const c=r&&validCrit(cls,r.crit).find(id=>id!=='__g');if(c)cls.opts.by=c}
 function createChart(cls,name,recipe){const h=saveHistory(cls,name);if(recipe&&TYPE_NAME[recipe.mode])h.recipe={mode:recipe.mode,crit:validCrit(cls,recipe.crit)};syncBy(cls,recipe);return h}
-function buildFromRecipe(cls,r){const crit=r.mode==='random'?[]:validCrit(cls,r.crit).map((id,i)=>({id,goal:r.mode==='similar'&&i===0?'match':'mix'}));
+function buildFromRecipe(cls,r){const crit=r.mode==='random'||r.mode==='alpha'?[]:validCrit(cls,r.crit).map((id,i)=>({id,goal:r.mode==='similar'&&i===0?'match':'mix'}));
   const res=runGrouping(cls,roomOf(cls),{mode:r.mode,crit,avoid:true,recent:recentGroups(cls,r.mode)});if(res.error)return res;
   const L=layoutInfo(roomOf(cls));orderByRank(cls,L,res.seats,rankCol(cls,validCrit(cls,r.crit),r.mode));
   cls.current={seats:res.seats,roles:res.roles||{},meta:res.meta,date:Date.now()};return res}
 function defaultChartName(cls,r){return[cls&&cls.name,r&&TYPE_NAME[r.mode],new Date().toLocaleDateString(undefined,{month:'short',day:'numeric'})].filter(Boolean).join(' · ')}
-function staleNotes(cls,r){if(!r||r.mode==='random')return[];const out=[],here=cls.students.filter(s=>!s.absent),ed=cls.colEdited||{};
+function staleNotes(cls,r){if(!r||r.mode==='random'||r.mode==='alpha')return[];const out=[],here=cls.students.filter(s=>!s.absent),ed=cls.colEdited||{};
   for(const id of validCrit(cls,r.crit)){if(id==='__g')continue;const c=cls.columns.find(x=>x.id===id);const miss=here.filter(s=>!hasVal(s,c)).length;
     if(miss)out.push(`${miss} student${miss>1?'s have':' has'} no ${c.name}`);else if(ed[id]&&Date.now()-ed[id]>28*864e5)out.push(`${c.name} hasn’t been updated since ${fmtDate(ed[id])}`)}
   return out}
@@ -1612,8 +1621,8 @@ function applyColors(){const q=(S&&S.settings.qColors)||QDEF;q.forEach((c,i)=>do
 function placePop(){const p=document.getElementById('pop');if(!p)return;const a=document.querySelector(p.dataset.anchor);if(!a){p.remove();return}const r=a.getBoundingClientRect(),w=p.offsetWidth,h=p.offsetHeight;let x=Math.min(r.left,innerWidth-w-12),y=r.bottom+8;if(y+h>innerHeight-12&&r.top-h-8>12)y=r.top-h-8;p.style.left=Math.max(12,x)+'px';p.style.top=Math.max(12,y)+'px'}
 if(HAS_DOM){addEventListener('resize',placePop);addEventListener('scroll',placePop,true)}
 /* keep the Groups page in step with the class: its room follows the class's room layout, and Mixed/Similar always start with a criterion */
-function syncQuick(c){const o=c&&c.quick&&c.quick.opts;if(!o)return;if(o.mode!=='random'&&!critOptions(c).length)o.mode='random';if(o.seenRoom!==c.roomId){o.roomId=c.roomId;o.seenRoom=c.roomId}
-  if(o.mode!=='random'&&!validCrit(c,o.crit).length){const c0=c.columns.find(x=>x.id===c.opts.by)||c.columns[0];const cr=[c0&&c0.id,c.students.some(s=>s.g)?'__g':null].filter(Boolean);if(cr.length)o.crit=cr}}
+function syncQuick(c){const o=c&&c.quick&&c.quick.opts;if(!o)return;if(o.mode!=='random'&&o.mode!=='alpha'&&!critOptions(c).length)o.mode='random';if(o.seenRoom!==c.roomId){o.roomId=c.roomId;o.seenRoom=c.roomId}
+  if(o.mode!=='random'&&o.mode!=='alpha'&&!validCrit(c,o.crit).length){const c0=c.columns.find(x=>x.id===c.opts.by)||c.columns[0];const cr=[c0&&c0.id,c.students.some(s=>s.g)?'__g':null].filter(Boolean);if(cr.length)o.crit=cr}}
 function render(){NAMEC=null;try{const ac=S&&activeClass&&activeClass();if(ac)syncQuick(ac)}catch(e){}try{renderNow()}catch(e){setTimeout(()=>{try{renderNow()}catch(x){}},0)}if(ui.tour!=null&&HAS_DOM)requestAnimationFrame(tourPlace)}
 function renderNow(){
   const app=$('#app');
@@ -1638,7 +1647,7 @@ function fitNames(root){(root||document).querySelectorAll('.room').forEach(room=
   /* one size for the whole room: the size that lets the longest name fit, never below 62% */
   ns.forEach(n=>{n.style.fontSize='';n.style.textOverflow='clip'});const base=parseFloat(getComputedStyle(ns[0]).fontSize);let k=1;ns.forEach(n=>{const w=n.clientWidth,sw=n.scrollWidth;if(w&&sw>w+1)k=Math.min(k,w/sw*.97)});k=Math.max(k,.62);
   ns.forEach(n=>{if(k<1)n.style.fontSize=base*k+'px'});ns.forEach(n=>{n.style.textOverflow=n.scrollWidth>n.clientWidth+1?'ellipsis':''})})}
-function fitSeatRoom(){const r=document.querySelector('.roomscroll .room.edit');if(!r)return;r.style.maxWidth='';const top=r.getBoundingClientRect().top+(window.scrollY||0),avail=window.innerHeight-Math.min(top,window.innerHeight*.45)-20;r.style.maxWidth=Math.max(620,avail*100/70)+'px';r.style.marginInline='auto'}
+function fitSeatRoom(){const r=document.querySelector('.roomscroll .room.edit')||document.querySelector('.roomscroll .room.seat-mode');if(!r)return;r.style.maxWidth='';const top=r.getBoundingClientRect().top+(window.scrollY||0),avail=window.innerHeight-Math.min(top,window.innerHeight*.45)-20;r.style.maxWidth=Math.max(620,avail*100/70)+'px';r.style.marginInline='auto'}
 if(HAS_DOM)addEventListener('resize',()=>{try{fitSeatRoom();fitNames(document)}catch(e){}});
 const IC={
   eyeoff:'<path d="M3 3l18 18"/><path d="M10.6 5.1A9.9 9.9 0 0112 5c5 0 8.5 4.2 9.5 7a12 12 0 01-2.7 4"/><path d="M6.1 6.2C4.3 7.4 3.1 9.3 2.5 12c1 2.8 4.5 7 9.5 7 1.8 0 3.4-.5 4.8-1.3"/><path d="M9.9 10a3 3 0 004.1 4.1"/>',
@@ -1678,9 +1687,9 @@ function railHTML(){
 }
 function topHTML(cls){
   return`<header class="top"><div class="top-in">
-  <div class="crumb"><span class="crumb-app">RobsonEDU Grouping Studio</span><span class="crumb-sep" aria-hidden="true">/</span>
-  ${S.classes.length?`<label class="clsel"><span class="sr">Class</span><select data-ch="pickClass">${S.classes.map(c=>`<option value="${c.id}"${cls&&c.id===cls.id?' selected':''}>${esc(c.name)}</option>`).join('')}</select></label>`:''}</div>
-  <div class="top-actions"><span id="saveState"${ui.tab==='groups'?' hidden':''} class="savestate ${!storageOK?'err':ui.saveState==='saving'?'busy':'ok'}" role="status" aria-live="polite">${saveLabel()}</span><div class="undo-group" role="group" aria-label="Undo and redo"><button class="iconbtn" id="btnUndo" data-act="undo" aria-label="Undo" title="Undo (Ctrl or Cmd + Z)"${hist.undo.length||saveT?'':' disabled'}>${svg('undo')}</button><button class="iconbtn" id="btnRedo" data-act="redo" aria-label="Redo" title="Redo (Shift + Ctrl or Cmd + Z)"${hist.redo.length?'':' disabled'}>${svg('redo')}</button></div><button class="btn primary" data-act="present"${cls?'':' disabled'}>${ui.tab==='stations'?svg('stations')+'<span class="lbl-l">Start stations</span><span class="lbl-s">Start</span>':ui.tab==='groups'?'<span class="lbl-l">Present groups</span><span class="lbl-s">Present</span>':'Present'}</button></div>
+  <div class="crumb"><button class="crumb-app crumb-home" data-act="tab" data-arg="classes" title="Back to My Classes" data-cc="crumbClasses">${ui.tab==='room'?'Rooms':'Classes'}</button><span class="crumb-sep" aria-hidden="true">/</span>
+  ${ui.tab==='room'?(()=>{const er=editRoom();return`<label class="clsel" data-x="roomCrumb"><span class="sr">Room layout</span><select data-ch="pickRoom">${S.rooms.map(r=>`<option value="${r.id}"${er&&r.id===er.id?' selected':''}>${esc(r.name)}</option>`).join('')}</select></label>`})():S.classes.length?`<label class="clsel"><span class="sr">Class</span><select data-ch="pickClass">${S.classes.map(c=>`<option value="${c.id}"${cls&&c.id===cls.id?' selected':''}>${esc(c.name)}</option>`).join('')}</select></label>`:''}</div>
+  <div class="top-actions"><span id="saveState"${ui.tab==='groups'?' hidden':''} class="savestate ${!storageOK?'err':ui.saveState==='saving'?'busy':'ok'}" role="status" aria-live="polite">${saveLabel()}</span><button class="qcbtn" data-act="qcOpen" title="Quick Chart: names, a layout, done">${window.QC_BOLT||''}<span class="lbl-l">Quick Chart</span><span class="lbl-s">Quick</span></button><div class="undo-group" role="group" aria-label="Undo and redo"><button class="iconbtn" id="btnUndo" data-act="undo" aria-label="Undo" title="Undo (Ctrl or Cmd + Z)"${hist.undo.length||saveT?'':' disabled'}>${svg('undo')}</button><button class="iconbtn" id="btnRedo" data-act="redo" aria-label="Redo" title="Redo (Shift + Ctrl or Cmd + Z)"${hist.redo.length?'':' disabled'}>${svg('redo')}</button></div><button class="btn primary" data-act="present"${cls?'':' disabled'}${['arrange','groups','stations'].includes(ui.tab)?'':' hidden'} data-po="presentOnly">${ui.tab==='stations'?svg('stations')+'<span class="lbl-l">Start stations</span><span class="lbl-s">Start</span>':ui.tab==='groups'?'Present':'Present'}</button></div>
   </div></header>`;
 }
 function viewHTML(cls){switch(ui.tab){case'groups':return groupsHTML(cls);case'stations':return stationsHTML(cls);case'roster':return rosterHTML(cls);case'room':return roomViewHTML();case'settings':return settingsHTML();case'manage':return manageHTML();default:return arrangeHTML(cls)}}
@@ -1749,7 +1758,7 @@ function arrangeHTML(cls){
   const help=(isCat(by)&&by.options?{mixed:'Every table gets a mix of colors.',similar:'Students with the same color sit together.'}:isCat(by)?{mixed:`Every table gets a mix of ${by.name.toLowerCase()}.`,similar:`Students with the same ${by.name.toLowerCase()} sit together.`}:{mixed:'Every table gets a spread of high, middle and low.',similar:'Students are grouped in bands: highs together, lows together.'})[o.mode]||'A fresh shuffle that still follows your rules.';
   const panelOpen=true; /* Options toggle removed for now; S.settings.seatPanel kept for later */
   ui.sZoomMax=zoomMax(room);if((ui.sZoom||1)>ui.sZoomMax)ui.sZoom=ui.sZoomMax;
-  return`${!openChart(cls)&&!cls.history.length&&cls.students.length&&roomOf(cls).confirmed===false&&!ui.layoutAsked?layoutAskHTML(cls):''}    <div class="seat-head"><div class="sh-left">${chartBarHTML(cls)}<p class="muted">${esc(room.name)} · ${here.length} students · ${L.seats.length} seats in ${L.groups.length} groups${hasSeats?' · '+esc(metaText(cls,cur.meta)):''}</p></div>${(v.colors&&by)||ui.sZoomMax>1?`<div class="legrow">${v.colors&&by?`<div class="legend" aria-label="Color key">${isCat(by)&&by.options?by.options.map((o,i)=>`<span><i style="background:var(--q${5+i})"></i>${esc(o)}</span>`).join(''):isCat(by)?catList(cls,by).map((c,i)=>`<span><i style="background:var(--q${i<4?i+1:0})"></i>${esc(i<4?c.name:'Other')}</span>`).slice(0,5).join(''):[1,2,3,4].map(q=>`<span class="tipbtn" tabindex="0" data-tip="${QFULL[q-1]}" aria-label="${QFULL[q-1]}"><i style="background:var(--q${q})"></i>${QABBR[q-1]}</span>`).join('')}</div>`:''}${ui.sZoomMax>1?`<div class="s-zoom sz-top" aria-label="Seat size"><button class="sz-b sz-minus" data-act="sZoomStep" data-arg="-0.1" aria-label="Smaller seats" title="Smaller seats"${(ui.sZoom||1)<=1?' disabled':''}>−</button><button class="sz-fit sz-val"  data-act="sZoomFit" title="Back to 100%">${Math.round((ui.sZoom||1)*100)}%</button><button class="sz-b sz-plus" data-act="sZoomStep" data-arg="0.1" aria-label="Bigger seats" title="Bigger seats"${(ui.sZoom||1)>=ui.sZoomMax?' disabled':''}>+</button></div>`:''}</div>`:''}</div>
+  return`${!openChart(cls)&&!cls.history.length&&cls.students.length&&roomOf(cls).confirmed===false&&!ui.layoutAsked?layoutAskHTML(cls):''}    <div class="seat-head"><div class="sh-left">${chartBarHTML(cls)}<p class="muted">${esc(room.name)} · ${here.length} students · ${L.seats.length} seats in ${L.groups.length} groups${hasSeats&&metaText(cls,cur.meta)!=='Arranged by hand'?' · '+esc(metaText(cls,cur.meta)):''} <button class="rostbtn" data-act="tab" data-arg="roster" title="Add, remove or edit students in this class"><svg viewBox="0 0 24 24"><circle cx="9" cy="8" r="3.2"/><path d="M3 20c0-3.3 2.7-6 6-6s6 2.7 6 6"/><path d="M16 4.5a3 3 0 0 1 0 6M18 14c2 .8 3 2.6 3 6"/></svg>Edit roster</button></p></div>${(v.colors&&by)||ui.sZoomMax>1?`<div class="legrow">${v.colors&&by?`<div class="legend" aria-label="Color key">${isCat(by)&&by.options?by.options.map((o,i)=>`<span><i style="background:var(--q${5+i})"></i>${esc(o)}</span>`).join(''):isCat(by)?catList(cls,by).map((c,i)=>`<span><i style="background:var(--q${i<4?i+1:0})"></i>${esc(i<4?c.name:'Other')}</span>`).slice(0,5).join(''):[1,2,3,4].map(q=>`<span class="tipbtn" tabindex="0" data-tip="${QFULL[q-1]}" aria-label="${QFULL[q-1]}"><i style="background:var(--q${q})"></i>${QABBR[q-1]}</span>`).join('')}</div>`:''}${ui.sZoomMax>1?`<div class="s-zoom sz-top" aria-label="Seat size"><button class="sz-b sz-minus" data-act="sZoomStep" data-arg="-0.1" aria-label="Smaller seats" title="Smaller seats"${(ui.sZoom||1)<=1?' disabled':''}>−</button><button class="sz-fit sz-val"  data-act="sZoomFit" title="Back to 100%">${Math.round((ui.sZoom||1)*100)}%</button><button class="sz-b sz-plus" data-act="sZoomStep" data-arg="0.1" aria-label="Bigger seats" title="Bigger seats"${(ui.sZoom||1)>=ui.sZoomMax?' disabled':''}>+</button></div>`:''}</div>`:''}</div>
   <div class="layout railright${panelOpen?'':' solo'}">
 
   <section class="stage">
@@ -1763,13 +1772,13 @@ function arrangeHTML(cls){
     ${hasSeats&&by?`<div class="field"><span>Tables at a glance · ${esc(by.name)}</span><div class="gsum">${L.groups.map(g=>{const ss=g.seats.map(si=>cur.seats[L.seats[si].key]).filter(Boolean).map(id=>stud(cls,id));return`<div class="gcard"><b>${esc(g.label)}</b><span class="muted">${ss.length} student${ss.length===1?'':'s'} · <span class="num">${esc(summ(ss,by))}</span>${ss.some(x=>x&&x.g)?` · ${ss.filter(x=>x&&x.g==='M').length}M ${ss.filter(x=>x&&x.g==='F').length}F`:''}</span><div class="dots">${ss.map(s=>`<i style="background:var(--q${qm.get(s.id)||0})" title="${esc(dname(s))}"></i>`).join('')}</div></div>`}).join('')}</div></div>`:''}
   </section>
   ${panelOpen?`<aside class="rail">
-    ${ui.mkOpen||!openChart(cls)?(()=>{const first=!openChart(cls);const o=cls.quick.opts,help=o.mode==='random'?'A fair shuffle. Seating rules still apply.':o.mode==='similar'?'Students are grouped in bands: highs together, lows together.':'Every table gets a spread of high, middle and low.';const saved=!!ui.mkSet,sets=cls.groupSets.slice().reverse(),setSel=saved?(sets.find(x=>x.id===ui.mkSet)||null):null,setMode=setSel&&setSel.meta&&TYPE_NAME[setSel.meta.mode]?setSel.meta.mode:(saved&&!setSel&&cls.quick.meta&&TYPE_NAME[cls.quick.meta.mode]?cls.quick.meta.mode:null);
+    ${ui.mkOpen||!openChart(cls)?(()=>{const first=!openChart(cls);const o=cls.quick.opts,help=o.mode==='alpha'?'':o.mode==='random'?'A fair shuffle. Seating rules still apply.':o.mode==='similar'?'Students are grouped in bands: highs together, lows together.':'Every table gets a spread of high, middle and low.';const saved=!!ui.mkSet,sets=cls.groupSets.slice().reverse(),setSel=saved?(sets.find(x=>x.id===ui.mkSet)||null):null,setMode=setSel&&setSel.meta&&TYPE_NAME[setSel.meta.mode]?setSel.meta.mode:(saved&&!setSel&&cls.quick.meta&&TYPE_NAME[cls.quick.meta.mode]?cls.quick.meta.mode:null);
     const nm=ui.mkName!=null?ui.mkName:saved?defaultChartName(cls,setMode?{mode:setMode}:null):defaultChartName(cls,{mode:o.mode});return`<section class="panel mkpanel"><div class="chart-head"><h3>${cls.history.length?'Make New Chart':'Make your first chart'}</h3>${first?'':`<button class="iconbtn" data-act="mkClose" aria-label="Close">${svg('x')}</button>`}</div>${first&&!cls.history.length?`<small class="muted">Pick how to group, choose your criteria, then press Create chart. Students are seated at the tables in your room layout.</small>`:''}
-      <div class="seg four" role="group" aria-label="Grouping type">${[['mixed','Mixed'],['similar','Similar'],['random','Random']].map(([k,l])=>{const off=k!=='random'&&!critOptions(cls).length;return`<button data-act="qGmode" data-arg="${k}" aria-pressed="${!saved&&o.mode===k}"${off?' disabled title="Add data on the Roster first"':''}>${l}</button>`}).join('')}<button data-act="mkSaved" aria-pressed="${saved}">Saved</button></div>${critOptions(cls).length?'':`<small class="muted">Mixed and Similar need something to group by. Add a score, level or category on the <button class="linkbtn" data-act="tab" data-arg="roster">Roster</button> (or genders), and they'll turn on. Until then, charts are a fair random shuffle.</small>`}
+      <div class="seg four five" role="group" aria-label="Grouping type">${ALPHA_SEG.map(([k,l])=>{const off=k!=='random'&&k!=='alpha'&&!critOptions(cls).length;return`<button data-act="qGmode" data-arg="${k}" aria-pressed="${!saved&&o.mode===k}"${k==='alpha'?' title="Alphabetical" aria-label="Alphabetical"':''}${off?' disabled title="Add data on the Roster first"':''}>${l}</button>`}).join('')}<button data-act="mkSaved" aria-pressed="${saved}">Saved</button></div>${critOptions(cls).length?'':`<small class="muted">Mixed and Similar need something to group by. Add a score, level or category on the <button class="linkbtn" data-act="tab" data-arg="roster">Roster</button> (or genders), and they'll turn on. Until then, charts are a fair random shuffle.</small>`}
       ${saved?`<label class="field"><span>Saved groups</span><select data-ch="mkSet"><option value="__cur"${ui.mkSet==='__cur'?' selected':''}>(Current) ${cls.quick.name?esc(cls.quick.name):'Groups page'}</option>${sets.map(x=>`<option value="${x.id}"${setSel&&x.id===setSel.id?' selected':''}>${esc(x.name)}</option>`).join('')}</select></label>`:''}
-      ${saved?`<small class="muted">Seats these exact groups, including any swaps you made by hand.</small>`:`      <small class="muted">${help}</small>
+      ${saved?`<small class="muted">Seats these exact groups, including any swaps you made by hand.</small>`:`      ${help?`<small class="muted">${help}</small>`:''}
       ${critListHTML(cls,o,'q')}
-      <label class="check"><input type="checkbox" data-ch="qopt" data-key="avoid"${o.avoid?' checked':''}> Avoid recent partners</label>`}
+      ${o.mode==='alpha'?'':`<label class="check"><input type="checkbox" data-ch="qopt" data-key="avoid"${o.avoid?' checked':''}> Avoid recent partners</label>`}`}
       <label class="field"><span>Room layout</span><select data-ch="mkRoom">${S.rooms.map(r=>`<option value="${r.id}"${r.id===(ui.mkRoom||room.id)?' selected':''}>${esc(r.name)}</option>`).join('')}</select></label>
       <label class="field"><span>Chart name</span><input type="text" id="mkName" data-ch="mkName" value="${esc(nm)}"></label>
       <button class="btn primary wide" data-act="mkCreate">${cls.history.length?'Create new chart':'Create chart'}</button>
@@ -1865,17 +1874,15 @@ function roomViewHTML(){
   const presets=[['pods4','Pods of 4'],['pods6','Pods of 6'],['pairs','Rows of pairs'],['horseshoe','Horseshoe'],['blank','Empty room']];
   return`<div class="layout">
   <aside class="rail">
-    <section class="panel"><h3>Room layouts</h3>
-      <label class="field"><span>Editing</span><select data-ch="pickRoom">${S.rooms.map(r=>`<option value="${r.id}"${r.id===room.id?' selected':''}>${esc(r.name)}</option>`).join('')}</select></label>
-      <label class="field"><span>Layout name</span><input type="text" data-ch="roomName" value="${esc(room.name)}"></label>
-      <div class="row"><button class="btn small" data-act="newRoom">New</button><button class="btn small" data-act="dupRoom">Duplicate</button>${S.rooms.length>1?confirmBtn('delRoom','Delete','Click again to delete','delRoom',''):''}</div>
+    <section class="panel" data-x="usedByPanel"><h3>Classes using this room</h3>
+      ${users.length?`<div class="usedby">${users.map(c=>`<span class="ub-chip">${esc(c.name)}</span>`).join('')}</div><p class="ub-warn">${users.length>1?`Changes here update all ${users.length} classes.`:'Changes here update this class.'}</p>`:'<small class="muted">No classes use this room yet.</small>'}
       ${cls&&cls.roomId!==room.id?`<button class="btn small" data-act="useRoom">Use for ${esc(cls.name)}</button>`:''}
-      <small class="muted">${users.length?'Used by '+users.map(c=>esc(c.name)).join(', ')+'. Changes apply to every class using it.':'Not used by any class yet.'}</small>
     </section>
-    ${ui.selIds.length>1?(()=>{const items=room.items.filter(x=>ui.selIds.includes(x.id)),tables=items.filter(x=>FURN[x.type].seats),allLinked=tables.length>1&&new Set(tables.map(x=>(x.cluster||'').toUpperCase())).size===1&&tables[0].cluster;return`<section class="panel"><h3>${items.length} pieces selected</h3>
-      <p class="muted small">Drag any selected piece to move them together. Arrow keys nudge them; Delete removes them.</p>
+    ${ui.selIds.length>1?(()=>{const items=room.items.filter(x=>ui.selIds.includes(x.id)),tables=items.filter(x=>FURN[x.type].seats),allLinked=tables.length>1&&new Set(tables.map(x=>(x.cluster||'').toUpperCase())).size===1&&tables[0].cluster;const lg=allLinked&&tables.length===items.length&&room.items.filter(x=>x.cluster&&x.cluster.toUpperCase()===tables[0].cluster.toUpperCase()).length===items.length?L.groups.find(g=>g.items.some(y=>y.id===tables[0].id)):null;
+      return`<section class="panel">${lg?`<h3 data-x="linkedEdit">Editing: ${esc(lg.label)}</h3><p class="muted small" style="margin:-4px 0 0">${items.length} linked tables · ${lg.seats.length} seats · one group</p><label class="field"><span>Name</span><input type="text" data-ch="groupLabel" value="${esc((tables.find(t=>(t.label||'').trim())||{}).label||'')}" placeholder="${esc('Table '+(lg.num<1e6?lg.num:lg.index+1))}"></label><p class="muted small" style="margin:0">To edit just one of these tables, hold Option (Alt) and click it.</p>`:`<h3>${items.length} pieces selected</h3>`}
+      ${lg?'':'<p class="muted small" data-x="lgHint">Drag any selected piece to move them together. Arrow keys nudge them; Delete removes them.</p>'}
       ${tables.length>1?(allLinked?`<button class="btn" data-act="unlinkSel">Unlink these tables</button>`:`<button class="btn primary" data-act="linkSel">Link as one table</button><small class="muted">Linked tables seat one group and share the lowest table number.</small>`):'<small class="muted">Select two or more tables to link them.</small>'}
-      <div class="row"><button class="btn small" data-act="rotItem">Rotate 90° together</button>${confirmBtn('delItem','Remove all','Click again','delItem','')}<button class="btn small" data-act="clearSel">Clear selection</button></div></section>`})():`    <section class="panel"><div class="chart-head"><h3>${it?'Selected: '+esc(FURN[it.type].label):'Selected'}</h3>${it?`<div class="chart-tools"><button class="iconbtn tipbtn${ui.itemDetails?' on':''}" data-act="itemDetails" data-tip="${ui.itemDetails?'Hide size and angle':'Size and angle'}" aria-label="Size and angle" aria-expanded="${!!ui.itemDetails}">${svg('pencil')}</button></div>`:''}</div>
+      <div class="row"><button class="btn small" data-act="rotItem">Rotate 90° together</button>${confirmBtn('delItem','Remove all','Click again','delItem','')}<button class="btn small" data-act="clearSel">Clear selection</button></div></section>`})():`    <section class="panel"><div class="chart-head"><h3 data-x="editingHead">${it?'Editing: '+esc(FURN[it.type].label):'Editing'}</h3>${it?`<div class="chart-tools"><button class="iconbtn tipbtn${ui.itemDetails?' on':''}" data-act="itemDetails" data-tip="${ui.itemDetails?'Hide size and angle':'Size and angle'}" aria-label="Size and angle" aria-expanded="${!!ui.itemDetails}">${svg('pencil')}</button></div>`:''}</div>
       ${it?`<label class="field"><span>Label</span><input type="text" data-ch="itemLabel" value="${esc(it.label)}" placeholder="${seatType?(it.cluster?'Desks '+esc(it.cluster):'Table '+(it.num||'')):FURN[it.type].blank?'Optional label':esc(FURN[it.type].text||FURN[it.type].label)}"></label>
       <div class="field"><span>Shape</span><div class="seg four shapeseg" role="group" aria-label="Shape">${[['rect','Rectangle','<rect x="2.5" y="5.5" width="15" height="9" rx="1.5"/>'],['square','Square','<rect x="4.5" y="4.5" width="11" height="11" rx="1.5"/>'],['circle','Circle','<circle cx="10" cy="10" r="6.5"/>'],['triangle','Triangle','<path d="M10 3.5l7 12.5H3z" stroke-linejoin="round"/>']].map(([k,l,d])=>`<button data-act="setShape" data-arg="${k}" aria-pressed="${(it.shape||'rect')===k}" title="${l}" aria-label="${l}"><svg viewBox="0 0 20 20">${d}</svg></button>`).join('')}</div></div>
       ${ui.itemDetails?`${FURN[it.type].rs?(()=>{const d=base(it);return`<div class="two" style="gap:10px"><label class="field"><span>Length</span><input type="number" min="1" max="100" step="0.5" data-ch="itemSize" data-key="w" value="${d.w}"></label><label class="field"><span>Depth</span><input type="number" min="1" max="70" step="0.5" data-ch="itemSize" data-key="h" value="${d.h}"></label></div>`})():''}
@@ -1885,14 +1892,14 @@ function roomViewHTML(){
       ${seatType&&!room.hideTeam?(()=>{const g=L.groups.find(x=>x.items.some(y=>y.id===it.id));if(!g||g.seats.length<2)return'';const tagging=ui.tagGk===g.key;
         return`<div class="seatnum"><div class="sn-h">Team seats</div><p class="muted small" style="margin:0">${g.customOrder?'Custom order.':'Kagan order, starting at the back right.'} 1A gets the highest-ranked student at this table.</p><div class="row"><button class="btn small" data-act="teamStartAt" data-arg="${esc(g.key)}">Reorder this table</button>${g.customOrder?`<button class="btn small" data-act="tagReset" data-arg="${esc(g.key)}">Reset</button>`:''}</div></div>`})():''}
       <div class="row"><button class="btn small" data-act="rotItem">Rotate 90°</button><button class="btn small" data-act="dupItem">Duplicate</button>${confirmBtn('delItem','Remove','Click again','delItem','')}</div>`
-      :'<p class="muted small">Click a piece to edit it. Drag a box on the floor to select several, or Shift-click to add to the selection.</p>'}
+      :'<p data-x="noSel" hidden></p>'}
     </section>
 `}
     <section class="panel"><h3>Label individual seats</h3>
       ${ui.numMode?(()=>{const seq=ui.numSeq,g0=seq.length&&L.groups[L.seatByKey.get(seq[0]).gi],oneTable=g0&&g0.items.length===1&&seq.length===g0.seats.length&&seq.every(k=>L.seatByKey.get(k).gi===g0.index),match=oneTable?L.groups.filter(g=>g.items.length===1&&g.items[0].type===g0.items[0].type).length:0;
         return oneTable&&match>1?`<p class="small" style="margin:0"><b>${esc(g0.label)}</b> is numbered ${ui.numStart}–${ui.numStart+seq.length-1}. Use this pattern for:</p><div class="row"><button class="btn small primary" data-act="numPattern">All ${match} tables like it</button><button class="btn small" data-act="numDone">Just ${esc(g0.label)}</button></div><small class="muted">All tables continues the count table by table: ${ui.numStart+seq.length}, ${ui.numStart+seq.length+1}… Or keep clicking seats to number them yourself.</small><div class="row"><button class="btn small" data-act="numUndo">Undo last</button><button class="btn small" data-act="numCancel">Cancel</button></div>`
         :`<p class="small" style="margin:0">Click each seat in order. Next: <b>${ui.numStart+seq.length}</b>. Finish one table to copy its pattern to the rest, or keep going across the room.</p><div class="row"><button class="btn small primary" data-act="numDone">Done</button><button class="btn small" data-act="numUndo"${seq.length?'':' disabled'}>Undo last</button><button class="btn small" data-act="numCancel">Cancel</button></div>`})()
-      :`<p class="muted small" style="margin:0">Each seat’s own number (1–${L.seats.length}), shown large on the seat.</p><div class="row" style="align-items:center"><label class="small muted" style="display:flex;gap:6px;align-items:center">Start at <input type="number" id="numFrom" min="1" value="1" style="width:64px;min-height:32px"></label><button class="btn small" data-act="numStart">Click to number</button>${room.seatNum?'<button class="btn small" data-act="numReset">Reset</button>':''}</div>`}
+      :`<p class="muted small" style="margin:0" data-x="noSeatsNum">${L.seats.length?`Each seat’s own number (1–${L.seats.length}), shown large on the seat.`:'Add tables to number the seats.'}</p><div class="row" style="align-items:center"><label class="small muted" style="display:flex;gap:6px;align-items:center">Start at <input type="number" id="numFrom" min="1" value="1" style="width:64px;min-height:32px"></label><button class="btn small" data-act="numStart">Click to number</button>${room.seatNum?'<button class="btn small" data-act="numReset">Reset</button>':''}</div>`}
     </section>
     <section class="panel"><label class="check panel-toggle"><span class="pt-h">Label team seats</span><input type="checkbox" data-act="teamShow"${room.hideTeam?'':' checked'} aria-label="Show team seats"></label>
       ${room.hideTeam?'<p class="muted small" style="margin:0">Hidden in this room. Turn on to show 1A, 2B, 3A, 4B on each seat.</p>':ui.teamMode?(()=>{const lastG=ui.teamLast&&L.groups.find(g=>g.key===ui.teamLast),match=lastG&&lastG.items.length===1?L.groups.filter(g=>g!==lastG&&g.items.length===1&&g.items[0].type===lastG.items[0].type).length:0;
@@ -1900,13 +1907,14 @@ function roomViewHTML(){
         :`<p class="small" style="margin:0">${ui.teamGk?`Keep going at this table. Next: <b>${teamTag(ui.teamSeq.length,(L.groups.find(g=>g.key===ui.teamGk)||{seats:[]}).seats.length)}</b>.`:'Click a table’s seats in order: <b>1A</b>, then <b>2B</b>, <b>3A</b>, <b>4B</b>.'}</p><div class="row"><button class="btn small" data-act="teamDone">Done</button></div>`})()
       :`<p class="muted small" style="margin:0">The small tag on each seat: 1A, 2B, 3A, 4B. The highest-ranked student at a table sits at 1A and the lowest sits diagonally across, so they are never shoulder or face partners.</p><div class="row"><button class="btn small" data-act="teamStart">Click to reorder</button>${room.seatOrder&&Object.keys(room.seatOrder).length?confirmBtn('teamResetAll','Reset all','Click again to reset','teamResetAll',''):''}</div>`}
     </section>
-    <section class="panel"><h3>Start from a layout</h3><p class="muted small">Replaces everything in this layout.</p><div class="row">${presets.map(([k,l])=>confirmBtn('preset:'+k,l,'Replace?','preset',k)).join('')}</div></section>
+    ${startLayoutsHTML(room)}
   </aside>
   <section class="stage">
-    <div class="stage-head"><div><h2>${esc(room.name)}</h2><p class="muted">${L.seats.length} seats in ${L.groups.length} groups. Each table is one group unless you link tables together.</p></div></div>
-    <div class="roomscroll">${roomHTML(room,L,{mode:'edit'})}</div>
-    <p class="hint">Drag pieces to move them, or drag a box across empty floor to select several at once. Select any piece and drag the dot in its corner to resize it, or the arrow above it to rotate it. Table numbers stay with each table when you move it. Arrow keys nudge the selected piece; Delete removes it.</p>
-    <section class="panel addroom"><h3>Add to the room</h3><div class="row">${addBtns}</div></section>
+    <div class="stage-head"><div style="flex:1;min-width:0">${roomBarHTML(room)}<p class="muted">${L.seats.length} seats in ${L.groups.length} groups. Each table is one group unless you link tables together.</p><ul class="roomtips" aria-label="How to edit the room" data-x="roomTips"><li><b>Drag</b> to move</li><li><b>Drag a box</b> to select several</li><li><b>Corner dot</b> resizes</li><li><b>Arrow above</b> rotates</li><li><b>Arrow keys</b> nudge</li><li><b>Delete</b> removes</li></ul></div></div>
+    <div class="roomwrap" data-x="furnBar"><div class="roomscroll">${roomHTML(room,L,{mode:'edit'})}</div>
+    <div class="furnfab-wrap${ui.furnOpen?' open':''}"><button class="furnfab" data-fab="toggle" aria-expanded="${!!ui.furnOpen}" aria-controls="furnDock" aria-label="${ui.furnOpen?'Close furniture':'Add furniture'}" data-ftip="${ui.furnOpen?'Close':'Add furniture'}">${ui.furnOpen?'<svg class="fx" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>':'<svg class="fi" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="7.5" height="7.5" rx="1.8"/><rect x="13.5" y="3" width="7.5" height="7.5" rx="1.8"/><rect x="3" y="13.5" width="7.5" height="7.5" rx="1.8"/><path d="M17.25 14v6.5M14 17.25h6.5"/></svg>'}</button>
+    <div class="furndock" id="furnDock" role="menu" aria-label="Add to the room"${ui.furnOpen?'':' hidden'}><div class="fd-head"><b>Add to the room</b></div><div class="fd-list">${addBtns}</div><p class="fd-note">New pieces appear in the middle of the room. Drag them into place.</p></div></div></div>
+
   </section></div>`;
 }
 
@@ -1915,7 +1923,7 @@ function chartBarHTML(cls){
   const H=cls.history.slice().sort((a,b)=>b.date-a.date),h=openChart(cls),ed=ui.chartEdit;
   const tb=(act,ic,tip,dis,on)=>`<button class="iconbtn tipbtn${on?' on':''}" data-act="${act}" data-tip="${tip}" aria-label="${tip}"${dis?' disabled':''}>${svg(ic)}</button>`;
   const delOn=ui.confirm==='delchart';
-  return`<div class="chartbar">${H.length?`<label class="chartsel-wrap"><span class="sr">Open a saved chart</span><select class="chartsel" data-ch="pickChart">${h?'':'<option value="" selected>Pick a chart</option>'}${H.map(x=>`<option value="${x.id}"${h&&x.id===h.id?' selected':''}>${esc(x.label||'Untitled chart')}</option>`).join('')}</select></label>`:`<h2>No charts yet</h2>`}
+  return`<div class="chartbar">${H.length>1||(H.length&&!h)?`<label class="chartsel-wrap"><span class="sr">Open a saved chart</span><select class="chartsel" data-ch="pickChart">${h?'':'<option value="" selected>Pick a chart</option>'}${H.map(x=>`<option value="${x.id}"${h&&x.id===h.id?' selected':''}>${esc(x.label||'Untitled chart')}</option>`).join('')}</select></label>`:H.length?`<h2 class="chart-one" data-x="oneChartTitle">${esc((h||H[0]).label||'Untitled chart')}</h2>`:`<h2>No charts yet</h2>`}
     <div class="chart-tools" role="toolbar" aria-label="Chart actions">
       ${tb('chartNewOpen','plus','New chart',false)}
       ${tb('chartDup','saveas','Duplicate',!h)}
@@ -2040,7 +2048,7 @@ function virtualL(sizes){const seats=[],groups=sizes.map((n,gi)=>({key:'q'+gi,in
 function qSizes(n,size){const ng=Math.max(1,Math.ceil(n/size)),base=Math.floor(n/ng),ex=n%ng;return Array.from({length:ng},(_,i)=>base+(i<ex?1:0))}
 function recentGroups(cls,mode){return repeatSources(cls,null,TYPE_NAME[mode]?mode:'',null).reverse()}
 function tgtOpts(cls,t){return t==='st'?cls.st.opts:cls.quick.opts}
-function critListHTML(cls,o,t){if(o.mode==='random')return'';const all=critOptions(cls),used=o.crit,opt=(sel,skip)=>all.filter(c=>c.id===sel||!skip.includes(c.id)).map(c=>`<option value="${c.id}"${c.id===sel?' selected':''}>${esc(c.name)}</option>`).join(''),rest=all.filter(c=>!used.includes(c.id));
+function critListHTML(cls,o,t){if(o.mode==='random')return'';if(o.mode==='alpha')return alphaHTML(cls);const all=critOptions(cls),used=o.crit,opt=(sel,skip)=>all.filter(c=>c.id===sel||!skip.includes(c.id)).map(c=>`<option value="${c.id}"${c.id===sel?' selected':''}>${esc(c.name)}</option>`).join(''),rest=all.filter(c=>!used.includes(c.id));
   return`<div class="field"><span>Group by</span><ol class="critlist" data-tgt="${t}">${used.map((id,i)=>`<li class="critrow" data-ci="${i}"><span class="grip" data-grip="${i}" data-tgt="${t}" aria-hidden="true" title="Drag to reorder">${svg('grip')}</span><span class="cnum">${i+1}</span><select data-ch="critSet" data-tgt="${t}" data-i="${i}" aria-label="Criterion ${i+1}">${opt(id,used)}</select><span class="goal">${i===0?(o.mode==='similar'?'Match':'Mix'):'Balance'}</span><button class="mini xbtn" data-act="critDel" data-arg="${t}|${i}" aria-label="Remove ${esc(critName(cls,id))}">${svg('x')}</button></li>`).join('')}</ol>
   ${rest.length?`<div class="critadd"><span class="cnum">${used.length+1}</span><select data-ch="critAdd" data-tgt="${t}" aria-label="Add a criterion"><option value="">${used.length?'Then by…':'Choose a criterion…'}</option>${rest.map(c=>`<option value="${c.id}">${esc(c.name)}</option>`).join('')}</select></div>`:''}
   ${used.length>1?'<small class="muted">Higher in the list counts more. Drag to reorder.</small>':''}</div>`}
@@ -2050,7 +2058,7 @@ function makeQuick(cls){syncQuick(cls);
   const q=cls.quick,ids=qPresent(cls),o=q.opts;if(ids.length<2)return;
   const qr=quickRoom(cls);let L;
   if(qr)L=virtualL(qr.RL.groups.map(g=>g.seats.length));else{qSnap(cls);L=virtualL(qSizes(ids.length,q.size))}
-  const crit=o.mode==='random'?[]:o.crit.map((id,i)=>({id,goal:o.mode==='similar'&&i===0?'match':'mix'}));
+  const crit=o.mode==='random'||o.mode==='alpha'?[]:o.crit.map((id,i)=>({id,goal:o.mode==='similar'&&i===0?'match':'mix'}));
   const r=runGroupingL(cls,L,{mode:o.mode,crit,avoid:o.avoid,recent:recentGroups(cls,o.mode)});
   let G=L.groups.map(g=>g.seats.map(si=>(r.seats||{})[L.seats[si].key]).filter(Boolean));
   let keys=qr?qr.RL.groups.map(g=>g.key):null,labels=qr?qr.RL.groups.map(g=>g.label):null;
@@ -2098,7 +2106,7 @@ function groupsHTML(cls){
   const q=cls.quick,o=q.opts,G=q.groups,opts=qSnap(cls),Lb=qLabels(cls);
   const lens=G.map(g=>g.length),lo=lens.length?Math.min(...lens):0,hi=lens.length?Math.max(...lens):0;
   const manual=q.swapMode==='manual';
-  const by=o.mode!=='random'?cls.columns.find(c=>c.id===o.crit[0]):null;
+  const by=o.mode!=='random'&&o.mode!=='alpha'?cls.columns.find(c=>c.id===o.crit[0]):null;
   const hint=G.length<2?'Make smaller groups to start swapping.':manual?(ui.qpick?`Now tap someone in another group to trade with ${nameOf(cls,ui.qpick)}.`:'Tap one name, then tap a name in another group to trade them.'):'Tap a name to swap them into another group. Tap the same name again for a different swap.';
   const qm=cls.view.colors&&by?qmapFor(cls,by.id):new Map(),sc=scoreCard(cls);
   const active=ui.qswap&&ui.qswap.partner?ui.qswap.id:null,partner=ui.qswap?ui.qswap.partner:null;
@@ -2119,16 +2127,16 @@ function groupsHTML(cls){
   return`<div class="layout">
   <aside class="rail">
     <section class="panel"><h3>Make groups</h3>
-      <div class="seg" role="group" aria-label="Grouping type">${[['mixed','Mixed'],['similar','Similar'],['random','Random']].map(([k,l])=>`<button data-act="qGmode" data-arg="${k}" aria-pressed="${o.mode===k}">${l}</button>`).join('')}</div>
-      <small class="muted">${o.mode==='random'?'A fair shuffle. Seating rules still apply.':o.mode==='similar'?'Students are ranked by your first criterion and grouped in bands: highs together, lows together. Any others are balanced only where scores tie.':'Every group gets a spread of your first criterion. Any others are balanced in order.'}</small>
+      <div class="seg four" role="group" aria-label="Grouping type">${ALPHA_SEG.map(([k,l])=>`<button data-act="qGmode" data-arg="${k}" aria-pressed="${o.mode===k}"${k==='alpha'?' title="Alphabetical" aria-label="Alphabetical"':''}>${l}</button>`).join('')}</div>
+      <small class="muted"${o.mode==='alpha'?' hidden':''}>${o.mode==='random'?'A fair shuffle. Seating rules still apply.':o.mode==='similar'?'Students are ranked by your first criterion and grouped in bands: highs together, lows together. Any others are balanced only where scores tie.':'Every group gets a spread of your first criterion. Any others are balanced in order.'}</small>
       ${critListHTML(cls,o,'q')}
       <div class="field"><span>Group sizes</span><div class="seg two" role="group" aria-label="Group sizes"><button data-act="qSizeMode" data-arg="room" aria-pressed="${o.sizeMode==='room'}">Room layout</button><button data-act="qSizeMode" data-arg="size" aria-pressed="${o.sizeMode!=='room'}">Pick group size</button></div>
       <small class="muted">${o.sizeMode==='room'?'Groups match the tables in a room, so mixed tables of 4 and 6 work. Best when the groups will be seated.':'Every group is the same size, no matter the room. Good for partner work, stations or activities away from the tables.'}</small>
       ${o.sizeMode==='room'?(()=>{const qr=quickRoom(cls);const caps={};let seats=0;if(qr)qr.RL.groups.forEach(g=>{const n=g.seats.length;caps[n]=(caps[n]||0)+1;seats+=n});return`<select data-ch="qopt" data-key="roomId" aria-label="Room layout">${S.rooms.map(r=>`<option value="${r.id}"${r.id===o.roomId?' selected':''}>${esc(r.name)}</option>`).join('')}</select>
         <div class="sizechips">${Object.entries(caps).sort((a,b)=>a[0]-b[0]).map(([n,c])=>`<span>${c} table${c>1?'s':''} of ${n}</span>`).join('')}<em class="${here.length>seats?'warn':''}">${seats} seats · ${here.length} students</em></div>`})():`<div class="stepper" role="group" aria-label="Group size"><button data-act="qSize" data-arg="-1" aria-label="Smaller groups"${q.size<=opts[0]?' disabled':''}>−</button><output>Groups of ${q.size}</output><button data-act="qSize" data-arg="1" aria-label="Larger groups"${q.size>=opts[opts.length-1]?' disabled':''}>+</button></div><small class="muted">Makes ${qSizes(here.length,q.size).length} groups${new Set(qSizes(here.length,q.size)).size>1?' (a few are one smaller or larger so everyone fits)':''}.</small>`}</div>
-      <label class="check"><input type="checkbox" data-ch="qopt" data-key="avoid"${o.avoid?' checked':''}> Avoid recent partners</label>
+      ${o.mode==='alpha'?'':`<label class="check"><input type="checkbox" data-ch="qopt" data-key="avoid"${o.avoid?' checked':''}> Avoid recent partners</label>`}
       <button class="btn primary wide" data-act="qShuffle">Make groups</button>
-      ${cls.rules.length?`<small class="muted">Your ${cls.rules.length} seating rule${cls.rules.length>1?'s':''} from the Roster ${cls.rules.length>1?'are':'is'} always followed.</small>`:''}
+      ${cls.rules.length&&o.mode!=='alpha'?`<small class="muted">Your ${cls.rules.length} seating rule${cls.rules.length>1?'s':''} from the Roster ${cls.rules.length>1?'are':'is'} always followed.</small>`:''}
     </section>
   </aside>
   <section class="stage">${q.blank&&!G.length?`${gHead}<div class="empty"><h3>No groups yet</h3><p class="muted">Choose Mixed, Similar or Random and your criteria, then click Make groups. Or open a saved set.</p></div>`:`
@@ -2140,7 +2148,7 @@ function groupsHTML(cls){
 `}
   </section></div>`;
 }
-function rankCol(cls,crit,mode){if(mode==='random')return null;for(const id of crit||[]){const c=cls.columns.find(x=>x.id===id);if(c&&!isCat(c))return c}return null}
+function rankCol(cls,crit,mode){if(mode==='random'||mode==='alpha')return null;for(const id of crit||[]){const c=cls.columns.find(x=>x.id===id);if(c&&!isCat(c))return c}return null}
 const FILL_CACHE={};
 function fillOrder(n,m){const key=n+':'+m;if(FILL_CACHE[key])return FILL_CACHE[key];
   if(n>8||m<3){const r=Array.from({length:m},(_,i)=>i);FILL_CACHE[key]=r;return r}
@@ -2174,7 +2182,7 @@ function makeStGroups(cls){
   const b=cls.st,o=b.opts,ids=qPresent(cls);if(ids.length<2)return;
   b.count=clamp(+b.count||6,2,stMax(cls));const n=ids.length,base=Math.floor(n/b.count),ex=n%b.count;
   const L=virtualL(Array.from({length:b.count},(_,i)=>base+(i<ex?1:0)));
-  const crit=o.mode==='random'?[]:o.crit.map((id,i)=>({id,goal:o.mode==='similar'&&i===0?'match':'mix'}));
+  const crit=o.mode==='random'||o.mode==='alpha'?[]:o.crit.map((id,i)=>({id,goal:o.mode==='similar'&&i===0?'match':'mix'}));
   const r=runGroupingL(cls,L,{mode:o.mode,crit,avoid:o.avoid,recent:recentGroups(cls,o.mode)});
   if(r.error){const G=L.groups.map(()=>[]);shuffle(ids.slice()).forEach((id,i)=>G[i%G.length].push(id));b.groups=G;b.meta={mode:'random'}}
   else{b.groups=L.groups.map(g=>g.seats.map(si=>r.seats[L.seats[si].key]).filter(Boolean)).filter(g=>g.length);b.meta=r.meta}
@@ -2188,15 +2196,15 @@ function stCountOf(cls){const c=cls.stationsCfg;if(!c.count)c.count=stationGroup
 function stationsHTML(cls){
   if(!cls)return emptyClassesHTML();
   if(qPresent(cls).length<2)return`<div class="page"><div class="page-head"><div><h2>Stations</h2></div></div><div class="empty"><h3>Add students first</h3><p class="muted">Stations rotates your groups through activities with a timer.</p><button class="btn" data-act="tab" data-arg="roster">Go to Roster</button></div></div>`;
-  const c=cls.stationsCfg,G=stationGroups(cls),n=G.length,ns=stCountOf(cls),b=cls.st,sc=scoreCard(cls,b),qm=cls.view.colors&&b.opts.mode!=='random'&&b.opts.crit[0]&&b.opts.crit[0]!=='__g'?qmapFor(cls,b.opts.crit[0]):new Map();
+  const c=cls.stationsCfg,G=stationGroups(cls),n=G.length,ns=stCountOf(cls),b=cls.st,sc=scoreCard(cls,b),qm=cls.view.colors&&b.opts.mode!=='random'&&b.opts.mode!=='alpha'&&b.opts.crit[0]&&b.opts.crit[0]!=='__g'?qmapFor(cls,b.opts.crit[0]):new Map();
   return`<div class="layout">
   <aside class="rail">
     <section class="panel"><h3>Station groups</h3>
-      <div class="seg" role="group" aria-label="Grouping type">${[['mixed','Mixed'],['similar','Similar'],['random','Random']].map(([k,l])=>`<button data-act="stGmode" data-arg="${k}" aria-pressed="${b.opts.mode===k}">${l}</button>`).join('')}</div>
+      <div class="seg four" role="group" aria-label="Grouping type">${ALPHA_SEG.map(([k,l])=>`<button data-act="stGmode" data-arg="${k}" aria-pressed="${b.opts.mode===k}"${k==='alpha'?' title="Alphabetical" aria-label="Alphabetical"':''}>${l}</button>`).join('')}</div>
       ${critListHTML(cls,b.opts,'st')}
       <div class="field"><span>Number of groups</span><div class="stepper" role="group" aria-label="Number of groups"><button data-act="stCount" data-arg="-1" aria-label="Fewer groups"${b.count<=2?' disabled':''}>−</button><output>${b.count} groups</output><button data-act="stCount" data-arg="1" aria-label="More groups"${b.count>=stMax(cls)?' disabled':''}>+</button></div><small class="muted">${Math.floor(qPresent(cls).length/b.count)}${qPresent(cls).length%b.count?'–'+Math.ceil(qPresent(cls).length/b.count):''} students per group.</small></div>
       <div class="field"><span>Number of stations</span><div class="stepper" role="group" aria-label="Number of stations"><button data-act="stStations" data-arg="-1" aria-label="Fewer stations"${ns<=2?' disabled':''}>−</button><output>${ns} stations</output><button data-act="stStations" data-arg="1" aria-label="More stations"${ns>=12?' disabled':''}>+</button></div><small class="muted">${ns>n?`${ns-n} station${ns-n>1?'s sit':' sits'} empty each round.`:ns<n?`Up to ${Math.ceil(n/ns)} groups share a station each round.`:'One group per station.'} Every group visits every station in ${ns} rounds.</small></div>
-      <label class="check"><input type="checkbox" data-ch="stopt" data-key="avoid"${b.opts.avoid?' checked':''}> Avoid recent partners</label>
+      ${b.opts.mode==='alpha'?'':`<label class="check"><input type="checkbox" data-ch="stopt" data-key="avoid"${b.opts.avoid?' checked':''}> Avoid recent partners</label>`}
       <button class="btn primary wide" data-act="stMake">Make groups</button>
       ${cls.groupSets.length?`<div class="ordiv"><span>or use a saved set</span></div><div class="row"><select id="stLoadSel" style="flex:1" aria-label="Saved group set">${cls.groupSets.slice().reverse().map(x=>`<option value="${x.id}">${esc(x.name)}</option>`).join('')}</select><button class="btn small" data-act="stLoad">Load</button></div>`:''}
     </section>
@@ -2212,10 +2220,10 @@ function stationsHTML(cls){
   </aside>
   <section class="stage">
     <div class="stage-head"><div><h2>Stations</h2><p class="muted">${n} groups · ${ns} stations · ${esc(metaText(cls,b.meta)||'')} · ${c.work} min each${+c.transition?` · ${c.transition<60?c.transition+' sec':(c.transition/60)+' min'} to move`:''}</p></div></div>
-    <div class="tablewrap"><table class="sched"><thead><tr><th></th>${Array.from({length:ns},(_,s2)=>`<th>${esc(stName(cls,s2))}</th>`).join('')}</tr></thead><tbody>${Array.from({length:ns},(_,r)=>`<tr><th>Round ${r+1}</th>${Array.from({length:ns},(_,s2)=>{const here=G.map((_,gi)=>gi).filter(gi=>stAt(gi,r,ns)===s2);return`<td>${here.length?here.map(gi=>`<span class="gchip" style="--tc:var(--t${gi%8+1})">Group ${gi+1}</span>`).join(' '):'<span class="muted small">Open</span>'}</td>`}).join('')}</tr>`).join('')}</tbody></table></div>
+    <div class="tablewrap"><table class="sched"><thead><tr><th></th>${Array.from({length:ns},(_,s2)=>`<th data-stn="${s2}">${esc(stName(cls,s2))}</th>`).join('')}</tr></thead><tbody>${Array.from({length:ns},(_,r)=>`<tr><th>Round ${r+1}</th>${Array.from({length:ns},(_,s2)=>{const here=G.map((_,gi)=>gi).filter(gi=>stAt(gi,r,ns)===s2);return`<td>${here.length?here.map(gi=>`<span class="gchip" style="--tc:var(--t${gi%8+1})">Group ${gi+1}</span>`).join(' '):'<span class="muted small">Open</span>'}</td>`}).join('')}</tr>`).join('')}</tbody></table></div>
     ${sc.length?`<div class="scorecard">${sc.map(x=>`<div class="sc ${x.ok?'ok':'warn'}"><i aria-hidden="true">${x.ok?'✓':'!'}</i><div><b>${esc(x.name)}</b><span>${esc(x.text)}</span></div></div>`).join('')}</div>`:''}
     <p class="hint">${ui.stpick?`Now tap someone in another group to trade with ${esc(nameOf(cls,ui.stpick))}.`:'To trade two students, tap one name, then a name in another group.'}</p>
-    <div class="qgrid">${G.map((g,gi)=>{const bad=qBroken(cls,G,gi);return`<div class="qcard${bad?' clash':''}"><div class="qc-head"><b>Group ${gi+1}</b>${bad?'<span class="pill bad">Rule broken</span>':''}<span class="n">${g.length}</span></div><div class="qsum">Starts at ${esc(stName(cls,stAt(gi,0,ns)))}</div><ul>${(qm.size?g.slice().sort((x,y)=>(qm.get(x)||9)-(qm.get(y)||9)):g).map(id=>{const qq=qm.get(id);return`<li><button class="qname${ui.stpick===id?' picked':''}" data-act="stTap" data-arg="${id}">${qq?(qq<=4?`<span class="qnum">${qq}</span>`:'')+`<i class="qdot" style="background:var(--q${qq})" aria-hidden="true"></i>`:''}<span class="qt">${esc(nameOf(cls,id))}</span>${svg('swap')}</button></li>`}).join('')}</ul></div>`}).join('')}</div>
+    <div class="qgrid">${G.map((g,gi)=>{const bad=qBroken(cls,G,gi);return`<div class="qcard${bad?' clash':''}"><div class="qc-head"><b>Group ${gi+1}</b>${bad?'<span class="pill bad">Rule broken</span>':''}<span class="n">${g.length}</span></div><div class="qsum">Starts at <span data-stn="${stAt(gi,0,ns)}">${esc(stName(cls,stAt(gi,0,ns)))}</span></div><ul>${(qm.size?g.slice().sort((x,y)=>(qm.get(x)||9)-(qm.get(y)||9)):g).map(id=>{const qq=qm.get(id);return`<li><button class="qname${ui.stpick===id?' picked':''}" data-act="stTap" data-arg="${id}">${qq?(qq<=4?`<span class="qnum">${qq}</span>`:'')+`<i class="qdot" style="background:var(--q${qq})" aria-hidden="true"></i>`:''}<span class="qt">${esc(nameOf(cls,id))}</span>${svg('swap')}</button></li>`}).join('')}</ul></div>`}).join('')}</div>
   </section></div>`;
 }
 function stationTimerEnd(){const cls=activeClass(),c=cls.stationsCfg;if(ui.phase==='work'){if(c.autoTransition&&+c.transition>0){startTransition();return}renderPresent();return}advanceStation(true)}
@@ -2349,7 +2357,7 @@ function exitPresent(){const w=ui.pwin;ui.pwin=null;try{if(w&&!w.closed)w.close(
 /* ---------- session ---------- */
 /* ---------- onboarding tour ---------- */
 const TOUR=[
-  {title:'Welcome to Grouping Studio',body:'We added a sample class so you can look around. Everything sample starts with <b>(Sample)</b>. There\u2019s one for a Room layout, a Roster, a Mixed group and a seating chart.<br><br>This short tour follows the workflow to build seating charts: <b>Room → Roster → Groups → Seating Chart</b>.<br><br>Build your room and rosters once. Then, seating charts can be made easily with one click.'},
+  {title:'Welcome to Grouping Studio',body:'We added a sample class so you can look around. Everything sample starts with <b>(Sample)</b>.<div class="tq">Which sounds more like you?</div>'},
   {tab:'room',sel:'.room.edit',step:'1',title:'Room',body:'<b>(Sample 3rd Period Room)</b> is a map of the classroom. Drag a table to move it, and drag its round arrow to turn it. Ready-made layouts and more furniture are on this page too.<br><br>Build each room once. Every class that meets there can share it.'},
   {tab:'roster',sel:'table.roster',step:'2',title:'Roster',body:'<b>(Sample 3rd Period Roster)</b> is the class list plus the data you group by, called criteria. Here that is a Summative score and a Behavior rating. The first criterion counts most.'},
   {tab:'roster',sel:()=>{const b=$('#pasteBox');return b&&b.closest('.panel')},step:'2',title:'Bring in your own class',body:'Click <b>New class</b> at the top of this page, then import from Google Sheets or paste your spreadsheet rows, including the header row. Check the purple preview and click <b>Import</b>.'},
@@ -2360,6 +2368,7 @@ const TOUR=[
   {tab:'manage',sel:'.siderail-item[data-arg=manage]',title:'Keep or delete the samples',body:'The samples are yours to explore. When you are done with them, delete them here in <b>Manage</b>.'},
   {title:'You’re ready',body:'Start with your own room here on the <b>Room</b> page. Then add your class on the <b>Roster</b> page with <b>New class</b>.<br><br>Your work is saved only in this browser, so download a backup about once a month in <b>Settings</b>. You can take this tour again from Settings any time.'}
 ];
+function tourPickHTML(){return`<div class="tour-pick"><button class="pk def" data-tour="next" id="tourNext"><span class="pi g"><span class="gm"><i></i><i></i><i></i><i></i></span></span><span class="pt"><span class="tag">Full Studio</span><b>“I want to group students strategically.”</b><small>Strategic charts built using data and criteria. Set seating rules, save groups, and build charts for your exact room layout.</small><span class="go">Take the 2-minute tour →</span></span></button><button class="pk" data-tour="qc"><span class="pi">${window.QC_BOLT||''}</span><span class="pt"><span class="tag q">Quick Chart</span><b>“I just need a seating chart.”</b><small>Quickly place students in a chart. Paste names, pick a preset layout, and drag names onto seats.</small><span class="go">Start Quick Chart →</span></span></button></div><div class="tour-or">Not sure? Take the tour. Quick Chart is always one tap away in the top bar.</div>`}
 function tourRoot(){let r=document.getElementById('tour-root');if(!r){r=document.createElement('div');r.id='tour-root';document.body.appendChild(r)}return r}
 function tourTarget(st){if(!st||!st.sel)return null;try{const el=typeof st.sel==='function'?st.sel():document.querySelector(st.sel);if(!el)return null;const r=el.getBoundingClientRect();return r.width&&r.height?el:null}catch(e){return null}}
 function tourShow(i){if(i<0||i>=TOUR.length){tourEnd();return}ui.tour=i;const st=TOUR[i];ui.newChart=null;ui.present&&exitPresent();
@@ -2384,16 +2393,16 @@ function tourPlace(){if(ui.tour==null||!HAS_DOM)return;const i=ui.tour,st=TOUR[i
   const dim=`<svg class="tour-dimsvg" width="${W}" height="${H}" aria-hidden="true"><defs><mask id="tourMask"><rect width="${W}" height="${H}" fill="#fff"/>${holes.map(h=>`<rect x="${h.x}" y="${h.y}" width="${Math.max(0,h.x2-h.x)}" height="${Math.max(0,h.y2-h.y)}" rx="${h.k?12:18}" fill="#000"/>`).join('')}</mask></defs><rect width="${W}" height="${H}" fill="rgba(18,16,30,.5)" mask="url(#tourMask)"/></svg>`;
   hole=holes.map(h=>`<div class="tour-hole${h.k}" style="left:${h.x}px;top:${h.y}px;width:${Math.max(0,h.x2-h.x)}px;height:${Math.max(0,h.y2-h.y)}px"></div>`).join('');
   root.innerHTML=`<div class="tour-block"></div>${dim}${hole}
-  <div class="tour-card${center?' center':''}" role="dialog" aria-modal="true" aria-labelledby="tourTitle" style="${center?'':`left:${cx}px;top:${cy}px;`}width:${cw}px">
+  <div class="tour-card${center?' center':''}${i===0?' wide':''}" role="dialog" aria-modal="true" aria-labelledby="tourTitle" style="${center?'':`left:${cx}px;top:${cy}px;`}width:${cw}px">
     ${st.step?`<div class="tour-step"><span class="tour-num">${st.step}</span>Step ${st.step} of 5</div>`:''}
-    ${center?'<span class="gmark tour-mark" aria-hidden="true"><i></i><i></i><i></i><i></i></span>':''}<h3 id="tourTitle">${st.title}</h3><p>${st.body}</p>
+    ${center?'<span class="gmark tour-mark" aria-hidden="true"><i></i><i></i><i></i><i></i></span>':''}<h3 id="tourTitle">${st.title}</h3><p>${st.body}</p>${i===0?tourPickHTML():''}${last?'<div class="tour-qc"><b class="h">Short on time?</b>Try <b>Quick Chart</b>: paste names, pick a layout, done. It’s always in the top bar.</div>':''}
     <div class="tour-foot"><div class="tour-dots" aria-label="Tour progress, ${i+1} of ${TOUR.length}">${dots}</div>
-      <div class="tour-btns">${last?'':'<button class="btn small ghost" data-tour="skip">Skip tour</button>'}${i>0?'<button class="btn small" data-tour="back">Back</button>':''}<button class="btn small primary" id="tourNext" data-tour="next">${last?'Finish':i===0?'Start the tour':'Next'}</button></div></div>
+      <div class="tour-btns">${i===0?'<button class="btn small ghost" data-tour="skip">Skip, I’ll explore</button>':`${last?'':'<button class="btn small ghost" data-tour="skip">Skip tour</button>'}${i>0?'<button class="btn small" data-tour="back">Back</button>':''}${last?`<button class="btn small qcb" data-tour="qc">${window.QC_BOLT||''} Try Quick Chart</button>`:''}<button class="btn small primary" id="tourNext" data-tour="next">${last?'Finish':'Next'}</button>`}</div></div>
   </div>`;
   /* keep the card fully on screen */
   const card=root.querySelector('.tour-card');if(card&&!center){const cr=card.getBoundingClientRect();if(cr.bottom>H-12)card.style.top=Math.max(12,H-12-cr.height)+'px'}}
 if(HAS_DOM){
-  document.addEventListener('click',e=>{const b=e.target.closest&&e.target.closest('[data-tour]');if(!b||ui.tour==null)return;e.preventDefault();e.stopPropagation();const a=b.dataset.tour;if(a==='next')tourShow(ui.tour+1);else if(a==='back')tourShow(ui.tour-1);else tourEnd()},true);
+  document.addEventListener('click',e=>{const b=e.target.closest&&e.target.closest('[data-tour]');if(!b||ui.tour==null)return;e.preventDefault();e.stopPropagation();const a=b.dataset.tour;if(a==='qc'){tourEnd();qcOpen(true);return}if(a==='next')tourShow(ui.tour+1);else if(a==='back')tourShow(ui.tour-1);else tourEnd()},true);
   document.addEventListener('keydown',e=>{if(ui.tour==null)return;if(e.key==='Escape'){e.preventDefault();e.stopPropagation();tourEnd()}else if(e.key==='ArrowRight'&&!/INPUT|TEXTAREA|SELECT/.test(e.target.tagName)){tourShow(ui.tour+1)}else if(e.key==='ArrowLeft'&&!/INPUT|TEXTAREA|SELECT/.test(e.target.tagName)&&ui.tour>0){tourShow(ui.tour-1)}},true);
   let tq=0;const rq=()=>{if(ui.tour==null)return;cancelAnimationFrame(tq);tq=requestAnimationFrame(tourPlace)};addEventListener('resize',rq);addEventListener('scroll',rq,true);
 }
@@ -2523,7 +2532,7 @@ const ACT={
   mkSrc:(b,a)=>{ui.mkSrc=a;ui.mkName=null;render()},
   mkOpen:()=>{const cls=need(),lr=lastRecipe(cls);ui.mkRoom=null;ui.mkSet=null;if(lr&&lr.r){cls.quick.opts.mode=lr.r.mode;const c=validCrit(cls,lr.r.crit);if(c.length)cls.quick.opts.crit=c}ui.mkOpen=true;ui.mkName=null;render()},
   mkClose:()=>{ui.mkOpen=false;render()},
-  mkCreate:()=>{const cls=need();if(ui.mkRoom&&S.rooms.some(r=>r.id===ui.mkRoom))cls.roomId=ui.mkRoom;if(ui.mkSet){const r=mkSeatSaved(cls),nm=(($('#mkName')||{}).value||'').trim()||defaultChartName(cls,r.rec);ui.mkOpen=false;ui.mkName=null;ui.mkRoom=null;ui.mkSet=null;createChart(cls,nm,r.rec);chartDone(cls,r.left,nm);return}const o=cls.quick.opts,r={mode:o.mode,crit:o.mode==='random'?[]:validCrit(cls,o.crit)};if(r.mode!=='random'&&!r.crit.length)r.mode='random';const typed=(($('#mkName')||{}).value||'').trim(),nm=(!typed||typed===defaultChartName(cls,{mode:o.mode}))?defaultChartName(cls,r):typed,res=buildFromRecipe(cls,r);if(res.error){toast(res.error);return}ui.mkOpen=false;ui.mkName=null;ui.mkRoom=null;createChart(cls,nm,r);chartDone(cls,(res.unseated||[]).length,nm)},
+  mkCreate:()=>{const cls=need();if(ui.mkRoom&&S.rooms.some(r=>r.id===ui.mkRoom))cls.roomId=ui.mkRoom;if(ui.mkSet){const r=mkSeatSaved(cls),nm=(($('#mkName')||{}).value||'').trim()||defaultChartName(cls,r.rec);ui.mkOpen=false;ui.mkName=null;ui.mkRoom=null;ui.mkSet=null;createChart(cls,nm,r.rec);chartDone(cls,r.left,nm);return}const o=cls.quick.opts,r={mode:o.mode,crit:o.mode==='random'||o.mode==='alpha'?[]:validCrit(cls,o.crit)};if(r.mode!=='random'&&r.mode!=='alpha'&&!r.crit.length)r.mode='random';const typed=(($('#mkName')||{}).value||'').trim(),nm=(!typed||typed===defaultChartName(cls,{mode:o.mode}))?defaultChartName(cls,r):typed,res=buildFromRecipe(cls,r);if(res.error){toast(res.error);return}ui.mkOpen=false;ui.mkName=null;ui.mkRoom=null;createChart(cls,nm,r);chartDone(cls,(res.unseated||[]).length,nm)},
   reshuffle:()=>{const cls=need(),h=openChart(cls);if(h&&!(ui.shufOk||{})[h.id]){ui.shufAsk=true;render();setTimeout(()=>{const i=$('#shName');if(i){i.focus();i.select()}},30);return}ACT.shThis()},
   shCancel:(b,a,ev)=>{if(b&&b.classList.contains('modal-back')&&ev&&ev.target!==b)return;ui.shufAsk=false;render()},
   shNew:()=>{const cls=need(),lr=lastRecipe(cls),r=lr?lr.r:{mode:'random',crit:[]},nm=(($('#shName')||{}).value||'').trim()||defaultChartName(cls,r),res=buildFromRecipe(cls,r);if(res.error){toast(res.error);return}ui.shufAsk=false;const h=createChart(cls,nm,r);ui.shufOk=ui.shufOk||{};ui.shufOk[h.id]=true;chartDone(cls,(res.unseated||[]).length,nm)},
@@ -2713,7 +2722,7 @@ async function gsImport(){if(GS.busy)return;
   catch(e){const m=String(e&&e.message||'');gsStatus('');toast(m==='load'?'Couldn’t reach Google. Check your connection and try again.':/denied|closed|popup|access_denied/.test(m)?'Google sign-in was cancelled.':m==='http403'||m==='http404'?'That sheet couldn’t be opened. Make sure you can view it in Google Sheets.':'Couldn’t import that sheet. Try again.')}
   finally{GS.busy=false}}
 function csvSplit(l){const out=[];let cur='',q=false;for(let i=0;i<l.length;i++){const ch=l[i];if(q){if(ch==='"'){if(l[i+1]==='"'){cur+='"';i++}else q=false}else cur+=ch}else if(ch==='"')q=true;else if(ch===','){out.push(cur);cur=''}else cur+=ch}out.push(cur);return out}
-function pasteParse(txt){const lines=String(txt||'').replace(/\r/g,'').split('\n').filter(l=>l.trim());if(lines.length<2)return null;const tab=lines[0].includes('\t');const rows=lines.map(l=>(tab?l.split('\t'):csvSplit(l)).map(c=>c.trim()));const low=rows[0].map(h=>h.toLowerCase());
+function pasteParse(txt){if(window.tabify)txt=window.tabify(txt);const lines=String(txt||'').replace(/\r/g,'').split('\n').filter(l=>l.trim());if(lines.length<2)return null;const tab=lines[0].includes('\t');const rows=lines.map(l=>(tab?l.split('\t'):csvSplit(l)).map(c=>c.trim()));const low=rows[0].map(h=>h.toLowerCase());
   const first=low.findIndex(h=>/^(first|given|preferred first)/.test(h)),last=low.findIndex(h=>/^(last|surname|family)/.test(h));let full=low.findIndex(h=>/name/.test(h)&&!/^(first|given|last|surname|family|preferred)/.test(h));if(first<0&&last<0&&full<0)full=0;
   const names=(first>=0||last>=0)?[]:rows.slice(1).map(r=>(r[full]||'').trim()).filter(Boolean);
   const comma=names.filter(n=>n.includes(',')).length;return{rows,first,last,full,names,cols:first>=0||last>=0,guess:names.length&&comma>=names.length/2?'lfc':'fl'}}
@@ -2722,7 +2731,7 @@ function pastePreview(){const box=$('#pasteBox'),out=$('#pastePrev');if(!box||!o
   const st=(S&&S.settings.nameStyle)||'initial',ex=labelList(P.cols?P.rows.slice(1).map(r=>({first:(r[P.first]||'').trim(),middle:'',last:(r[P.last]||'').trim()})):P.names.map(n=>parseName(n,fmt==='fl'?'fl':'lf')),st).slice(0,4);
   out.hidden=false;out.innerHTML=P.cols?`<div class="pp-row"><b>Names</b><span>First and last name columns found</span></div><div class="pp-ex">${ex.map(x=>`<span>${esc(x)}</span>`).join('')}<em>…</em></div>`
     :`<div class="pp-row"><b>Names are written</b><select id="pasteFmt"${cur&&cur.dataset.user?' data-user="1"':''}>${[['fl','First Last'],['lfc','Last, First'],['lf','Last First (no comma)']].map(([k,l])=>`<option value="${k}"${fmt===k?' selected':''}>${l}${k===P.guess?' (detected)':''}</option>`).join('')}</select></div><div class="pp-ex"><small>On charts:</small>${ex.map(x=>`<span>${esc(x)}</span>`).join('')}${P.names.length>4?'<em>…</em>':''}</div>`}
-function importRows(cls,txt,mode,fmt){
+function importRows(cls,txt,mode,fmt){if(window.tabify)txt=window.tabify(txt);
   const lines=String(txt||'').replace(/\r/g,'').split('\n').filter(l=>l.trim());
   if(lines.length<2)return{err:'Paste a header row and at least one student.'};
   const tab=lines[0].includes('\t');
@@ -2762,7 +2771,7 @@ const CH={
   station:el=>{need().stations[el.dataset.key]=el.value.trim();save()},
   stopt:el=>{need().st.opts[el.dataset.key]=el.checked;save()},
   stcfg:el=>{const c=need().stationsCfg,k=el.dataset.key;c[k]=el.type==='checkbox'?el.checked:k==='work'?clamp(Math.round(+el.value)||12,1,120):k==='transition'?+el.value:el.value;save();render()},
-  stname:el=>{need().stationsCfg.names[+el.dataset.key]=el.value.trim();save()},
+  stname:el=>{const c=need(),k=+el.dataset.key;c.stationsCfg.names[k]=el.value.trim();save();document.querySelectorAll(`[data-stn="${k}"]`).forEach(x=>x.textContent=stName(c,k))},
   qstation:el=>{need().quick.stations[+el.dataset.key]=el.value.trim();save()},
   qName:el=>{need().quick.name=el.value.trim();save()},
   qPickSet:el=>{if(el.value){ui.qEdit=false;ACT.qOpen(null,el.value)}},
@@ -2958,3 +2967,883 @@ const saved=readData();if(saved)S=migrate(saved);resetHistory();
 render();
 }
 </script>
+
+<style>
+/* ---------- Quick Chart ---------- */
+#qc-root:empty{display:none}
+#qc{position:fixed;inset:0;z-index:8800;background:radial-gradient(1200px 600px at 0% 0%,rgba(255,79,184,.10),transparent 60%),radial-gradient(1000px 700px at 100% 0%,rgba(162,89,255,.12),transparent 60%),radial-gradient(900px 600px at 50% 100%,rgba(61,139,255,.10),transparent 60%),#eef0f5;overflow:auto;font-family:var(--f-body);color:#1d1d1f;-webkit-overflow-scrolling:touch}
+#qc *{box-sizing:border-box}
+#qc button{font:inherit;color:inherit}
+#qc .qh{position:sticky;top:0;z-index:4;display:flex;align-items:center;gap:14px;margin:16px 16px 0;padding:10px 12px 10px 16px;border-radius:20px;background:rgba(255,255,255,.78);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);border:1px solid rgba(255,255,255,.85);box-shadow:var(--glass-shadow)}
+#qc .qh .ttl{display:flex;align-items:center;gap:10px;font-weight:700;font-size:16px;letter-spacing:-.01em;white-space:nowrap}
+#qc .steps{display:flex;align-items:center;gap:6px;margin:0 auto}
+#qc .st{display:flex;align-items:center;gap:7px;font-size:13px;font-weight:700;color:#8e8e93;padding:6px 12px 6px 6px;border-radius:999px;border:0;background:none;cursor:default}
+#qc .st[data-qa]{cursor:pointer}
+#qc .st b{width:24px;height:24px;border-radius:50%;display:grid;place-items:center;background:rgba(118,118,128,.14);font-size:12px;color:#6e6e73}
+#qc .st.on{background:#fff;color:#1d1d1f;box-shadow:0 1px 3px rgba(0,0,0,.08)}
+#qc .st.on b{background:var(--grad);color:#fff}
+#qc .st.done b{background:#1d1d1f;color:#fff}
+#qc .st.done{color:#1d1d1f}
+#qc .sep{width:18px;height:2px;border-radius:2px;background:rgba(60,60,67,.18)}
+#qc .hbtn{font-size:13px;font-weight:700;color:#3a3a3c;display:flex;align-items:center;gap:6px;white-space:nowrap;border:1px solid rgba(60,60,67,.18);background:#fff;border-radius:999px;padding:7px 12px;cursor:pointer}
+#qc .hbtn:hover{border-color:rgba(162,89,255,.5)}
+#qc .body{max-width:1080px;margin:0 auto;padding:28px 24px 130px}
+#qc h1{font-size:34px;letter-spacing:-.03em;margin:0 0 4px;line-height:1.1}
+#qc .sub{color:#6e6e73;font-size:16px;margin:0 0 22px}
+#qc .card{background:rgba(255,255,255,.62);border:1px solid rgba(255,255,255,.85);box-shadow:var(--glass-shadow);border-radius:22px;padding:22px}
+#qc label.l{display:block;font-size:13px;font-weight:700;color:#6e6e73;margin:0 0 6px}
+#qc input.t{font:inherit;font-size:16px;width:100%;max-width:340px;padding:10px 14px;border-radius:12px;border:1px solid rgba(60,60,67,.2);background:#fff;min-height:0}
+#qc textarea{font:inherit;font-size:16px;line-height:1.55;width:100%;height:330px;padding:14px 16px;border-radius:14px;border:1px solid rgba(60,60,67,.2);background:#fff;resize:vertical}
+#qc input.t:focus,#qc textarea:focus{outline:none;border-color:#a259ff;box-shadow:0 0 0 4px rgba(162,89,255,.15)}
+#qc .row{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+#qc .chip{display:inline-flex;align-items:center;gap:6px;padding:5px 11px;border-radius:999px;background:rgba(162,89,255,.12);color:#6b2fd6;font-weight:700;font-size:13px}
+#qc .chip.zero{background:rgba(118,118,128,.12);color:#6e6e73}
+#qc .bigbtn{display:inline-flex;align-items:center;gap:8px;border:0;border-radius:14px;padding:13px 22px;font-weight:700;font-size:16px;cursor:pointer;white-space:nowrap}
+#qc .go{background:var(--grad);color:#fff!important;box-shadow:0 8px 20px rgba(162,89,255,.3)}
+#qc .go:disabled{opacity:.45;box-shadow:none;cursor:not-allowed}
+#qc .sec{background:#fff;border:1px solid rgba(60,60,67,.18)}
+#qc .ghost{background:transparent;color:#6e6e73!important}
+#qc .foot{position:fixed;left:0;right:0;bottom:0;z-index:4;padding:14px 24px;display:flex;justify-content:center;pointer-events:none}
+#qc .foot .in{pointer-events:auto;max-width:1032px;width:100%;display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:20px;background:rgba(255,255,255,.8);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);border:1px solid rgba(255,255,255,.85);box-shadow:0 10px 30px rgba(40,40,80,.12)}
+#qc .foot .sp{flex:1}
+@media (min-width:601px){#qc .body.s3{padding-top:16px}#qc .body.s3 .sub{margin-bottom:14px}}
+#qc .foot .in{padding:6px 10px}#qc .foot .bigbtn{padding-top:9px;padding-bottom:9px}
+@media (max-width:600px){#qc .foot .in.in{padding:5px}#qc .foot .in .bigbtn.bigbtn{padding-top:8px;padding-bottom:8px}}
+#qc .note{font-size:13px;color:#6e6e73}
+#qc .qprev{margin:0 0 8px;font-size:13px;color:#6e6e73;min-height:1em;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+#qc .two{display:grid;grid-template-columns:1.35fr 1fr;gap:20px;align-items:start}
+#qc .tip{display:grid;gap:12px;font-size:14px;color:#3a3a3c}
+#qc .tip>div{display:flex;gap:10px;align-items:flex-start}
+#qc .tip i{flex:none;width:28px;height:28px;border-radius:9px;display:grid;place-items:center;background:var(--grad);color:#fff;font-style:normal;font-weight:800;font-size:13px}
+#qc .gsbtn{display:flex;align-items:center;gap:10px;width:100%;justify-content:center}
+#qc .lays{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+#qc .lay{background:#fff;border:2px solid transparent;border-radius:18px;padding:14px 14px 12px;text-align:center;box-shadow:0 1px 3px rgba(0,0,0,.06);cursor:pointer;position:relative}
+#qc .lay:hover{border-color:rgba(162,89,255,.35)}
+#qc .lay.on{border-color:#a259ff;box-shadow:0 0 0 4px rgba(162,89,255,.15)}
+#qc .lay svg{width:100%;height:auto;display:block;margin-bottom:8px}
+#qc .lay b{font-size:15px;display:block}
+#qc .lay span.s{font-size:12px;color:#8e8e93}
+#qc .lay .ck{position:absolute;right:8px;top:8px;width:22px;height:22px;border-radius:50%;background:var(--grad);color:#fff;font-size:13px;display:grid;place-items:center;font-weight:800}
+#qc .stepper{display:inline-flex;align-items:center;border-radius:12px;background:#fff;border:1px solid rgba(60,60,67,.18);overflow:hidden}
+#qc .stepper button{border:0;background:none;width:40px;height:40px;font-size:20px;font-weight:700;cursor:pointer}
+#qc .stepper button:disabled{opacity:.3}
+#qc .stepper span{min-width:34px;text-align:center;font-weight:800;font-size:17px}
+#qc .fit{display:flex;align-items:center;gap:12px 14px;flex-wrap:wrap;margin-top:18px;padding:14px 16px;border-radius:16px;background:rgba(255,255,255,.7)}
+#qc .fit .lb{font-weight:700}
+#qc .ok{color:#1f9d55;font-weight:700;font-size:14px}
+#qc .warn{color:#b26a00;font-weight:700;font-size:14px}
+/* room grid */
+#qc .qroom{position:relative;background:#fff;border-radius:20px;border:1px solid rgba(60,60,67,.12);padding:16px 18px 18px;box-shadow:0 1px 3px rgba(0,0,0,.05)}
+#qc .qboard{margin:0 auto 18px;width:46%;background:#1d1d1f;color:#fff;font-size:10px;font-weight:800;letter-spacing:.14em;text-align:center;padding:5px;border-radius:7px}
+#qc .qgrid{display:grid;gap:22px 28px;align-items:start}
+#qc .qgrid.desks{gap:10px 10px}
+#qc .qtb .qtl{font-size:11px;font-weight:700;color:#6e6e73;margin:0 0 4px 2px;white-space:nowrap}
+#qc .qtb .qsts{display:grid;gap:6px;padding:7px;border-radius:14px;background:#f4f4f8;border:1px solid rgba(60,60,67,.1)}
+#qc .qgrid.desks .qtb .qsts{padding:0;background:none;border:0}
+#qc .qseat{height:46px;border-radius:10px;display:grid;place-items:center;font-size:13px;font-weight:700;background:#fff;border:1px solid rgba(60,60,67,.12);overflow:hidden;padding:0 3px;position:relative;cursor:pointer;user-select:none;-webkit-user-select:none}
+#qc .qseat.n{color:#b0b0b8;font-size:12px;cursor:default}
+#qc .qseat.e{border:1.5px dashed rgba(162,89,255,.45);background:rgba(162,89,255,.04);color:#a259ff;font-size:18px;font-weight:600}
+#qc .qseat.e.off{border-color:rgba(60,60,67,.15);color:#c7c7cc;background:#fafafa}
+#qc .qseat.f{background:linear-gradient(#fff,#fbf8ff);box-shadow:inset 0 0 0 1px rgba(162,89,255,.18)}
+#qc .qseat .qn{display:grid;place-items:center;text-align:center;width:100%;height:100%;line-height:1.08;overflow:hidden;touch-action:none;overflow-wrap:normal}
+#qc .qseat.bad{box-shadow:inset 0 0 0 2px #ff9f0a;background:#fff8ec}
+#qc .qsel{box-shadow:0 0 0 3px #a259ff!important;background:#f5edff!important}
+#qc .qtgt{box-shadow:0 0 0 3px #3d8bff!important;background:#eef5ff!important}
+#qc .qdrag{opacity:.35}
+#qc-ghost{position:fixed;z-index:9900;pointer-events:none;padding:10px 14px;border-radius:12px;background:#fff;font:700 14px var(--f-body);box-shadow:0 14px 30px rgba(40,20,90,.28);transform:translate(-50%,-60%) rotate(-3deg);border:1px solid rgba(162,89,255,.4);white-space:nowrap}
+#qc .qfront{display:flex;justify-content:space-between;font-size:10px;font-weight:800;letter-spacing:.1em;color:#a1a1a8;margin-top:12px}
+#qc .seg{display:inline-flex;padding:4px;border-radius:14px;background:rgba(118,118,128,.14)}
+#qc .seg button{border:0;background:none;font-weight:700;font-size:14px;padding:9px 16px;border-radius:10px;color:#6e6e73;cursor:pointer;display:flex;align-items:center;gap:7px}
+#qc .seg button.on{background:#fff;color:#1d1d1f;box-shadow:0 1px 4px rgba(0,0,0,.1)}
+#qc .tools{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:14px}
+#qc .tools .sp{flex:1}
+#qc .tools{align-items:stretch}#qc .arr-main{min-width:0}#qc .arr>.qtray{position:sticky;top:96px}#qc .tools .sbtn{min-height:46px;border-radius:14px;padding-top:0;padding-bottom:0}#qc .seg{min-height:46px;box-sizing:border-box}
+#qc .sbtn{display:inline-flex;align-items:center;gap:6px;border-radius:12px;border:1px solid rgba(60,60,67,.18);background:#fff;padding:9px 14px;font-weight:700;font-size:14px;cursor:pointer;white-space:nowrap}
+#qc .sbtn.on{border-color:#a259ff;box-shadow:0 0 0 3px rgba(162,89,255,.15)}
+#qc .sbtn .ct{background:#a259ff;color:#fff;border-radius:999px;font-size:11px;padding:1px 7px}
+#qc .arr{display:grid;grid-template-columns:1fr 250px;gap:18px;align-items:start}
+#qc .qtray{background:rgba(255,255,255,.75);border:1px solid rgba(255,255,255,.9);border-radius:20px;padding:14px;box-shadow:var(--glass-shadow);transition:box-shadow .15s}
+#qc .qtray.qtgt{background:#eef5ff!important}
+#qc .qtray h4{margin:0 0 2px;font-size:15px}
+#qc .qtray p{margin:0 0 10px;font-size:12.5px;color:#6e6e73}
+#qc .qnames{display:flex;flex-wrap:wrap;gap:6px}
+#qc .qnm{padding:8px 11px;border-radius:10px;background:#fff;border:1px solid rgba(60,60,67,.15);font-weight:700;font-size:13px;box-shadow:0 1px 2px rgba(0,0,0,.05);cursor:grab;touch-action:none;user-select:none;-webkit-user-select:none}
+#qc .qempty{font-size:13px;color:#8e8e93;padding:6px 0}
+#qc .choose{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:16px}
+#qc .choose button{display:flex;gap:14px;align-items:flex-start;text-align:left;padding:18px;border-radius:18px;background:#fff;border:1.5px solid rgba(60,60,67,.14);cursor:pointer;box-shadow:0 2px 8px rgba(40,40,80,.05)}
+#qc .choose button:hover{border-color:#a259ff;box-shadow:0 0 0 4px rgba(162,89,255,.12)}
+#qc .choose .ci{flex:none;width:44px;height:44px;border-radius:13px;display:grid;place-items:center;background:var(--grad);color:#fff}
+#qc .choose .ci.alt{background:rgba(162,89,255,.12);color:#7a3cf0}
+#qc .choose b{display:block;font-size:17px;margin-bottom:3px}
+#qc .choose small{font-size:13.5px;color:#6e6e73;line-height:1.45;display:block}
+#qc .apart{margin:-4px 0 14px;padding:14px 16px;border-radius:16px;background:#fff;border:1px solid rgba(60,60,67,.12)}
+#qc .apart h4{margin:0 0 2px;font-size:15px}
+#qc .apart p{margin:0 0 10px;font-size:13px;color:#6e6e73}
+#qc .apart .row{flex-wrap:wrap}#qc .apart select{font:inherit;font-size:14px;padding:8px 30px 8px 10px;border-radius:10px;border:1px solid rgba(60,60,67,.2);background-color:#fff;width:auto!important;flex:0 1 220px;min-width:140px;max-width:100%;height:auto;min-height:0}
+#qc .pairs{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
+#qc .pair{display:inline-flex;align-items:center;gap:6px;padding:5px 6px 5px 11px;border-radius:999px;background:rgba(162,89,255,.1);font-weight:700;font-size:13px}
+#qc .pair button{border:0;background:#fff;border-radius:50%;width:22px;height:22px;cursor:pointer;line-height:1}
+#qc .alert{display:flex;gap:8px;align-items:flex-start;font-size:13.5px;color:#8a5200;background:#fff4e0;border:1px solid #ffd99a;padding:9px 12px;border-radius:12px;margin:0 0 12px}
+#qc .icn{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;flex:none}
+#qc .bolt{width:20px;height:20px;fill:currentColor}
+#qc .bigbtn .sm{display:none}
+#qc .ttlrow{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin:0 0 4px}#qc .ttlrow h1{margin:0}
+#qc .reuse{margin-bottom:16px}
+#qc .rh{font-size:13px;font-weight:700;color:#6e6e73;margin:0 0 8px}
+#qc .reuse .rh+.ropts{margin-bottom:16px}
+#qc .ropts{display:grid;gap:10px}
+#qc .ropt{position:relative;display:flex;align-items:center;gap:14px;text-align:left;background:#fff;border:2px solid transparent;border-radius:18px;padding:10px 14px 10px 10px;box-shadow:0 1px 3px rgba(0,0,0,.06);cursor:pointer}
+#qc .ropt.one{margin-bottom:18px}#qc .ropt.one .rtx{padding-right:24px}
+#qc .ropt .rtx{display:flex;flex-direction:column;align-items:flex-start;gap:5px;min-width:0}
+#qc .ropt .rnm{font-size:14px;font-weight:600}
+#qc #qcRoomPick{font:inherit;font-size:14.5px;font-weight:700;color:#1d1d1f;max-width:100%;padding:7px 34px 7px 12px;border-radius:10px;border:1px solid rgba(60,60,67,.2);background:#fff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1.5l5 5 5-5' fill='none' stroke='%236e6e73' stroke-width='2' stroke-linecap='round'/%3E%3C/svg%3E") no-repeat right 12px center;-webkit-appearance:none;appearance:none;cursor:pointer}
+#qc #qcRoomPick:focus-visible{outline:3px solid rgba(162,89,255,.35)}
+#qc .ropt:hover{border-color:rgba(162,89,255,.35)}
+#qc .ropt.on{border-color:#a259ff;box-shadow:0 0 0 4px rgba(162,89,255,.15)}
+#qc .ropt b{display:block;font-size:15px}#qc .ropt .s{font-size:12.5px;color:#8e8e93}
+#qc .ropt .ck,#qc .ccard .ck{position:absolute;right:10px;top:10px;width:22px;height:22px;border-radius:50%;background:var(--grad);color:#fff;font-size:13px;display:grid;place-items:center;font-weight:800}
+#qc .mini{flex:none;width:110px;height:72px;overflow:hidden;border-radius:10px;pointer-events:none;background:#fff;border:1px solid rgba(60,60,67,.1)}
+#qc .qroom.free{overflow-x:auto}
+#qc .qfree{position:relative;width:100%}
+#qc .qfree .qtb{position:absolute;box-sizing:border-box;padding:2px}
+#qc .qfree .qtb .qtl{position:absolute;bottom:100%;left:4px;margin:0 0 1px;font-size:10.5px}
+#qc .qfree .qtb .qsts{height:100%;box-sizing:border-box;gap:4px;padding:4px;border-radius:10px}
+#qc .qfree .qseat{height:auto;min-height:0;border-radius:8px;font-size:calc(13px * var(--qs,1))}
+#qc .qfree .qtb .qtl{font-size:calc(10.5px * max(.85,var(--qs,1)))}
+#qc .qfree.desks .qtb .qsts{padding:0;background:none;border:0}
+#qc .qroom.free .qboard{position:sticky;left:0}
+#qc .mini>.qroom{zoom:.22;border:0;box-shadow:none;width:500px}
+#qc .mini.big{width:100%;height:150px;border-radius:14px}
+#qc .mini.big>.qroom{zoom:.42;width:auto}
+#qc .clist{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:16px}
+#qc .ccard{display:flex;flex-direction:column;gap:12px;padding:12px;border-radius:20px;background:rgba(255,255,255,.75);border:1px solid rgba(255,255,255,.9);box-shadow:var(--glass-shadow)}
+#qc .ccard.just{box-shadow:0 0 0 3px rgba(162,89,255,.35),var(--glass-shadow)}
+#qc .cinfo{padding:0 4px 4px;display:grid;gap:4px}
+#qc .cname{display:flex;align-items:center;gap:8px}#qc .cname b{font-size:18px}
+#qc .badge{font-size:12px;font-weight:800;color:#1f9d55;background:#e8f7ee;border-radius:999px;padding:3px 9px}
+#qc .cinfo .s{font-size:13px;color:#6e6e73}
+#qc .cbtns{display:flex;gap:8px;flex-wrap:wrap;margin-top:6px}#qc .cbtns .sbtn{padding:7px 11px;font-size:13px}
+#qc .ccard.add{align-items:center;justify-content:center;text-align:center;min-height:250px;border:2px dashed rgba(162,89,255,.4);background:rgba(255,255,255,.45);box-shadow:none;cursor:pointer;gap:6px}
+#qc .ccard.add:hover{background:rgba(255,255,255,.8);border-color:#a259ff}
+#qc .ccard.add .ai{width:48px;height:48px;border-radius:14px;display:grid;place-items:center;background:var(--grad);color:#fff;margin-bottom:6px}
+#qc .ccard.add .ai .icn{width:24px;height:24px}
+#qc .ccard.add b{font-size:17px}#qc .ccard.add .s{font-size:13px;color:#6e6e73}
+@media (max-width:900px){#qc .arr{grid-template-columns:1fr}#qc .two{grid-template-columns:1fr}}
+@media (max-width:600px){
+ #qc .qh{margin:10px 10px 0;padding:8px 8px 8px 10px;gap:8px}
+ #qc .qh .ttl .t{display:none}
+ #qc .st{padding:4px;font-size:0;gap:0}#qc .st.on{font-size:12px;padding:4px 10px 4px 4px;gap:6px}
+ #qc .sep{width:10px}
+ #qc .hbtn{padding:6px 9px;font-size:12px}#qc .hbtn .lg{display:none}
+ #qc .body{padding:18px 12px 130px}
+ #qc h1{font-size:26px}#qc .sub{font-size:14px;margin-bottom:16px}
+ #qc textarea{height:240px}
+ #qc .lays{grid-template-columns:repeat(2,1fr);gap:10px}
+ #qc .lay{padding:10px 10px 8px}#qc .lay b{font-size:14px}
+ #qc .card{padding:16px;border-radius:18px}
+ #qc .qroom{padding:10px 8px 12px;border-radius:16px}
+ #qc .qgrid{gap:14px 8px}#qc .qgrid.desks{gap:6px 5px}
+ #qc .qtb .qsts{gap:3px;padding:4px;border-radius:10px}
+ #qc .qseat{height:36px;font-size:10.5px;border-radius:7px;padding:0 1px}
+ #qc .qseat.e{font-size:14px}
+ #qc .foot{padding:8px 10px}
+ #qc .foot .in{padding:8px;gap:6px;border-radius:18px}
+ #qc .bigbtn{padding:12px 14px;font-size:15px}
+ #qc .foot .note{display:none}
+ #qc .foot .bigbtn .lg{display:none}#qc .foot .bigbtn .sm{display:inline}
+ #qc .foot .bigbtn.sec,#qc .foot .bigbtn.ghost{padding:12px}
+ #qc .clist{grid-template-columns:1fr}#qc .ccard.add{min-height:150px}
+ #qc .tools{gap:8px}
+ #qc .seg{width:100%}#qc .seg button{flex:1;justify-content:center;padding:9px 6px;font-size:13px}
+ #qc .tools .sbtn{flex:1;justify-content:center;padding:8px 6px;font-size:13px}
+ #qc .tools .sp{display:none}
+ #qc .choose{grid-template-columns:1fr}
+ #qc .qtray{margin-top:12px}
+}
+@media print{#qc-root{display:none!important}}
+.qcbtn{display:inline-flex;align-items:center;gap:7px;min-height:36px;padding:0 14px 0 12px;border-radius:var(--r,12px);font-weight:700;font-size:14px;cursor:pointer;white-space:nowrap;color:#1d1d1f;background:linear-gradient(#fff,#fff) padding-box,var(--grad) border-box;border:2px solid transparent}
+.qcbtn svg{width:17px;height:17px;fill:url(#qcg);stroke:none;flex:none}
+.qcbtn .lbl-s{display:none}
+@media (max-width:900px){.qcbtn{padding:0 10px 0 8px}.qcbtn .lbl-l{display:none}.qcbtn .lbl-s{display:inline}}
+#tour-root .tour-card.center.wide{width:min(560px,calc(100vw - 24px))!important}
+.tour-card .tq{margin-top:14px;font-weight:700;color:#1d1d1f}
+.tour-pick{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px}
+@media (max-width:600px){.tour-pick{grid-template-columns:1fr}}
+.tour-pick .pk{display:flex;flex-direction:column;align-items:flex-start;gap:10px;text-align:left;padding:14px;border-radius:16px;font:inherit;cursor:pointer;background:#fff;border:1.5px solid rgba(60,60,67,.14);color:#1d1d1f;box-shadow:0 2px 8px rgba(40,40,80,.05)}
+.tour-pick .pk:hover{border-color:#a259ff}
+@media (max-width:600px){.tour-pick .pk{flex-direction:row;padding:12px}}
+.tour-pick .pk.def{border-color:rgba(162,89,255,.55);box-shadow:0 0 0 3px rgba(162,89,255,.12)}
+.tour-pick .pi{flex:none;width:38px;height:38px;border-radius:11px;display:grid;place-items:center;background:var(--grad);color:#fff}
+.tour-pick .pi.g{background:#1d1d1f}
+.tour-pick .pi svg{width:20px;height:20px;fill:#fff}
+.tour-pick .gm{display:grid;grid-template-columns:1fr 1fr;gap:2.5px;width:18px;height:18px}.tour-pick .gm i{border-radius:3px}
+.tour-pick .gm i:nth-child(1){background:linear-gradient(135deg,#ff5cb8,#ff8a4c)}.tour-pick .gm i:nth-child(2){background:linear-gradient(135deg,#b46cff,#ff5cb8)}.tour-pick .gm i:nth-child(3){background:linear-gradient(135deg,#5a8dff,#b46cff)}.tour-pick .gm i:nth-child(4){background:linear-gradient(135deg,#3ec6ff,#5a8dff)}
+.tour-pick .pt{display:grid;gap:4px}
+.tour-pick .tag{font-size:11px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:#6e6e73}
+.tour-pick .tag.q{color:#a259ff}
+.tour-pick b{font-size:15.5px;line-height:1.3}
+.tour-pick small{font-size:13px;line-height:1.45;color:#4a4a50}
+.tour-pick .go{margin-top:4px;font-weight:700;font-size:13.5px;color:#7a3cf0}
+.tour-or{margin-top:12px;font-size:12.5px;color:#6e6e73}
+.tour-qc{margin-top:14px;padding:12px 14px;border-radius:14px;background:linear-gradient(135deg,rgba(255,79,184,.10),rgba(162,89,255,.10),rgba(61,139,255,.10));border:1px solid rgba(162,89,255,.25);font-size:14px;line-height:1.45}
+.tour-qc b.h{display:block;font-size:15px;margin-bottom:2px}
+.tour-btns .qcb svg{width:15px;height:15px;fill:url(#qcg)}
+</style>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs><linearGradient id="qcg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#ff4fb8"/><stop offset=".52" stop-color="#a259ff"/><stop offset="1" stop-color="#3d8bff"/></linearGradient></defs></svg>
+<div id="qc-root"></div>
+<script>
+(function(){
+const BOLT='<svg class="bolt" viewBox="0 0 24 24" aria-hidden="true"><path d="M13.5 2 4.5 13.6h6.2L9.6 22l9.9-12.2h-6.4z"/></svg>';
+const QI={shuffle:'<svg class="icn" viewBox="0 0 24 24"><path d="M16 3h5v5M4 20 21 3M21 16v5h-5M15 15l6 6M4 4l5 5"/></svg>',clear:'<svg class="icn" viewBox="0 0 24 24"><path d="M3 6h18M8 6V4h8v2M6 6l1 14h10l1-14"/></svg>',apart:'<svg class="icn" viewBox="0 0 24 24"><circle cx="7" cy="8" r="3"/><circle cx="17" cy="8" r="3"/><path d="M2 20c0-3 2.5-5 5-5M22 20c0-3-2.5-5-5-5M10 16l4 4M14 16l-4 4"/></svg>',present:'<svg class="icn" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="12" rx="2"/><path d="M8 20h8M12 16v4"/></svg>',print:'<svg class="icn" viewBox="0 0 24 24"><path d="M6 9V3h12v6M6 18H4v-7h16v7h-2M7 14h10v7H7z"/></svg>',wand:'<svg class="icn" viewBox="0 0 24 24"><path d="m15 4 1.5 3L20 8.5 16.5 10 15 13l-1.5-3L10 8.5 13.5 7zM4 20l9-9"/></svg>',hand:'<svg class="icn" viewBox="0 0 24 24"><path d="M8 13V5a1.5 1.5 0 0 1 3 0v6M11 10V3.5a1.5 1.5 0 0 1 3 0V11M14 10V5a1.5 1.5 0 0 1 3 0v8c0 4-2.5 8-6.5 8S5 18 4 15l-1.5-3.5a1.5 1.5 0 0 1 2.6-1.4L8 13"/></svg>',grid:'<svg class="icn" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="2"/><rect x="14" y="3" width="7" height="7" rx="2"/><rect x="3" y="14" width="7" height="7" rx="2"/><rect x="14" y="14" width="7" height="7" rx="2"/></svg>',sheet:'<svg class="icn" viewBox="0 0 24 24" style="stroke:#1fa463"><rect x="4" y="2" width="16" height="20" rx="2"/><path d="M4 9h16M4 15h16M10 9v13"/></svg>',plus:'<svg class="icn" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>',roster:'<svg class="icn" viewBox="0 0 24 24"><circle cx="9" cy="8" r="3.2"/><path d="M3 20c0-3.3 2.7-6 6-6s6 2.7 6 6"/><path d="M16 4.5a3 3 0 0 1 0 6M18 14c2 .8 3 2.6 3 6"/></svg>',list:'<svg class="icn" viewBox="0 0 24 24"><path d="M3 10.5 12 3l9 7.5"/><path d="M5.5 9v11h13V9"/><path d="M10 20v-6h4v6"/></svg>',check:'<svg class="icn" viewBox="0 0 24 24"><path d="m5 12.5 4.5 4.5L19 7.5"/></svg>',edit:'<svg class="icn" viewBox="0 0 24 24"><path d="M4 20h4L19 9l-4-4L4 16z"/></svg>'};
+window.QC_BOLT=BOLT;
+const r=(x,y,w,h)=>`<rect x="${x}" y="${y}" width="${w}" height="${h}" rx="3" fill="#f0e8ff" stroke="#a259ff" stroke-width="1.4"/>`;
+const svgw=inner=>`<svg viewBox="0 0 120 76" aria-hidden="true"><rect x="1" y="1" width="118" height="74" rx="8" fill="#fafafe" stroke="#e5e5ef"/><rect x="40" y="6" width="40" height="4" rx="2" fill="#1d1d1f"/>${inner}</svg>`;
+const LAYS=[
+ {k:'rows',name:'Rows',sub:'single desks',per:1,unit:'Desks',svg:svgw([0,1,2,3].map(j=>[0,1,2,3,4].map(i=>r(14+i*19,18+j*13,12,8)).join('')).join(''))},
+ {k:'pairs',name:'Pairs',sub:'desks of 2',per:2,unit:'Tables',svg:svgw([0,1,2].map(j=>[0,1,2].map(i=>r(12+i*34,20+j*17,28,9)).join('')).join(''))},
+ {k:'g4',name:'Groups of 4',sub:'pods',per:4,unit:'Groups',svg:svgw([0,1].map(j=>[0,1,2].map(i=>r(16+i*33,20+j*26,22,18)).join('')).join(''))},
+ {k:'g6',name:'Groups of 6',sub:'big tables',per:6,unit:'Groups',svg:svgw([0,1].map(j=>[0,1].map(i=>r(22+i*46,20+j*26,30,18)).join('')).join(''))},
+ {k:'u',name:'U-shape',sub:'around the edge',per:1,unit:'Desks',svg:svgw(r(16,20,10,46)+r(94,20,10,46)+r(26,56,68,10))},
+ {k:'cards',name:'Just groups',sub:'no room map',per:0,unit:'Groups',svg:`<svg viewBox="0 0 120 76" aria-hidden="true"><rect x="1" y="1" width="118" height="74" rx="8" fill="#fafafe" stroke="#e5e5ef"/>${[0,1].map(j=>[0,1,2].map(i=>`<rect x="${10+i*35}" y="${10+j*31}" width="30" height="26" rx="5" fill="#fff" stroke="#c9b3ff" stroke-width="1.4"/><text x="${25+i*35}" y="${21+j*31}" font-size="6" font-weight="700" text-anchor="middle" fill="#a259ff" font-family="sans-serif">Group ${j*3+i+1}</text><rect x="${14+i*35}" y="${25+j*31}" width="22" height="3" rx="1.5" fill="#e3d6ff"/><rect x="${14+i*35}" y="${30+j*31}" width="16" height="3" rx="1.5" fill="#e3d6ff"/>`).join('')).join('')}</svg>`}];
+const LAY=k=>LAYS.find(l=>l.k===k)||LAYS[2];
+const perOf=q=>q.layout==='cards'?q.gsize:LAY(q.layout).per;
+const shuf=a=>{a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a};
+const qcls=()=>ui.qc&&ui.qc.clsId&&S&&S.classes.find(c=>c.id===ui.qc.clsId)||null;
+const here=cls=>cls.students.filter(s=>!s.absent);
+
+/* names from the box: one per line, or rows from a spreadsheet (tab separated, with a header row) */
+/* Pasted tables that lost their tabs (copied from a doc, email or chat): "First Last Score Gender" with spaces.
+   If the first line looks like a header, turn the rows back into columns. Extra words in a row go into the name. */
+const NAME_HEAD=/^(name|names|student|students|first|firstname|given|preferred|last|lastname|surname|family|full)$/i;
+window.tabify=function(txt){txt=String(txt||'').replace(/\r/g,'');if(/\t/.test(txt))return txt;
+  const lines=txt.split('\n').filter(l=>l.trim());if(lines.length<2)return txt;
+  if(lines.filter(l=>l.includes(',')).length>=lines.length*.8)return txt;
+  const head=lines[0].trim().split(/\s+/);if(head.length<2||head.some(h=>/\d/.test(h))||!head.some(h=>NAME_HEAD.test(h.replace(/[:_-]/g,''))))return txt;
+  const low=head.map(h=>h.toLowerCase().replace(/[:_-]/g,'')),fi=low.findIndex(h=>/^(first|firstname|given|preferred)$/.test(h)),li=low.findIndex(h=>/^(last|lastname|surname|family)$/.test(h));
+  let ni=fi>=0?fi:low.findIndex(h=>NAME_HEAD.test(h));if(ni<0)ni=0;
+  let ok=0;const out=[head.join('\t')];
+  for(const l of lines.slice(1)){let t=l.trim().split(/\s+/);const extra=t.length-head.length;
+    if(extra>0){t=t.slice(0,ni).concat([t.slice(ni,ni+extra+1).join(' ')],t.slice(ni+extra+1))}
+    if(t.length===head.length)ok++;out.push(t.join('\t'))}
+  return ok>=(lines.length-1)*.8?out.join('\n'):txt};
+const JUNK=/(\d|^(m|f|x|nb|male|female|boy|girl)$)/i;
+function qcNames(text){text=window.tabify(String(text||'').replace(/\r/g,''));
+  const l0=text.split('\n').find(l=>l.trim())||'',csvHead=l0.includes(',')&&l0.split(',').some(h=>NAME_HEAD.test(h.trim().replace(/[\s:_-]/g,'')));
+  if(/\t/.test(text)||csvHead){const P=pasteParse(text);if(P){if(P.cols){return P.rows.slice(1).map(rw=>[P.first>=0?rw[P.first]:'',P.last>=0?rw[P.last]:''].filter(Boolean).join(' ').trim()).filter(Boolean)}return P.names}}
+  let L=text.split('\n').map(l=>l.replace(/^\s*\d+[.)]\s+/,'').trim()).filter(Boolean);
+  /* names followed by scores or other notes (Ava Martinez 92 F): drop the trailing extras when most lines have them */
+  const cut=l=>{const t=l.split(/\s+/);while(t.length>1&&JUNK.test(t[t.length-1]))t.pop();return t.join(' ')};
+  if(L.length>1&&L.filter(l=>cut(l)!==l).length>=L.length*.6)L=L.map(cut);
+  return L}
+
+/* the room: a tidy grid of tables, saved as a real room so the full Studio can use it */
+function qcCols(kind,n){if(kind==='rows')return Math.min(7,Math.max(2,Math.ceil(Math.sqrt(n*1.5))));if(kind==='g6')return n<=4?2:3;if(kind==='g4'||kind==='cards'||kind==='pairs')return n<=4?2:n>12?4:3;return 3}
+function qcGen(kind,n,gs){const it=[];const add=(type,x,y,extra)=>it.push(Object.assign({id:uid(),type,x,y,ang:0,label:'',cluster:''},extra||{}));
+  add('board',50,3);
+  const meta={kind,cols:1,rows:1};
+  if(kind==='u'){const sc=n>24?2:1,b=Math.min(10-2*sc,Math.max(2,Math.round(n/3))),side=Math.max(0,n-b),L=Math.ceil(side/2),R=side-L,rows=Math.max(1,Math.ceil(L/sc)),C=2*sc+b;
+    meta.cols=C;meta.rows=rows+1;add('door',10,3);add('teacher',50,30);
+    const xs=c=>C>1?7+86*c/(C-1):50,sy=Math.min(8,(56-12)/Math.max(1,rows-1)),ys=rw=>12+rw*sy;
+    let k=0;for(let c=0;c<sc&&k<L;c++)for(let rw=0;rw<rows&&k<L;rw++,k++)add('desk',xs(c),ys(rw),{qg:[c,rw]});
+    for(let c=0;c<b;c++)add('desk',xs(sc+c),Math.min(64,ys(rows-1)+Math.max(sy,7)),{qg:[sc+c,rows]});
+    k=0;for(let c=0;c<sc&&k<R;c++)for(let rw=0;rw<rows&&k<R;rw++,k++)add('desk',xs(C-1-c),ys(rw),{qg:[C-1-c,rw]});
+  }else{
+    add('door',6,68.5);add('teacher',88,63);
+    const T={rows:['desk',9,6],pairs:['pair',16,6.5],g4:['pod4',16,12],g6:['pod6',23,12]}[kind];
+    const cols=Math.min(n,qcCols(kind,n)),rows=Math.ceil(n/cols);meta.cols=cols;meta.rows=rows;
+    const w=kind==='cards'?18:T[1],h=kind==='cards'?6*Math.ceil(gs/2):T[2];
+    const x0=8,x1=92,y0=10,y1=57,sx=cols>1?(x1-x0-w)/(cols-1):0,sy=rows>1?Math.min(h+12,(y1-y0-h)/(rows-1)):0,top=y0+(rows>1?0:(y1-y0-h)/3);
+    let k=0;for(let rw=0;rw<rows;rw++){const inRow=Math.min(cols,n-k),off=(cols-inRow)*sx/2;for(let c=0;c<inRow;c++){const x=cols>1?x0+w/2+off+c*sx:50,y=top+h/2+rw*sy,g=[c,rw];
+      if(kind==='cards'){for(let d=0;d<gs;d++)add('desk',x-4.5+(d%2)*9,y-h/2+3+Math.floor(d/2)*6,{cluster:letter(k),num:k+1,qg:g})}else add(T[0],x,y,{qg:g});k++}}}
+  if(kind!=='cards'){let m=1;it.forEach(i=>{if(FURN[i.type].seats)i.num=m++})}
+  it.forEach(clampItem);return{items:it,meta}}
+
+/* draw the room as a grid of tables; seat keys match the real room */
+const qcPosSig=r=>r.items.filter(i=>FURN[i.type]&&FURN[i.type].seats).map(i=>i.id+'@'+Math.round(i.x*10)+','+Math.round(i.y*10)+','+(i.ang||0)).join(';');
+const qcStamp=r=>{r.qcPos=qcPosSig(r);return r};
+const qcPristine=r=>!!(r&&r.qc&&r.qc.cols&&(!('qcPos' in r)||r.qcPos===qcPosSig(r)));
+const qcOwned=(r,cls)=>!!(r&&cls&&(r.qcTmp||r.qcOwner===cls.id||(!('qcOwner' in r)&&r.qcSig&&cls.qc)));
+const qcSampleRoom=r=>(r.name||'').includes(SAMPLE_PREFIX);
+/* For a room built or changed in the Studio: lay tables out on a grid in the same rows and columns as the real room */
+function qcMeta(room,L){L=L||layoutInfo(room);const gs=L.groups.filter(g=>g.seats.length),allDesk=gs.length>0&&gs.every(g=>g.seats.length===1);
+  if(qcPristine(room)){const k=room.qc.kind;return Object.assign({},room.qc,{desks:k==='rows'||k==='u',pos:null,front:k==='cards'?null:'top'})}
+  const box=g=>{let x0=1e9,x1=-1e9,y0=1e9,y1=-1e9;g.items.forEach(it=>{const d=dims(it);x0=Math.min(x0,it.x-d.w/2);x1=Math.max(x1,it.x+d.w/2);y0=Math.min(y0,it.y-d.h/2);y1=Math.max(y1,it.y+d.h/2)});return{x0,y0,w:x1-x0,h:y1-y0}};
+  const boxes=new Map(gs.map(g=>[g.key,box(g)]));let X0=1e9,X1=-1e9,Y0=1e9,Y1=-1e9;boxes.forEach(b=>{X0=Math.min(X0,b.x0);X1=Math.max(X1,b.x0+b.w);Y0=Math.min(Y0,b.y0);Y1=Math.max(Y1,b.y0+b.h)});
+  if(!gs.length){X0=0;X1=100;Y0=0;Y1=60}
+  const lab=allDesk?0:3.2;Y0-=lab;X0-=1;X1+=1;Y1+=1;
+  const board=room.items.find(i=>i.type==='board'),avgY=avg(L.seats.map(s=>s.y));
+  return{kind:'free',boxes,ext:{x0:X0,y0:Y0,W:X1-X0,H:Y1-Y0},desks:allDesk,pos:null,free:true,front:board?(board.y>avgY?'bottom':'top'):null}}
+function qcRoomHTML(room,cls,opts){opts=opts||{};const L=layoutInfo(room),meta=qcMeta(room,L),seats=(cls&&curOf(cls).seats)||{},q=ui.qc||{};
+  const labs=cls?nameLabels(S.settings.nameStyle||'initial'):null,bad=opts.bad||new Set();
+  const groups=new Map();L.groups.forEach(g=>groups.set(g.key,g));
+  const cells=new Map();for(const s of L.seats){const it=room.items.find(i=>i.id===s.itemId);const qg=it&&it.qg;const ck=s.gk;if(!cells.has(ck))cells.set(ck,{g:groups.get(s.gk),qg,keys:[],type:it&&it.type});cells.get(ck).keys.push(s.key)}
+  const desks=meta.desks;
+  const scol=(t,n)=>meta.kind==='cards'?2:n===1||t==='desk'?1:t==='pod6'||n===6?3:n>6?4:2;
+  let html='';let auto=0,maxFc=1;
+  const E=meta.ext,P=v=>(v*100).toFixed(3)+'%';let kx=0,ky=0;
+  for(const c of cells.values()){const gp=c.qg,bx=meta.free&&meta.boxes.get(c.g.key);let pos=gp&&!meta.free?`grid-column:${gp[0]+1};grid-row:${gp[1]+1}`:'';
+    if(bx)pos=`left:${P((bx.x0-E.x0)/E.W)};top:${P((bx.y0-E.y0)/E.H)};width:${P(bx.w/E.W)};height:${P(bx.h/E.H)}`;
+    const g=c.g;g.seats&&(c.keys=g.seats.map(i=>L.seats[i].key));let fc=0;
+    if(meta.free&&c.keys.length>1){const sk=c.keys.map(k=>L.seatByKey.get(k)),xs=[];sk.forEach(t=>{if(!xs.some(x=>Math.abs(x-t.x)<2))xs.push(t.x)});const nn=c.keys.length;fc=xs.length<=3?xs.length:Math.ceil(nn/Math.ceil(nn/3));c.keys=sk.slice().sort((p,q)=>Math.round(p.y/2)-Math.round(q.y/2)||p.x-q.x).map(t=>t.key)}
+    const st=c.keys.map((k,j)=>{if(opts.preview)return`<div class="qseat n">${++auto}</div>`;const sid=seats[k],s=sid&&stud(cls,sid);
+      if(s){const sel=q.pick===sid?' qsel':'';return`<div class="qseat f${bad.has(sid)?' bad':''}${sel}" data-qs="${esc(k)}"><span class="qn" data-qn="${esc(sid)}">${esc(labs.get(sid)||s.name)}</span></div>`}
+      return`<div class="qseat e${q.pick?'':' off'}" data-qs="${esc(k)}" aria-label="Empty seat">+</div>`}).join('');
+    const label=desks||c.keys.length===1?'':`<div class="qtl">${esc(meta.kind==='cards'?'Group '+(g.index+1):g.label)}</div>`;
+    const nc=fc||scol(c.type,c.keys.length),nr=Math.ceil(c.keys.length/nc);maxFc=Math.max(maxFc,nc);
+    if(bx){kx=Math.max(kx,(nc*66+(nc-1)*4+8)/bx.w);ky=Math.max(ky,(nr*34+(nr-1)*4+8)/bx.h)}
+    html+=`<div class="qtb" style="${pos}">${label}<div class="qsts" style="grid-template-columns:repeat(${nc},1fr)${bx?`;grid-template-rows:repeat(${nr},1fr)`:''}">${st}</div></div>`}
+  const gridStyle=meta.free?`aspect-ratio:${E.W.toFixed(2)}/${E.H.toFixed(2)}${opts.preview?'':`;margin:0 auto" data-nat="${Math.ceil(Math.max(kx,ky)*E.W)}" data-nw="${Math.ceil(kx*E.W)}" data-nh="${Math.ceil(ky*E.H)}" data-r="${(E.W/E.H).toFixed(4)}`}`:`grid-template-columns:repeat(${meta.cols},minmax(0,1fr))`;
+  const fb='<div class="qboard">FRONT OF ROOM</div>';
+  return`<div class="qroom${meta.free?' free':''}">${meta.front==='top'?fb:''}<div class="${meta.free?'qfree':'qgrid'}${desks?' desks':''}" style="${gridStyle}">${html}</div>${meta.front==='bottom'?fb:''}</div>`}
+
+function qcBad(cls){const out=new Set(),msgs=[],room=roomOf(cls),L=layoutInfo(room),seats=curOf(cls).seats,gOf=new Map();
+  for(const s of L.seats){const sid=seats[s.key];if(sid)gOf.set(sid,s.gk)}
+  if(qcMeta(room,L).desks)return{set:out,msgs};
+  const labs=nameLabels(S.settings.nameStyle||'initial');
+  for(const rl of cls.rules||[]){if(rl.type!=='apart')continue;const a=gOf.get(rl.a),b=gOf.get(rl.b);if(a&&a===b){out.add(rl.a);out.add(rl.b);msgs.push(`${esc(labs.get(rl.a))} and ${esc(labs.get(rl.b))} are at the same table.`)}}
+  return{set:out,msgs}}
+
+/* ---------- actions ---------- */
+function qcSaveRoster(){const q=ui.qc,names=qcNames(q.text);if(!names.length){toast('Add at least one name first.');return false}
+  let cls=qcls();const nm=(q.name||'').trim()||'My class';
+  if(!cls){const g=qcGen('g4',Math.max(1,Math.ceil(names.length/4)),4);const room=qcStamp({id:uid(),name:nm+' room',items:g.items,confirmed:true,qc:g.meta,qcTmp:true});S.rooms.push(room);cls=newClass(nm,room.id);cls.qc=true;room.qcOwner=cls.id;S.classes.push(cls);q.clsId=cls.id;q.built=null}
+  else{cls.name=nm;const rm=roomOf(cls);if(rm&&qcOwned(rm,cls)&&/ room$/.test(rm.name||''))rm.name=nm+' room'}
+  const pool=new Map();cls.students.forEach(s=>{const k=s.name.toLowerCase();if(!pool.has(k))pool.set(k,[]);pool.get(k).push(s)});
+  cls.students=names.map(n=>{const a=pool.get(n.toLowerCase());return a&&a.length?a.shift():{id:uid(),name:n,v:{},front:false,door:false,absent:false}});
+  const ids=new Set(cls.students.map(s=>s.id)),cur=curOf(cls);Object.keys(cur.seats).forEach(k=>{if(!ids.has(cur.seats[k]))delete cur.seats[k]});
+  cls.rules=(cls.rules||[]).filter(rl=>ids.has(rl.a)&&ids.has(rl.b));
+  S.activeClass=cls.id;save();return true}
+function qcBuildRoom(){const q=ui.qc,cls=qcls();if(!cls)return;let room=roomOf(cls);
+  const dropTmp=r=>{if(r&&qcOwned(r,cls)&&!S.classes.some(c=>c.roomId===r.id)&&S.rooms.length>1){S.rooms=S.rooms.filter(x=>x!==r)}};
+  if(String(q.layout).startsWith('room:')){const rid=q.layout.slice(5);if(cls.roomId!==rid&&S.rooms.some(r=>r.id===rid)){const old=room;cls.roomId=rid;curOf(cls).seats={};q.mode=null;try{localStorage.setItem('rgs.lastRoom',rid)}catch(e){}dropTmp(old)}}
+  else{const N=here(cls).length,per=perOf(q),n=q.count||Math.max(1,Math.ceil(N/per)),sig=[q.layout,n,q.gsize].join('|');
+    const mine=qcOwned(room,cls)&&!S.classes.some(c=>c!==cls&&c.roomId===room.id);
+    if(!mine||room.qcSig!==sig||!qcPristine(room)){if(!mine){room={id:uid(),name:cls.name+' room',items:[],confirmed:true,qcOwner:cls.id};S.rooms.push(room);cls.roomId=room.id}
+      const g=qcGen(q.layout,n,q.gsize);room.items=g.items;room.qc=g.meta;room.qcSig=sig;room.confirmed=true;room.seatOrder={};room.seatNum={};room.qcOwner=cls.id;delete room.qcTmp;qcStamp(room);curOf(cls).seats={};q.mode=null}}
+  if(!openChart(cls))createChart(cls,cls.name+' · Quick Chart',null);save()}
+function qcSeatKeys(cls){const L=layoutInfo(roomOf(cls));return L.groups.flatMap(g=>g.seats.map(i=>L.seats[i].key))}
+function qcFill(all){const cls=qcls();if(!cls)return;const cur=curOf(cls),keys=qcSeatKeys(cls);if(all)cur.seats={};
+  const seated=new Set(Object.values(cur.seats));const pool=here(cls).filter(s=>!seated.has(s.id)).map(s=>s.id);
+  const empties=keys.filter(k=>!cur.seats[k]);
+  /* spread students evenly over tables: take empty seats round-robin by table */
+  const L=layoutInfo(roomOf(cls)),gk=new Map(L.seats.map(s=>[s.key,s.gk]));
+  let best=null,bestBad=1e9;const base=Object.assign({},cur.seats);
+  for(let t=0;t<(all?250:60);t++){const byG=new Map();shuf(empties).forEach(k=>{const g=gk.get(k);if(!byG.has(g))byG.set(g,[]);byG.get(g).push(k)});
+    /* fill whole tables first, in room order, so leftover seats end up together */
+    const gOrder=[...new Set(keys.map(k=>gk.get(k)))];const order=[];gOrder.forEach(g=>{const a=byG.get(g);if(a)order.push(...a)});
+    const trial=Object.assign({},base);shuf(pool).forEach((id,i)=>{if(order[i])trial[order[i]]=id});
+    cur.seats=trial;const b=qcBad(cls).msgs.length;if(b<bestBad){best=trial;bestBad=b}if(!b)break}
+  cur.seats=best||base;cur.meta=null;save()}
+function qcPlace(id,key){const cls=qcls(),seats=curOf(cls).seats;const from=Object.keys(seats).find(k=>seats[k]===id);if(from===key){ui.qc.pick=null;return}const occ=seats[key];
+  seats[key]=id;if(from){if(occ)seats[from]=occ;else delete seats[from]}ui.qc.pick=null;save()}
+function qcUnseat(id){const cls=qcls(),seats=curOf(cls).seats;Object.keys(seats).forEach(k=>{if(seats[k]===id)delete seats[k]});ui.qc.pick=null;save()}
+function qcTap(id){const q=ui.qc,cls=qcls(),seats=curOf(cls).seats;const keyOf=x=>Object.keys(seats).find(k=>seats[k]===x);
+  if(!q.pick){q.pick=id;return}if(q.pick===id){q.pick=null;return}
+  const kp=keyOf(q.pick),ki=keyOf(id);
+  if(ki)qcPlace(q.pick,ki);else if(kp){q.pick=id}else q.pick=id}
+
+const qcList=()=>S.classes.filter(c=>c.qc&&S.rooms.some(r=>r.id===c.roomId)&&openChart(c));
+const reuseRooms=cls=>{const out=[];for(const r of S.rooms){if(r.qcTmp||qcSampleRoom(r))continue;const names=S.classes.filter(c=>c.roomId===r.id&&!(cls&&c.id===cls.id)).map(c=>c.name);
+  if(cls&&r.id===cls.roomId&&!names.length&&qcOwned(r,cls)&&qcPristine(r))continue;const n=layoutInfo(r).seats.length;if(!n)continue;out.push({room:r,names,seats:n})}return out};
+function qcResume(a){const rm=roomOf(a),m=rm&&rm.qc||{},shared=S.classes.some(c=>c!==a&&c.roomId===rm.id)||!qcOwned(rm,a)||!qcPristine(rm);
+  return{step:3,clsId:a.id,name:a.name,text:a.students.map(s=>s.name).join('\n'),layout:shared?'room:'+rm.id:(m.kind||'g4'),gsize:(rm.qcSig&&+rm.qcSig.split('|')[2])||4,count:rm.qcSig?+rm.qcSig.split('|')[1]:null,mode:Object.keys(curOf(a).seats).length?'place':null,pick:null,apart:false,max:3}}
+window.qcRoomHTMLPublic=(r,c)=>qcRoomHTML(r,c,{});window.qcPristinePublic=qcPristine;window.qcGenPublic=qcGen;window.QC_LAYS=LAYS;window.qcResumePublic=c=>qcResume(c);
+window.qcOpen=function(fresh){if(!S)return;const a=activeClass&&activeClass();
+  if(!fresh&&a&&(a.qc||a.qcFrom)&&openChart(a)){a.qc=true;ui.qc=qcResume(a);qcSnapAll()}
+  else if(!fresh&&S.classes.some(c=>!(c.name||'').includes(SAMPLE_PREFIX)))ui.qc={step:4,clsId:null,max:1};
+  else ui.qc={step:1,clsId:null,name:'',text:'',layout:'g4',gsize:4,count:null,mode:null,pick:null,apart:false,max:1};
+  if(window.rTrack)try{rTrack('Quick Chart Opened')}catch(e){}
+  qcRender();const el=document.getElementById('qc');el&&(el.scrollTop=0)};
+function qcClose(){ui.qc=null;document.documentElement.style.overflow='';qcRender()}
+
+/* ---------- render ---------- */
+function qcHead(q){const s=['Names','Layout','Arrange'];return`<div class="qh"><div class="ttl"><span class="gmark" aria-hidden="true"><i></i><i></i><i></i><i></i></span><span class="t">Quick Chart</span></div>
+  ${q.step===4?'<div class="steps"></div>':`<div class="steps">${s.map((x,k)=>{const n=k+1,can=n!==q.step&&n<=q.max;return`${k?'<i class="sep"></i>':''}<button class="st ${n===q.step?'on':n<q.step||n<=q.max?'done':''}"${can?` data-qa="goStep" data-arg="${n}"`:' tabindex="-1"'}><b>${n<q.step||(n<=q.max&&n!==q.step)?'✓':n}</b>${x}</button>`}).join('')}</div>`}
+  ${q.step!==4&&S.classes.some(c=>c.id!==q.clsId&&!(c.name||'').includes(SAMPLE_PREFIX))?`<button class="hbtn" data-qa="list" title="See all your classes">${QI.list}<span class="lg">My Classes</span></button>`:''}<button class="hbtn" data-qa="full" title="Open this in the full Grouping Studio">${QI.grid}<span class="lg">Open full Studio</span></button></div>`}
+const qcPrevHTML=t=>{const L=qcNames(t);return L.length?`Names: ${L.slice(0,4).map(esc).join(' · ')}${L.length>4?' …':''}`:''};
+function step1(q){const n=qcNames(q.text).length,ed=q.max>=3&&q.clsId;return{body:`<h1>${ed?'Edit roster':'Who’s in your class?'}</h1><p class="sub">${ed?'Add, remove or fix names, one per line. Everyone already seated keeps their seat.':'Paste or type names, one per line. That’s all Quick Chart needs.'}</p>
+  <div class="two"><div class="card"><label class="l" for="qcName">Class name</label><input class="t" id="qcName" placeholder="3rd Period" value="${esc(q.name)}" autocomplete="off"><div style="height:16px"></div><div class="row" style="justify-content:space-between;align-items:center;gap:10px;margin-bottom:6px"><label class="l" for="qcText" style="margin:0">Student names</label><span class="chip${n?'':' zero'}" id="qcCount">${n?'✓ '+n+' student'+(n===1?'':'s'):'No names yet'}</span></div><div class="qprev" id="qcPrev">${qcPrevHTML(q.text)}</div><textarea id="qcText" placeholder="Ava Martinez&#10;Ben Carter&#10;Chloe Nguyen&#10;…" spellcheck="false">${esc(q.text)}</textarea>
+  <div class="row" style="margin-top:10px"><span class="note">First and last, or first names only. Both work.</span></div></div>
+  <div class="card tip">${gsOn()?`<button class="bigbtn sec gsbtn" data-qa="gs">${QI.sheet} Import from Google Sheets</button><div style="text-align:center;color:#8e8e93;font-size:13px;margin:-2px 0">or</div>`:''}
+   <div><i>1</i><span><b>Copy</b> names from your gradebook or spreadsheet. Extra columns like scores are fine.</span></div><div><i>2</i><span><b>Paste</b> it in the box. One name per line.</span></div><div><i>3</i><span><b>Next</b>, pick how your desks are set up.</span></div>
+   <div class="note" style="border-top:1px solid rgba(60,60,67,.12);padding-top:12px">🔒 Names stay in this browser. Nothing is uploaded.</div></div></div>
+  <textarea id="pasteBox" hidden></textarea><div id="pastePrev" hidden></div><div id="gsInfo" hidden></div>`,
+  foot:q.max>=3&&q.clsId?`<button class="bigbtn ghost" data-qa="goStep" data-arg="3">Cancel</button><span class="note">New names go to “Not seated yet.” Removed names leave their seats.</span><span class="sp"></span><button class="bigbtn go" data-qa="namesBack" id="qcNext1"${n?'':' disabled'}>Save roster · back to chart →</button>`:`<button class="bigbtn ghost" data-qa="full">Cancel</button><span class="note">Saved as a class in Grouping Studio</span><span class="sp"></span><button class="bigbtn go" data-qa="next1" id="qcNext1"${n?'':' disabled'}>Next: pick a layout →</button>`}}
+function step2(q){const cls=qcls(),N=cls?here(cls).length:0,narrow=innerWidth<=900,reuse=reuseRooms(cls);
+  const isRoom=String(q.layout).startsWith('room:'),rr=isRoom&&reuse.find(o=>'room:'+o.room.id===q.layout);if(isRoom&&!rr){q.layout='g4';return step2(q)}
+  const lay=LAY(isRoom?'g4':q.layout),per=perOf(isRoom?{layout:'g4'}:q),auto=Math.max(1,Math.ceil(N/per)),n=q.count||auto;
+  let tmp,seats;if(rr){tmp=rr.room;seats=layoutInfo(rr.room).seats.length}else{const prev=qcGen(q.layout,n,q.gsize);tmp={id:'tmp',items:prev.items,qc:prev.meta};seats=n*per}
+  const fit=seats>=N?`<span class="ok">✓ ${seats} seats for ${N} students${seats-N?` (${seats-N} empty)`:''}</span>`:rr?`<span class="warn">⚠ ${seats} seats for ${N} students. Pick a new layout below to add tables.</span>`:`<span class="warn">⚠ ${seats} seats for ${N} students. Add ${Math.ceil((N-seats)/per)} more.</span>`;
+  let rid=rr?rr.room.id:(q.reuseId&&reuse.some(o=>o.room.id===q.reuseId)?q.reuseId:null);
+  if(!rid&&reuse.length){let last=null;try{last=localStorage.getItem('rgs.lastRoom')}catch(e){}rid=(reuse.find(o=>o.room.id===last)||reuse[reuse.length-1]).room.id}
+  const ro=reuse.find(o=>o.room.id===rid),nms=a=>a.slice(0,2).join(', ')+(a.length>2?` +${a.length-2}`:'');
+  const reuseHTML=ro?`<div class="reuse"><div class="ropt one${rr?' on':''}" role="button" tabindex="0" data-qa="lay" data-arg="room:${esc(rid)}">${rr?'<span class="ck">✓</span>':''}<span class="mini" aria-hidden="true">${qcRoomHTML(ro.room,null,{preview:true})}</span><span class="rtx"><b>Use a room you already set up</b>${reuse.length>1?`<select id="qcRoomPick" aria-label="Choose a room">${reuse.map(o=>`<option value="${esc(o.room.id)}"${o.room.id===rid?' selected':''}>${esc(o.room.name||'My room')}</option>`).join('')}</select>`:`<span class="rnm">${esc(ro.room.name||'My room')}</span>`}<span class="s">${ro.seats} seats${ro.names.length?' · Used by '+esc(nms(ro.names)):''}</span></span></div><div class="rh">Or pick a new layout</div></div>`:'';
+  return{body:`<h1>How are your desks set up?</h1><p class="sub">Pick the closest picture. You can change it later.</p>
+  <div class="two" style="grid-template-columns:${narrow?'1fr':'1fr 1.05fr'}"><div>${reuseHTML}<div class="lays">${LAYS.map(l=>`<button class="lay${l.k===q.layout?' on':''}" data-qa="lay" data-arg="${l.k}">${l.k===q.layout?'<span class="ck">✓</span>':''}${l.svg}<b>${l.name}</b><span class="s">${l.sub}</span></button>`).join('')}</div>
+  <div class="fit">${rr?fit:''}${!rr&&q.layout==='cards'?`<span class="lb">Per group</span><span class="stepper"><button data-qa="gs-" ${q.gsize<=2?'disabled':''} aria-label="Fewer per group">−</button><span>${q.gsize}</span><button data-qa="gs+" ${q.gsize>=6?'disabled':''} aria-label="More per group">+</button></span>`:''}
+   ${rr?'':`<span class="lb">${lay.unit}</span><span class="stepper"><button data-qa="cnt-" ${n<=1?'disabled':''} aria-label="Fewer">−</button><span>${n}</span><button data-qa="cnt+" ${n>=60?'disabled':''} aria-label="More">+</button></span>`}${rr?'':fit}</div></div>
+  <div><div class="note" style="margin:0 0 8px;font-weight:700">Preview</div>${qcRoomHTML(tmp,null,{preview:true})}</div></div>`,
+  foot:`<button class="bigbtn ghost" data-qa="goStep" data-arg="1">← Names</button><span class="sp"></span><button class="bigbtn go" data-qa="next2">Next: place students →</button>`}}
+function step3(q){const cls=qcls();if(!cls)return{body:'',foot:''};const room=roomOf(cls),cur=curOf(cls),seated=new Set(Object.values(cur.seats)),all=here(cls),left=all.filter(s=>!seated.has(s.id));
+  const labs=nameLabels(S.settings.nameStyle||'initial'),B=qcBad(cls),nSeats=layoutInfo(room).seats.length,fill=q.mode==='fill';
+  const touch=matchMedia('(pointer:coarse)').matches;
+  let sub;if(!q.mode&&!seated.size)sub='How do you want to seat them?';else if(!left.length)sub=`Everyone has a seat. ${touch?'Tap two students to swap them, or drag one onto another.':'Drag one name onto another to swap them, or tap two names.'}`;else sub=`${seated.size} of ${all.length} seated. ${nSeats-seated.size<=0?'No empty seats left. Add tables in Layout.':'Place the rest any way you like.'}`;
+  const choose=!q.mode&&!seated.size?`<div class="choose"><button data-qa="mode" data-arg="fill"><span class="ci">${QI.wand}</span><span><b>Fill seats for me</b><small>Everyone gets a random seat, spread evenly across tables. Then drag to fix anything.</small></span></button><button data-qa="mode" data-arg="place"><span class="ci alt">${QI.hand}</span><span><b>I’ll place them</b><small>Drag each name to a seat, or tap a name and then a seat.</small></span></button></div>`:'';
+  const rules=(cls.rules||[]).filter(rl=>rl.type==='apart');
+  const tools=choose?'':`<div class="tools"><div class="seg" role="group" aria-label="How to seat"><button class="${fill?'on':''}" data-qa="mode" data-arg="fill">${QI.wand} Fill seats for me</button><button class="${q.mode==='place'?'on':''}" data-qa="mode" data-arg="place">${QI.hand} I’ll place them</button></div><span class="sp"></span>${fill?`<button class="sbtn" data-qa="shuffle">${QI.shuffle} Shuffle</button>`:''}${qcMeta(room).desks?'':`<button class="sbtn${q.apart?' on':''}" data-qa="apart">${QI.apart} Keep apart${rules.length?` <span class="ct">${rules.length}</span>`:''}</button>`}<button class="sbtn" data-qa="clear"${seated.size?'':' disabled'}>${QI.clear} Clear seats</button></div>`;
+  const apart=q.apart?`<div class="apart"><h4>Keep apart</h4><p>These students won’t be put at the same table when you fill or shuffle.</p><div class="row"><select id="qcA" aria-label="First student"><option value="">Choose a student</option>${all.map(s=>`<option value="${esc(s.id)}">${esc(s.name)}</option>`).join('')}</select><span class="note">and</span><select id="qcB" aria-label="Second student"><option value="">Choose a student</option>${all.map(s=>`<option value="${esc(s.id)}">${esc(s.name)}</option>`).join('')}</select><button class="sbtn" data-qa="apartAdd">Add</button></div>${rules.length?`<div class="pairs">${rules.map(rl=>`<span class="pair">${esc(labs.get(rl.a))} ↔ ${esc(labs.get(rl.b))}<button data-qa="apartDel" data-arg="${esc(rl.id)}" aria-label="Remove">×</button></span>`).join('')}</div>`:''}</div>`:'';
+  const alert=B.msgs.length?`<div class="alert">⚠ <span>${B.msgs.join('<br>')}</span></div>`:'';
+  const showTray=q.mode==='place'||left.length;
+  const tray=showTray&&!choose?`<div class="qtray" data-qtray="1"><h4>${left.length?'Not seated yet · '+left.length:'Everyone is seated'}</h4><p>${left.length?(touch?'Tap a name, then tap a seat. Or drag it.':'Drag a name onto a seat, or tap a name and then a seat.'):'Drag a student here to take them out of their seat.'}</p><div class="qnames">${left.map(s=>`<span class="qnm${q.pick===s.id?' qsel':''}" data-qn="${esc(s.id)}">${esc(labs.get(s.id)||s.name)}</span>`).join('')||'<span class="qempty">✓ All set</span>'}</div></div>`:'';
+  const rm=qcRoomHTML(room,cls,{bad:B.set});
+  return{body:`<div class="ttlrow"><h1>${esc(cls.name)}</h1><button class="sbtn" data-qa="roster">${QI.roster} Edit roster</button></div><p class="sub">${sub}</p>${choose}${tray&&innerWidth>900?`<div class="arr"><div class="arr-main">${tools}${apart}${alert}${rm}</div>${tray}</div>`:tools+apart+alert+rm+tray}`,
+   foot:`<button class="bigbtn ghost" data-qa="goStep" data-arg="2">← <span class="lg">Layout</span></button><span class="note">✓ Changes save as you go</span><span class="sp"></span><button class="bigbtn sec" data-qa="print"${seated.size?'':' disabled'} title="Print">${QI.print}<span class="lg">Print</span></button><button class="bigbtn sec" data-qa="present"${seated.size?'':' disabled'} title="Present">${QI.present}<span class="lg">Present</span></button><button class="bigbtn go" data-qa="done"${seated.size?'':' disabled'}>${QI.check} Save chart</button>`}}
+function step4(q){const n=S.classes.filter(c=>!(c.name||'').includes(SAMPLE_PREFIX)).length;
+  return{body:`<h1>My Classes</h1><p class="sub">${n} saved in this browser. Make a chart for each class. If your room stays the same, the next class can use it in one tap.</p>${mcListHTML({inQC:true,just:q.justSaved})}`,
+  foot:''}}
+window.qcRender=function(){const root=document.getElementById('qc-root');if(!root)return;const q=ui.qc;
+  if(!q||q.hidden){root.innerHTML='';document.documentElement.style.overflow='';return}
+  NAMEC=null;const old=document.getElementById('qc'),st=old?old.scrollTop:0;const ae=document.activeElement,aid=ae&&ae.id,sel=ae&&ae.selectionStart;
+  const v=q.step===1?step1(q):q.step===2?step2(q):q.step===3?step3(q):step4(q);
+  root.innerHTML=`<div id="qc" role="dialog" aria-label="Quick Chart">${qcHead(q)}<div class="body s${q.step}">${v.body}</div>${v.foot?`<div class="foot"><div class="in">${v.foot}</div></div>`:''}</div>`;
+  document.documentElement.style.overflow='hidden';const nw=document.getElementById('qc');if(nw&&old)nw.scrollTop=st;
+  if(aid){const el=document.getElementById(aid);if(el&&/INPUT|TEXTAREA|SELECT/.test(el.tagName)){el.focus({preventScroll:true});try{if(sel!=null)el.setSelectionRange(sel,sel)}catch(e){}}}};
+
+/* ---------- events ---------- */
+const QA={
+  full:()=>{const st=ui.qc&&ui.qc.step,cls=qcls();qcClose();if(st===4||!cls){ui.tab='classes';render();return}S.activeClass=cls.id;ui.tab='arrange';render();toast(`“${cls.name}” is saved here in Grouping Studio.`)},
+  newQC:()=>qcOpen(true),
+  list:()=>{ui.qc={step:4,clsId:null,max:1}},
+  roster:()=>{const q=ui.qc,cls=qcls();if(!cls)return;q.text=here(cls).map(s=>s.name).join('\n');q.name=cls.name;q.step=1;q.pick=null},
+  namesBack:()=>{const q=ui.qc;if(!qcSaveRoster())return;q.step=3;const cls=qcls(),left=here(cls).filter(s=>!new Set(Object.values(curOf(cls).seats)).has(s.id)).length;if(left&&q.mode==='fill')q.mode='place';toast(left?`Roster saved. ${left} not seated yet.`:'Roster saved.')},
+  done:()=>{const cls=qcls();if(!cls)return;save();ui.qc={step:4,clsId:null,max:1,justSaved:cls.id};toast(`Saved “${cls.name}”`)},
+  edit:(b,id)=>{const c=S.classes.find(x=>x.id===id);if(c){S.activeClass=c.id;ui.qc=qcResume(c)}},
+  goStep:(b,a)=>{const q=ui.qc;a=+a;if(q.step===1&&a>1&&!qcSaveRoster())return;if(a===3&&q.step===2)qcBuildRoom();q.step=a;q.pick=null},
+  next1:()=>{const q=ui.qc;if(!qcSaveRoster())return;q.step=2;q.max=Math.max(q.max,2);const cls=qcls(),rm=roomOf(cls);if(rm.qcSig){const p=rm.qcSig.split('|');if(p[0]===q.layout)q.count=+p[1]}else if(rm.qcTmp){const ru=reuseRooms(cls);let last=null;try{last=localStorage.getItem('rgs.lastRoom')}catch(e){}const pick=ru.find(o=>o.room.id===last)||ru[ru.length-1];if(pick)q.layout='room:'+pick.room.id}},
+  next2:()=>{const q=ui.qc;qcBuildRoom();q.step=3;q.max=3},
+  lay:(b,k)=>{const q=ui.qc;if(q.layout!==k){q.layout=k;q.count=null}},
+  'cnt-':()=>{const q=ui.qc,cls=qcls(),n=q.count||Math.max(1,Math.ceil(here(cls).length/perOf(q)));q.count=Math.max(1,n-1)},
+  'cnt+':()=>{const q=ui.qc,cls=qcls(),n=q.count||Math.max(1,Math.ceil(here(cls).length/perOf(q)));q.count=Math.min(60,n+1)},
+  'gs-':()=>{const q=ui.qc;q.gsize=Math.max(2,q.gsize-1);q.count=null},
+  'gs+':()=>{const q=ui.qc;q.gsize=Math.min(6,q.gsize+1);q.count=null},
+  mode:(b,m)=>{const q=ui.qc,cls=qcls(),cur=curOf(cls);q.mode=m;q.pick=null;if(m==='fill'){const any=Object.keys(cur.seats).length;qcFill(!any);if(any)toast('Filled the empty seats. Shuffle to mix everyone.')}},
+  shuffle:()=>{qcFill(true);toast('Shuffled')},
+  clear:()=>{const cls=qcls();curOf(cls).seats={};ui.qc.mode='place';ui.qc.pick=null;save()},
+  apart:()=>{ui.qc.apart=!ui.qc.apart},
+  apartAdd:()=>{const a=$('#qcA').value,b=$('#qcB').value,cls=qcls();if(!a||!b||a===b){toast('Pick two different students.');return}if(cls.rules.some(rl=>rl.type==='apart'&&((rl.a===a&&rl.b===b)||(rl.a===b&&rl.b===a)))){toast('Those two are already kept apart.');return}cls.rules.push({id:uid(),type:'apart',a,b});save()},
+  apartDel:(b,id)=>{const cls=qcls();cls.rules=cls.rules.filter(rl=>rl.id!==id);save()},
+  print:(b,id)=>{const cls=id?S.classes.find(x=>x.id===id):qcls();if(!cls)return;S.activeClass=cls.id;ACT.print()},
+  present:async(b,id)=>{const cls=id?S.classes.find(x=>x.id===id):qcls();if(!cls)return;S.activeClass=cls.id;ui.tab='arrange';ui.qc.hidden=true;qcRender();render();await enterPresent('chart');if(ui.pwin&&ui.qc){ui.qc.hidden=false;qcRender()}},
+  gs:()=>{gsImport();const box=$('#pasteBox');let n=0;const t=setInterval(()=>{n++;if(box&&box.value){ui.qc.text=box.value;clearInterval(t);qcRender()}if(n>600||!document.getElementById('qc'))clearInterval(t)},500)},
+};
+document.addEventListener('click',e=>{const root=document.getElementById('qc-root');if(!root||!root.contains(e.target)||!ui.qc)return;
+  if(drag&&drag.moved)return;
+  if(e.target.closest('select'))return;
+  const b=e.target.closest('[data-qa]');if(b){if(b.disabled)return;e.preventDefault();const p=QA[b.dataset.qa]&&QA[b.dataset.qa](b,b.dataset.arg);Promise.resolve(p).then(()=>{if(ui.qc&&!ui.qc.hidden)qcRender()});return}
+  const seat=e.target.closest('[data-qs]');if(seat&&ui.qc.step===3){const k=seat.dataset.qs,cls=qcls(),sid=curOf(cls).seats[k];if(!sid&&ui.qc.pick){qcPlace(ui.qc.pick,k);qcRender()}else if(!sid){/* empty seat with nothing picked */}}
+});
+document.addEventListener('change',e=>{if(!ui.qc||e.target.id!=='qcRoomPick')return;const v=e.target.value;ui.qc.reuseId=v;ui.qc.layout='room:'+v;ui.qc.count=null;qcRender()});
+document.addEventListener('keydown',e=>{if(!ui.qc||e.target.id==='qcRoomPick')return;const b=e.target.closest&&e.target.closest('.ropt.one');if(b&&(e.key==='Enter'||e.key===' ')){e.preventDefault();b.click()}});
+document.addEventListener('input',e=>{if(!ui.qc)return;if(e.target.id==='qcText'){ui.qc.text=e.target.value;const n=qcNames(e.target.value).length,c=$('#qcCount'),b=$('#qcNext1');if(c){c.textContent=n?'✓ '+n+' student'+(n===1?'':'s'):'No names yet';c.className='chip'+(n?'':' zero')}if(b)b.disabled=!n;const pv=$('#qcPrev');if(pv)pv.textContent=qcPrevHTML(e.target.value).replace(/&amp;/g,'&').replace(/&#39;/g,"'").replace(/&quot;/g,'"').replace(/&lt;/g,'<').replace(/&gt;/g,'>')}
+  else if(e.target.id==='qcName')ui.qc.name=e.target.value});
+document.addEventListener('keydown',e=>{if(!ui.qc||ui.qc.hidden)return;if(e.key==='Escape'&&ui.qc.pick){ui.qc.pick=null;qcRender();e.stopPropagation()}},true);
+/* drag a name onto a seat (mouse, pen or finger); a short press without moving is a tap */
+let drag=null;
+document.addEventListener('pointerdown',e=>{if(!ui.qc||ui.qc.step!==3||e.button>0)return;const n=e.target.closest&&e.target.closest('#qc [data-qn]');if(!n)return;
+  drag={id:n.dataset.qn,x:e.clientX,y:e.clientY,el:n.closest('.qseat')||n,moved:false,ghost:null,tgt:null};});
+document.addEventListener('pointermove',e=>{if(!drag||!drag.id)return;if(!drag.moved){if(Math.hypot(e.clientX-drag.x,e.clientY-drag.y)<7)return;drag.moved=true;drag.el.classList.add('qdrag');const g=document.createElement('div');g.id='qc-ghost';g.textContent=(drag.el.querySelector('[data-qn]')||drag.el).textContent;document.body.appendChild(g);drag.ghost=g}
+  e.preventDefault();drag.ghost.style.left=e.clientX+'px';drag.ghost.style.top=e.clientY+'px';
+  const u=document.elementFromPoint(e.clientX,e.clientY),t=u&&u.closest&&(u.closest('#qc [data-qs]')||u.closest('#qc [data-qtray]'));if(t!==drag.tgt){drag.tgt&&drag.tgt.classList.remove('qtgt');drag.tgt=t;t&&t.classList.add('qtgt')}
+  const sc=document.getElementById('qc');if(sc){if(e.clientY<90)sc.scrollTop-=12;else if(e.clientY>innerHeight-110)sc.scrollTop+=12}},{passive:false});
+function endDrag(e,cancel){if(!drag||!drag.id)return;const d=drag;drag=null;d.ghost&&d.ghost.remove();d.el.classList.remove('qdrag');d.tgt&&d.tgt.classList.remove('qtgt');
+  if(cancel)return;
+  if(!d.moved){qcTap(d.id);qcRender();return}
+  if(d.tgt&&d.tgt.dataset.qs)qcPlace(d.id,d.tgt.dataset.qs);else if(d.tgt&&d.tgt.dataset.qtray)qcUnseat(d.id);
+  drag={moved:true};setTimeout(()=>{if(drag&&!drag.id)drag=null;qcRender()},0)}
+document.addEventListener('pointerup',e=>endDrag(e,false));
+document.addEventListener('pointercancel',e=>endDrag(e,true));
+document.addEventListener('touchmove',e=>{if(drag&&drag.id&&drag.moved)e.preventDefault()},{passive:false});
+
+/* keep the overlay in step with the rest of the app */
+const _render=window.render;window.render=render=function(){_render.apply(this,arguments);if(ui.qc&&!ui.qc.hidden&&!(drag&&drag.id))qcRender()};
+const _exit=window.exitPresent;window.exitPresent=exitPresent=function(){_exit.apply(this,arguments);if(ui.qc&&ui.qc.hidden){ui.qc.hidden=false;qcRender()}};
+ACT.qcOpen=()=>qcOpen();
+/* Graduating to Full Studio: a Quick Chart class that gets edited in Full Studio (roster, chart, room) opens in Full Studio from then on.
+   Opening it with the Quick Chart button brings it back to Quick Chart. Only looking around in Full Studio changes nothing. */
+const QC_SKIP={view:1,st:1,qc:1,qcFrom:1,qcSnap:1};
+const qcEditSig=c=>{try{const r=S.rooms.find(x=>x.id===c.roomId);return JSON.stringify(c,(k,v)=>QC_SKIP[k]?undefined:v)+'|'+(r?JSON.stringify(r.items)+JSON.stringify(r.seatNum||{})+JSON.stringify(r.seatOrder||{}):'')}catch(e){return''}};
+function qcSnapAll(){if(!S)return;S.classes.forEach(c=>{if(c.qc){c.qcFrom=true;c.qcSnap=qcEditSig(c)}})}
+{const _save=window.save;window.save=save=function(){const out=_save.apply(this,arguments);try{if(!S)return out;
+  if(ui.qc){const c=qcls&&qcls();if(c){c.qc=true;c.qcFrom=true}qcSnapAll()}
+  else S.classes.forEach(c=>{if(c.qc&&c.qcSnap!==undefined&&qcEditSig(c)!==c.qcSnap){c.qc=false;delete c.qcSnap}})}catch(e){}return out}}
+/* fit a real-room chart on screen: shrink it so the whole room shows above the bottom bar (laptops and iPads); phones scroll sideways */
+function qcFit(){document.querySelectorAll('#qc-root .qfree[data-nat]').forEach(el=>{const nat=+el.dataset.nat,nw=+el.dataset.nw,nh=+el.dataset.nh,r=+el.dataset.r,box=el.parentElement;
+  if(innerWidth<=600){el.style.width='';el.style.height='';el.style.aspectRatio=String(r);el.style.minWidth=nat+'px';el.style.setProperty('--qs',1);return}
+  el.style.minWidth='0';const foot=document.querySelector('#qc .foot .in'),sc=document.getElementById('qc'),top=el.getBoundingClientRect().top+(sc?sc.scrollTop:0),bb=box.lastElementChild&&box.lastElementChild.classList.contains('qboard')?44:0;
+  const cs=getComputedStyle(box),limit=(foot?foot.getBoundingClientRect().top:innerHeight)-14-bb-parseFloat(cs.paddingBottom)-parseFloat(cs.borderBottomWidth),cw=box.clientWidth-parseFloat(cs.paddingLeft)-parseFloat(cs.paddingRight);
+  /* use the full height above the bottom bar, then let the room widen (up to about twice its real shape) so names have room */
+  const h=Math.round(Math.max(240,Math.min(limit-top,nh*1.5))),w=Math.round(Math.max(260,Math.min(cw,h*r*1.9)));
+  el.style.aspectRatio='auto';el.style.height=h+'px';el.style.width=w+'px';el.style.setProperty('--qs',Math.max(.75,Math.min(1,h/nh,w/nw)).toFixed(3))})}
+{const orig=window.qcRender;window.qcRender=function(){const out=orig.apply(this,arguments);try{qcFit()}catch(e){}return out};let t;addEventListener('resize',()=>{clearTimeout(t);t=setTimeout(()=>{try{qcFit()}catch(e){}},80)})}
+})();
+</script>
+
+<style>
+/* ---------- My Classes ---------- */
+.mc-head{display:flex;align-items:flex-end;gap:16px;flex-wrap:wrap;margin:4px 0 18px}
+.mc-head .tt{flex:1;min-width:240px}
+.mc-head h1{font-size:34px;letter-spacing:-.03em;margin:0 0 4px;line-height:1.1}
+.mc-head p{margin:0;color:var(--muted,#6e6e73);font-size:15px}
+.mc-head .acts{display:flex;gap:10px;flex-wrap:wrap}
+.mc-btn{display:inline-flex;align-items:center;gap:7px;border-radius:12px;border:1px solid rgba(60,60,67,.18);background:#fff;padding:9px 14px;font:inherit;font-weight:700;font-size:14px;cursor:pointer;color:#1d1d1f;white-space:nowrap}
+.mc-btn:hover{border-color:rgba(162,89,255,.5)}
+.mc-btn.go{background:var(--grad);color:#fff;border:0;box-shadow:0 8px 20px rgba(162,89,255,.28)}
+.mc-btn.sm{padding:7px 11px;font-size:13px}
+.mc-btn.danger{color:#d70015}
+.mc-btn.danger.armed{background:#d70015;color:#fff;border-color:#d70015}
+.mc-btn:disabled{opacity:.45;cursor:not-allowed}
+.mc-btn svg,.mc-ic{width:17px;height:17px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;flex:none}
+.mc-btn svg.bolt{fill:url(#qcg);stroke:none}
+.mc-flow{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:0 0 18px;padding:12px 14px;border-radius:16px;background:rgba(255,255,255,.6);border:1px solid rgba(255,255,255,.85);font-size:13.5px;color:#3a3a3c}
+.mc-flow b{font-weight:700}
+.mc-flow .st{display:inline-flex;align-items:center;gap:6px}
+.mc-flow .n{width:22px;height:22px;border-radius:50%;display:grid;place-items:center;background:var(--grad);color:#fff;font-size:12px;font-weight:800}
+.mc-flow .ar{color:#a1a1a8}
+.mc-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(310px,1fr));gap:16px}
+.mc-card{display:flex;flex-direction:column;gap:12px;padding:12px;border-radius:20px;background:rgba(255,255,255,.75);border:1px solid rgba(255,255,255,.9);box-shadow:var(--glass-shadow);min-width:0}
+.mc-card.just{box-shadow:0 0 0 3px rgba(162,89,255,.35),var(--glass-shadow)}
+.mc-card.sample{opacity:.78}
+.mc-prev{position:relative;height:158px;overflow:hidden;border-radius:14px;background:#fff;border:1px solid rgba(60,60,67,.1);pointer-events:none;display:flex;justify-content:center}
+.mc-prev .in{width:900px;flex:none;zoom:.36;padding:14px}
+.mc-prev .in>.qroom{border:0;box-shadow:none}
+.mc-setup{height:158px;border-radius:14px;background:linear-gradient(135deg,rgba(255,79,184,.06),rgba(162,89,255,.07),rgba(61,139,255,.06));border:1px solid rgba(162,89,255,.18);padding:12px 14px;display:grid;align-content:center;gap:7px}
+.mc-setup .ln{display:flex;align-items:center;gap:9px;font-size:13.5px;color:#3a3a3c}
+.mc-setup .dot{flex:none;width:20px;height:20px;border-radius:50%;display:grid;place-items:center;font-size:11px;font-weight:800;border:1.5px solid rgba(60,60,67,.25);color:#8e8e93;background:#fff}
+.mc-setup .ln.ok .dot{background:#1d1d1f;border-color:#1d1d1f;color:#fff}
+.mc-setup .ln.next{font-weight:700;color:#1d1d1f}
+.mc-setup .ln.next .dot{background:var(--grad);border:0;color:#fff}
+.mc-setup .ln .opt{color:#8e8e93;font-weight:500;font-size:12px}
+.mc-info{padding:0 4px 4px;display:grid;gap:4px;min-width:0}
+.mc-name{display:flex;align-items:center;gap:8px}.mc-name .sp{flex:1}.mc-name b{min-width:0}
+.mc-name b{font-size:18px;overflow-wrap:anywhere}
+.mc-tag{font-size:11px;font-weight:800;letter-spacing:.04em;border-radius:999px;padding:3px 8px;background:rgba(118,118,128,.12);color:#6e6e73}
+.mc-tag.qc{background:rgba(162,89,255,.12);color:#7a3cf0}
+.mc-tag.ok{background:#e8f7ee;color:#1f9d55}
+.mc-meta{font-size:13px;color:#6e6e73}
+.mc-acts{display:flex;gap:8px;flex-wrap:nowrap;margin-top:6px;align-items:center}
+.mc-acts .sp{flex:1}
+.mc-prevbtn{display:block;width:100%;padding:0;border:0;background:none;cursor:pointer;border-radius:14px;text-align:left;font:inherit;color:inherit}
+.mc-prevbtn:hover .mc-prev,.mc-prevbtn:hover .mc-setup{border-color:#a259ff;box-shadow:0 0 0 3px rgba(162,89,255,.15)}
+.mc-prevbtn:focus-visible{outline:3px solid #a259ff;outline-offset:2px}
+.mc-prev,.mc-setup{transition:border-color .15s,box-shadow .15s}
+.mc-del{flex:none;display:inline-grid;place-items:center;width:36px;height:36px;border-radius:999px;border:1px solid rgba(60,60,67,.18);background:#fff;color:#8e8e93;cursor:pointer;font:inherit;font-weight:700;font-size:13px;padding:0;transition:color .15s,border-color .15s,background .15s}
+.mc-del svg{width:17px;height:17px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.mc-del:hover{color:#d70015;border-color:rgba(215,0,21,.4)}
+.mc-del.armed{width:auto;padding:0 14px;background:#d70015;border-color:#d70015;color:#fff}
+#qc .mc-del{color:#8e8e93}#qc .mc-del.armed{color:#fff}
+.mc-acts .mc-next{flex:1;margin-top:0}
+.mc-next{margin-top:8px;width:100%;box-sizing:border-box;justify-content:center}
+.mc-btn{box-sizing:border-box;max-width:100%}
+.mc-add{display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;gap:6px;min-height:250px;border-radius:20px;border:2px dashed rgba(162,89,255,.4);background:rgba(255,255,255,.45);cursor:pointer;font:inherit;color:#1d1d1f;padding:16px}
+.mc-add:hover{background:rgba(255,255,255,.8);border-color:#a259ff}
+.mc-add .ai{width:48px;height:48px;border-radius:14px;display:grid;place-items:center;background:var(--grad);color:#fff;margin-bottom:6px}
+.mc-add .ai svg{width:24px;height:24px;fill:none;stroke:#fff;stroke-width:2;stroke-linecap:round}
+.mc-add b{font-size:17px}.mc-add span.s{font-size:13px;color:#6e6e73;max-width:240px}
+.mc-sec{display:flex;align-items:center;gap:10px;margin:28px 0 12px;font-size:13px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:#8e8e93}
+.mc-sec::after{content:"";flex:1;height:1px;background:rgba(60,60,67,.14)}
+.mc-sec .mc-btn{text-transform:none;letter-spacing:0}
+@media (max-width:600px){.mc-head h1{font-size:28px}.mc-grid{grid-template-columns:1fr}.mc-add{min-height:140px}.mc-head .acts{width:100%}.mc-head .acts .mc-btn{flex:1;justify-content:center}.mc-flow{font-size:12.5px}}
+#qc .mc-grid{margin-top:4px}
+#qc .mc-btn{font-size:14px;color:#1d1d1f}#qc .mc-btn.sm{font-size:13px}#qc .mc-btn.danger{color:#d70015}#qc .mc-btn.danger.armed,#qc .mc-btn.go{color:#fff}#qc .mc-add{font-size:14px}
+.mc-prev .qroom{position:relative;background:#fff;border-radius:20px;border:1px solid rgba(60,60,67,.12);padding:16px 18px 18px;box-shadow:0 1px 3px rgba(0,0,0,.05)}
+.mc-prev .qboard{margin:0 auto 18px;width:46%;background:#1d1d1f;color:#fff;font-size:10px;font-weight:800;letter-spacing:.14em;text-align:center;padding:5px;border-radius:7px}
+.mc-prev .qgrid{display:grid;gap:22px 28px;align-items:start}
+.mc-prev .qgrid.desks{gap:10px 10px}
+.mc-prev .qtb .qtl{font-size:11px;font-weight:700;color:#6e6e73;margin:0 0 4px 2px;white-space:nowrap}
+.mc-prev .qtb .qsts{display:grid;gap:6px;padding:7px;border-radius:14px;background:#f4f4f8;border:1px solid rgba(60,60,67,.1)}
+.mc-prev .qgrid.desks .qtb .qsts{padding:0;background:none;border:0}
+.mc-prev .qseat{height:46px;border-radius:10px;display:grid;place-items:center;font-size:13px;font-weight:700;background:#fff;border:1px solid rgba(60,60,67,.12);overflow:hidden;padding:0 3px;position:relative;cursor:pointer;user-select:none;-webkit-user-select:none}
+.mc-prev .qseat.n{color:#b0b0b8;font-size:12px;cursor:default}
+.mc-prev .qseat.e{border:1.5px dashed rgba(162,89,255,.45);background:rgba(162,89,255,.04);color:#a259ff;font-size:18px;font-weight:600}
+.mc-prev .qseat.e.off{border-color:rgba(60,60,67,.15);color:#c7c7cc;background:#fafafa}
+.mc-prev .qseat.f{background:linear-gradient(#fff,#fbf8ff);box-shadow:inset 0 0 0 1px rgba(162,89,255,.18)}
+.mc-prev .qseat .qn{display:grid;place-items:center;text-align:center;width:100%;height:100%;line-height:1.08;overflow:hidden;touch-action:none;overflow-wrap:normal}
+.mc-prev .qseat.bad{box-shadow:inset 0 0 0 2px #ff9f0a;background:#fff8ec}
+.mc-flow .tip{color:#8e8e93}
+@media (max-width:600px){.mc-flow .tip{display:none}.mc-flow .ar{display:none}.mc-flow{gap:6px 10px}}
+.mc-btn.ico{padding:7px 9px}
+.rostbtn{display:inline-flex;align-items:center;gap:5px;margin-left:6px;vertical-align:middle;border:1px solid rgba(60,60,67,.18);background:#fff;border-radius:999px;padding:3px 10px 3px 8px;font:inherit;font-size:12.5px;font-weight:700;color:#1d1d1f;cursor:pointer}
+.rostbtn:hover{border-color:#a259ff;color:#7a3cf0}
+.rostbtn svg{width:14px;height:14px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round}
+
+/* Stations schedule: equal columns so long station names don't push the groups out of line */
+.sched{table-layout:fixed;min-width:620px}
+.sched tr>:first-child{width:92px}
+.sched th,.sched td{vertical-align:middle}
+.sched thead th{white-space:normal;overflow-wrap:anywhere;vertical-align:bottom;line-height:1.25}
+.chartbar .newroom-btn{margin-left:auto;flex:none;display:inline-flex;align-items:center;gap:.45em;border:0;border-radius:999px;padding:.72em 1.25em .72em 1em;font:inherit;font-size:clamp(12px,calc(.45vw + 8px),15px);font-weight:700;color:#fff;cursor:pointer;background:linear-gradient(100deg,#ff4fb8,#a259ff 55%,#3d8bff);box-shadow:0 4px 14px rgba(162,89,255,.3)}
+.chartbar .newroom-btn b{font-size:1.4em;line-height:1;font-weight:600;margin-top:-2px}
+.chartbar .roomname-in{flex:0 1 460px!important;min-width:120px;width:auto!important}
+.chartbar .newroom-btn:hover{filter:brightness(1.06)}
+.chartbar .newroom-btn:focus-visible{outline:3px solid rgba(162,89,255,.4);outline-offset:2px}
+@media (min-width:901px){.roomtips.fit{flex-wrap:nowrap;overflow:hidden}.roomtips.fit li{flex:none}}
+</style>
+<script>
+(function(){
+const I={plus:'<svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>',edit:'<svg viewBox="0 0 24 24"><path d="M4 20h4L19 9l-4-4L4 16z"/></svg>',present:'<svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="12" rx="2"/><path d="M8 20h8M12 16v4"/></svg>',print:'<svg viewBox="0 0 24 24"><path d="M6 9V3h12v6M6 18H4v-7h16v7h-2M7 14h10v7H7z"/></svg>',roster:'<svg viewBox="0 0 24 24"><circle cx="9" cy="8" r="3.2"/><path d="M3 20c0-3.3 2.7-6 6-6s6 2.7 6 6"/><path d="M16 4.5a3 3 0 0 1 0 6M18 14c2 .8 3 2.6 3 6"/></svg>',trash:'<svg viewBox="0 0 24 24"><path d="M3 6h18M8 6V4h8v2M6 6l1 14h10l1-14"/></svg>',room:'<svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg>',groups:'<svg viewBox="0 0 24 24"><path d="M16 3h5v5M4 20 21 3M21 16v5h-5M15 15l6 6M4 4l5 5"/></svg>'};
+IC.classes='<path d="M3 10.5 12 3l9 7.5"/><path d="M5.5 9v11h13V9"/><path d="M10 20v-6h4v6"/>';
+const LAYS_NAME={rows:'Rows',pairs:'Pairs',g4:'Groups of 4',g6:'Groups of 6',u:'U-shape',cards:'Just groups'};
+const isSample=c=>(c.name||'').includes(SAMPLE_PREFIX);
+const herec=c=>c.students.filter(s=>!s.absent);
+const seatedN=c=>{try{return Object.keys(curOf(c).seats||{}).length}catch(e){return 0}};
+const roomName=c=>{const r=roomOf(c);return r?r.name:''};
+window.mcPreview=function(c){const room=roomOf(c);if(!room)return'';let inner;
+  try{if(window.qcPristinePublic&&qcPristinePublic(room))inner=window.qcRoomHTMLPublic(room,c);else{const L=layoutInfo(room);inner=roomHTML(room,L,{mode:'present',cls:c,cur:curOf(c)})}}catch(e){inner=''}
+  return`<div class="mc-prev" aria-hidden="true"><div class="in">${inner}</div></div>`};
+function setupHTML(c){const n=herec(c).length,gs=(c.groupSets||[]).length,ch=(c.history||[]).length||seatedN(c)?1:0;
+  const lines=[['Room',true,esc(roomName(c))],['Roster',n>0,n?`${n} students`:'Add students'],['Groups',gs>0,gs?`${gs} saved`:'<span class="opt">optional</span>'],['Seating chart',!!ch,ch?'Ready':'Make one']];
+  let nextDone=false;return`<div class="mc-setup">${lines.map(([t,ok,d],i)=>{const nx=!ok&&!nextDone&&!(t==='Groups');if(nx)nextDone=true;return`<div class="ln${ok?' ok':''}${nx?' next':''}"><span class="dot">${ok?'✓':i+1}</span><span>${t} · ${d}</span></div>`}).join('')}</div>`}
+function nextStep(c){if(!herec(c).length)return['roster','Next: add students'];if(!seatedN(c)&&!(c.history||[]).length)return['chart','Next: make a chart'];return null}
+window.mcCard=function(c,opts){opts=opts||{};const n=herec(c).length,seated=seatedN(c),ready=seated>0,nx=nextStep(c),rm=roomOf(c),id=esc(c.id);
+  const kind=rm&&rm.qc&&rm.qc.kind&&c.qc&&rm.qcOwner===c.id?(LAYS_NAME[rm.qc.kind]||''):esc(roomName(c));
+  const meta=[`${n} student${n===1?'':'s'}`,ready?`${seated} seated`:'',kind].filter(Boolean).join(' · ');
+  const top=ready?`<button class="mc-prevbtn" data-mc="chart" data-arg="${id}" aria-label="Edit ${esc(c.name)} chart" title="Edit chart">${mcPreview(c)}</button>`:`<button class="mc-prevbtn" data-mc="${nx?nx[0]:'chart'}" data-arg="${id}" aria-label="Set up ${esc(c.name)}">${setupHTML(c)}</button>`;
+  return`<div class="mc-card${opts.just===c.id?' just':''}${isSample(c)?' sample':''}">${top}
+  <div class="mc-info"><div class="mc-name"><b>${esc(c.name)}</b>${opts.just===c.id?'<span class="mc-tag ok">✓ Saved</span>':''}${isSample(c)?'<span class="mc-tag">Sample</span>':''}</div><div class="mc-meta">${meta}</div>
+  ${nx?`<div class="mc-acts"><button class="mc-btn go mc-next" data-mc="${nx[0]}" data-arg="${id}">${nx[1]} →</button><button class="mc-del${ui.mcConfirm===c.id?' armed':''}" data-mc="del" data-arg="${id}" aria-label="Delete ${esc(c.name)}" title="Delete class">${ui.mcConfirm===c.id?'Delete?':I.trash}</button></div>`:`<div class="mc-acts"><button class="mc-btn" data-mc="chart" data-arg="${id}">${I.edit} Edit</button><button class="mc-btn" data-mc="present" data-arg="${id}">${I.present} Present</button><button class="mc-btn" data-mc="print" data-arg="${id}">${I.print} Print</button><span class="sp"></span><button class="mc-del${ui.mcConfirm===c.id?' armed':''}" data-mc="del" data-arg="${id}" aria-label="Delete ${esc(c.name)}" title="Delete class">${ui.mcConfirm===c.id?'Delete?':I.trash}</button></div>`}</div></div>`};
+window.mcListHTML=function(opts){opts=opts||{};const mine=S.classes.filter(c=>!isSample(c)),samp=S.classes.filter(isSample);
+  const add=`<button class="mc-add" data-mc="${opts.inQC?'newqc':'new'}"><span class="ai">${I.plus}</span><b>Add a class</b><span class="s">${opts.inQC?'Paste names, reuse your room, done.':'Name it, pick its room, then add the roster.'}</span></button>`;
+  return`<div class="mc-grid">${mine.map(c=>mcCard(c,opts)).join('')}${add}</div>${samp.length?`<div class="mc-sec">Sample class <button class="mc-btn sm danger${ui.mcConfirm==='samples'?' armed':''}" data-mc="delSamples">${ui.mcConfirm==='samples'?'Click again to remove':'Remove samples'}</button></div><div class="mc-grid">${samp.map(c=>mcCard(c,opts)).join('')}</div>`:''}`};
+function classesHTML(){const mine=S.classes.filter(c=>!isSample(c));
+  return`<div class="mc-head"><div class="tt"><h1>My Classes</h1><p>${mine.length?`${mine.length} class${mine.length===1?'':'es'} saved in this browser.`:'Set up each class once. Then make groups and seating charts in a few clicks.'}</p></div>
+  <div class="acts"><button class="mc-btn" data-mc="quick">${QC_BOLT.replace('class="bolt"','class="bolt" style="width:17px;height:17px;fill:url(#qcg)"')} Quick Chart</button></div></div>
+  <div class="mc-flow"><span class="st"><span class="n">1</span><b>Room</b></span><span class="ar">→</span><span class="st"><span class="n">2</span><b>Class &amp; roster</b></span><span class="ar">→</span><span class="st"><span class="n">3</span><b>Groups</b></span><span class="ar">→</span><span class="st"><span class="n">4</span><b>Seating chart</b></span><span class="tip">· Build the room once. Every class can share it.</span></div>
+  ${mcListHTML()}`}
+/* page wiring */
+const _rail=railHTML;window.railHTML=railHTML=function(){return _rail().replace('<button class="siderail-item" data-act="tab" data-arg="arrange"',`<button class="siderail-item" data-act="tab" data-arg="classes"${ui.tab==='classes'?' aria-current="page"':''} aria-label="My Classes"><span class="ic">${svg('classes')}</span><span class="lbl-l">My Classes</span><span class="lbl-s">Classes</span></button><div class="siderail-sep" role="separator" aria-hidden="true"></div><button class="siderail-item" data-act="tab" data-arg="arrange"`)};
+const _top=topHTML;window.topHTML=topHTML=function(cls){return ui.tab==='classes'?'':_top(cls)};
+const _view=viewHTML;window.viewHTML=viewHTML=function(cls){return ui.tab==='classes'?classesHTML():_view(cls)};
+/* actions (work on the My Classes page and inside Quick Chart) */
+const inQC=()=>!!(ui.qc&&!ui.qc.hidden);
+const MC={
+  chart:id=>{const c=S.classes.find(x=>x.id===id);if(!c)return;S.activeClass=c.id;if(c.qc){ui.qc=qcResumePublic(c)}else{if(inQC())ui.qc=null;ui.tab='arrange'}},
+  roster:id=>{const c=S.classes.find(x=>x.id===id);if(!c)return;S.activeClass=c.id;if(c.qc){ui.qc=qcResumePublic(c);ui.qc.step=1}else{if(inQC())ui.qc=null;ui.tab='roster'}},
+  present:id=>{const c=S.classes.find(x=>x.id===id);if(!c)return;S.activeClass=c.id;const wasQC=inQC();ui.tab='arrange';if(wasQC)ui.qc.hidden=true;qcRender();render();return Promise.resolve(enterPresent('chart')).then(()=>{if(ui.pwin&&ui.qc){ui.qc.hidden=false}})},
+  print:id=>{const c=S.classes.find(x=>x.id===id);if(!c)return;S.activeClass=c.id;ACT.print()},
+  del:id=>{if(ui.mcConfirm!==id){ui.mcConfirm=id;clearTimeout(MC.t);MC.t=setTimeout(()=>{ui.mcConfirm=null;inQC()?qcRender():render()},4000);return}ui.mcConfirm=null;const c=S.classes.find(x=>x.id===id);S.classes=S.classes.filter(x=>x.id!==id);if(S.activeClass===id)S.activeClass=S.classes[0]?S.classes[0].id:null;
+    if(c){const r=roomOf(c)||S.rooms.find(x=>x.id===c.roomId);if(r&&!S.classes.some(x=>x.roomId===r.id)&&S.rooms.length>1&&(r.qc||isSample(c)))S.rooms=S.rooms.filter(x=>x!==r)}save();toast(`Deleted “${c?c.name:'class'}”. Undo to bring it back.`)},
+  delSamples:()=>{if(ui.mcConfirm!=='samples'){ui.mcConfirm='samples';clearTimeout(MC.t);MC.t=setTimeout(()=>{ui.mcConfirm=null;inQC()?qcRender():render()},4000);return}ui.mcConfirm=null;S.classes=S.classes.filter(c=>!isSample(c));S.rooms=S.rooms.filter(r=>!(r.name||'').includes(SAMPLE_PREFIX)||S.classes.some(c=>c.roomId===r.id));if(!S.rooms.length){S.rooms.push({id:uid(),name:'My room',items:preset('pods4'),confirmed:false})}if(!S.classes.some(c=>c.id===S.activeClass))S.activeClass=S.classes[0]?S.classes[0].id:null;save();toast('Removed the sample class.')},
+  new:()=>{if(inQC())ui.qc=null;ACT.newClass();return'done'},
+  newqc:()=>{qcOpen(true);return'done'},
+  quick:()=>{qcOpen();return'done'},
+};
+document.addEventListener('click',e=>{const b=e.target.closest&&e.target.closest('[data-mc]');if(!b||b.disabled)return;e.preventDefault();e.stopPropagation();
+  const was=inQC();const r=MC[b.dataset.mc]&&MC[b.dataset.mc](b.dataset.arg);
+  Promise.resolve(r).then(v=>{if(v==='done')return;if(ui.qc&&!ui.qc.hidden)qcRender();else{qcRender();render();if(!was)return;scrollTo(0,0)}})},true);
+/* returning teachers land on My Classes */
+try{const pg=new URLSearchParams(location.search).get('page');if(S&&ui.tour==null&&!pg){ui.tab='classes';render()}}catch(e){}
+})();
+
+CH.alphaBy=el=>{const c=need();c.alphaBy=el.value==='first'?'first':'last';save();render()};
+/* Room tips: keep them on one row on laptops and desktops. Shrink the text a little, then drop the last tips if there still isn't room. */
+function fitTips(){const u=document.querySelector('.roomtips');if(!u)return;const lis=[...u.children];lis.forEach(l=>{l.style.display='';l.style.fontSize=''});
+  if(innerWidth<=900){u.classList.remove('fit');return}u.classList.add('fit');
+  const hid=lis.filter(l=>getComputedStyle(l).display==='none');const vis=lis.filter(l=>!hid.includes(l));
+  for(let fs=13;fs>=11&&u.scrollWidth>u.clientWidth+1;fs-=.5)vis.forEach(l=>l.style.fontSize=fs+'px');
+  for(let k=vis.length-1;k>2&&u.scrollWidth>u.clientWidth+1;k--)vis[k].style.display='none'}
+{const _r=window.render;window.render=render=function(){const out=_r.apply(this,arguments);try{fitTips()}catch(e){}return out};let tt;addEventListener('resize',()=>{clearTimeout(tt);tt=setTimeout(()=>{try{fitTips()}catch(e){}},80)})}
+
+/* station names: update the rotation table while typing */
+document.addEventListener('input',e=>{const el=e.target;if(!el||el.dataset.ch!=='stname')return;try{CH.stname(el)}catch(x){}});
+</script>
+
+<style>.mc-acts{gap:6px}.mc-acts .mc-btn{padding:8px 11px;font-size:13.5px;gap:6px}.mc-acts .mc-btn svg{width:16px;height:16px}#qc .mc-acts .mc-btn{font-size:13.5px}
+@media (max-width:420px){.mc-acts .mc-btn{padding:8px 9px;font-size:13px}}</style>
+<style>[data-po][hidden]{display:none!important}</style>
+<style>.crumb-home{border:0;background:none;padding:4px 6px;margin-left:-6px;border-radius:8px;cursor:pointer;color:inherit}.crumb-home:hover{background:rgba(162,89,255,.1);color:#7a3cf0}
+.top-in{flex-wrap:nowrap!important}.crumb{flex:1 1 auto;min-width:0;flex-wrap:nowrap}.crumb .clsel{flex:0 1 auto;min-width:0}.crumb .clsel select{max-width:100%;min-width:90px;text-overflow:ellipsis}.top-actions{flex:none;align-items:center}
+@media (max-width:1100px){#saveState{font-size:0;gap:0}}</style>
+<style>/*tipabove*/.chart-tools .tipbtn[data-tip]:hover::after,.chart-tools .tipbtn[data-tip]:focus-visible::after{top:auto;bottom:calc(100% + 8px)}</style>
+<style>.chartbar h2.chart-one{font-size:30px;line-height:1.1;font-weight:700;letter-spacing:-.03em;color:var(--ink);max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}@media (max-width:900px){.chartbar h2.chart-one{font-size:24px}}</style>
+<style>/*qmenuFix*/.chartbar{flex-wrap:wrap;row-gap:6px}.chartbar .qmenu,.chartbar .chartsel-wrap{flex:0 1 auto;min-width:min(100%,180px)}.qmenu-btn span{min-width:0}</style>
+<style>/*prevFix*/.mc-prev{display:block}.mc-prev .in{width:auto;zoom:.4}#qc .mc-prev .in{zoom:.4}.mc-name{flex-wrap:wrap;row-gap:4px}#qc .mc-name b{font-size:18px}</style>
+<style>.roomtips{list-style:none;margin:10px 0 0;padding:0;display:flex;flex-wrap:wrap;gap:6px}.roomtips li{font-size:13px;color:#3a3a3c;background:rgba(255,255,255,.75);border:1px solid rgba(60,60,67,.12);border-radius:999px;padding:5px 11px;white-space:nowrap}.roomtips b{font-weight:700;color:#1d1d1f}@media (pointer:coarse){.roomtips li:nth-child(5),.roomtips li:nth-child(6){display:none}}@media (max-width:600px){.roomtips li{font-size:12px;padding:4px 9px}}</style>
+<style>.furnbar{display:flex;align-items:center;gap:12px;margin:12px 0 10px;padding:8px 8px 8px 14px;border-radius:18px;background:rgba(255,255,255,.72);border:1px solid rgba(255,255,255,.9);box-shadow:var(--glass-shadow);min-width:0}
+.furnbar .fb-lbl{flex:none;font-size:12px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:#7a3cf0;max-width:70px;line-height:1.25}
+.furnbar .fb-row{display:flex;gap:6px;overflow-x:auto;min-width:0;padding:2px;scrollbar-width:thin}
+.furnbar .addfurn{flex:none;min-width:76px;padding:6px 8px 5px;font-size:12px}
+.furnbar .addfurn:hover{border-color:#a259ff;color:#7a3cf0}
+@media (max-width:600px){.furnbar{flex-direction:column;align-items:stretch;gap:6px;padding:8px}.furnbar .fb-lbl{max-width:none}}</style>
+<style>.furnbar{flex-direction:column;align-items:stretch;gap:8px;padding:10px 12px 12px}.furnbar .fb-lbl{max-width:none}
+@media (min-width:601px){.furnbar .fb-row{flex-wrap:wrap;overflow:visible}.furnbar .addfurn{min-width:0;flex:1 0 auto;padding:6px 10px 5px}}
+@media (max-width:600px){.furnbar .fb-row{-webkit-mask-image:linear-gradient(90deg,#000 85%,transparent);mask-image:linear-gradient(90deg,#000 85%,transparent)}}</style>
+<style>.furnbar .addfurn{flex:0 0 auto!important;flex-direction:row;gap:7px;padding:6px 12px 6px 8px!important;min-height:38px;border-radius:12px!important}.furnbar .addfurn .ficon{width:26px!important;height:18px!important}
+@media (min-width:601px){.furnbar{flex-direction:row;align-items:flex-start;padding:10px 12px}.furnbar .fb-lbl{max-width:74px;padding-top:4px}}</style>
+<style>/*fab*/.roomwrap{position:relative}
+.furnfab-wrap{position:absolute;top:14px;right:14px;z-index:15;display:flex;flex-direction:column;align-items:flex-end;gap:8px}
+.furnfab{display:inline-flex;align-items:center;gap:8px;height:48px;min-width:48px;padding:0 18px 0 12px;border-radius:999px;border:0;cursor:pointer;color:#fff;background:var(--grad);box-shadow:0 10px 24px rgba(162,89,255,.35),0 2px 6px rgba(0,0,0,.12);font:inherit;font-weight:700;font-size:15px;transition:transform .15s,box-shadow .15s}
+.furnfab:hover{transform:translateY(-1px);box-shadow:0 14px 28px rgba(162,89,255,.42)}
+.furnfab svg{width:24px;height:24px;fill:none;stroke:#fff;stroke-width:2.4;stroke-linecap:round;transition:transform .2s}
+.furnfab-wrap.open .furnfab{background:#1d1d1f;box-shadow:0 10px 24px rgba(0,0,0,.25)}
+.furnfab-wrap.open .furnfab svg{transform:rotate(45deg)}
+.furnfab-wrap.open .fab-lbl{display:none}.furnfab-wrap.open .furnfab{padding:0;width:48px;justify-content:center}
+.furndock{width:250px;max-height:min(520px,calc(100vh - 220px));display:flex;flex-direction:column;border-radius:20px;background:rgba(255,255,255,.92);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);border:1px solid rgba(255,255,255,.9);box-shadow:0 18px 40px rgba(40,30,90,.22);overflow:hidden;animation:fdIn .16s ease-out}
+@keyframes fdIn{from{opacity:0;transform:translateY(-6px) scale(.98)}to{opacity:1;transform:none}}
+@media (prefers-reduced-motion:reduce){.furndock{animation:none}}
+.fd-head{display:flex;align-items:center;justify-content:space-between;padding:12px 12px 6px 16px}.fd-head b{font-size:15px}
+.fd-x{border:0;background:rgba(118,118,128,.12);width:28px;height:28px;border-radius:50%;font-size:18px;line-height:1;cursor:pointer;color:#3a3a3c}
+.fd-list{display:grid;grid-template-columns:1fr 1fr;gap:6px;padding:4px 10px 6px;overflow-y:auto}
+.fd-list .addfurn{flex-direction:column!important;min-width:0!important;width:100%;padding:8px 4px 6px!important;font-size:12px;border-radius:12px!important;gap:4px}
+.fd-list .addfurn:hover{border-color:#a259ff;color:#7a3cf0}
+.fd-note{margin:0;padding:6px 14px 12px;font-size:12px;color:#6e6e73}
+@media (max-width:600px){.furnfab-wrap{top:10px;right:10px}.furnfab{height:44px;font-size:14px}.furndock{width:min(250px,calc(100vw - 60px))}}</style>
+<script>(function(){document.addEventListener('click',e=>{const b=e.target.closest&&e.target.closest('[data-fab]');
+ if(b){e.preventDefault();e.stopPropagation();ui.furnOpen=b.dataset.fab==='toggle'?!ui.furnOpen:false;render();return}
+ if(ui.furnOpen&&ui.tab==='room'&&!(e.target.closest&&e.target.closest('.furnfab-wrap'))){ui.furnOpen=false;setTimeout(render,0)}},true);
+document.addEventListener('keydown',e=>{if(e.key==='Escape'&&ui.furnOpen){ui.furnOpen=false;render()}});})();</script>
+<script>(function(){function placeFab(){const w=document.querySelector('.furnfab-wrap'),r=document.querySelector('.roomwrap .room');if(!w||!r)return;const rw=w.parentElement.getBoundingClientRect(),rr=r.getBoundingClientRect();const g=Math.round(Math.min(14,Math.max(8,innerWidth*.01)));w.style.right=Math.max(8,rw.right-rr.right+g)+'px';w.style.top=Math.max(8,rr.top-rw.top+g)+'px'}
+const _r=window.render;window.render=render=function(){_r.apply(this,arguments);requestAnimationFrame(placeFab)};addEventListener('resize',placeFab);requestAnimationFrame(placeFab);})();</script><style>.furndock[hidden]{display:none!important}</style>
+<style>@media (max-width:600px){.furnfab .fab-lbl{display:none}.furnfab{width:46px;height:46px;padding:0;justify-content:center}}</style>
+
+<style>/*fab2*/.furnfab,.furnfab-wrap.open .furnfab{--fs:clamp(38px,3.4vw,54px);width:var(--fs);height:var(--fs);min-width:0;padding:0!important;justify-content:center;position:relative}
+.furnfab svg{width:calc(var(--fs)*.5);height:calc(var(--fs)*.5);stroke-width:2}
+.furnfab-wrap.open .furnfab svg{transform:none}
+.furnfab[data-ftip]:hover::after,.furnfab[data-ftip]:focus-visible::after{content:attr(data-ftip);position:absolute;right:calc(100% + 10px);top:50%;transform:translateY(-50%);background:#1d1d1f;color:#fff;font-size:12.5px;font-weight:600;padding:6px 10px;border-radius:8px;white-space:nowrap;pointer-events:none}
+@media (hover:none){.furnfab[data-ftip]::after{display:none!important}}
+.furnfab-wrap{top:clamp(8px,1vw,14px);right:clamp(8px,1vw,14px)}
+@media (max-width:600px){.furnfab{width:var(--fs);height:var(--fs)}}</style>
+
+<style>/*zoomhead*/@media (min-width:901px){.szwrap>.s-zoom{display:none!important}.seat-head>.legrow{width:auto!important;flex-wrap:nowrap}.legrow .sz-top{display:flex!important;margin:0;flex:none}}</style><style>/*chartside*/
+.cs-panel{display:grid;gap:10px}
+.cs-panel .issues{margin:0}
+.cs-panel .issue{padding:8px 12px;font-size:13.5px}
+.cs-tips{list-style:none;margin:0;padding:0;display:flex;flex-wrap:wrap;gap:6px}
+.cs-tips li{font-size:12.5px;color:#3a3a3c;background:rgba(255,255,255,.75);border:1px solid rgba(60,60,67,.12);border-radius:999px;padding:4px 10px}
+.cs-tips b{color:#1d1d1f}
+.cs-glance>span{font-size:13px;color:#6e6e73;font-weight:600}
+.cs-glance .gsum{display:grid!important;grid-template-columns:1fr 1fr;gap:6px;margin-top:6px}
+.cs-glance .gcard{padding:8px 10px!important;border-radius:12px!important;font-size:12px}
+.cs-glance .gcard b{font-size:13.5px}
+.cs-glance .gcard *{font-size:inherit}
+</style>
+<script>(function(){
+const TIPS='<ul class="cs-tips"><li>Drag to swap</li><li>Double-click hides a student</li><li>Pinch to zoom</li></ul>';
+function moveSide(){if(ui.tab!=='arrange'||innerWidth<=900)return;
+  const st=document.querySelector('section.stage');if(!st)return;const page=st.parentElement;const rail=page&&page.querySelector('aside.rail');if(!rail)return;
+  const iss=st.querySelector(':scope > .issues'),hint=st.querySelector(':scope > p.hint'),gl=[...st.querySelectorAll(':scope > .field')].find(f=>f.querySelector('.gsum'));
+  if(!iss&&!gl&&!hint)return;
+  const box=document.createElement('section');box.className='panel cs-panel';box.innerHTML='<h3 style="margin:0">Check this chart</h3>';
+  if(iss)box.appendChild(iss);
+  if(hint){const has=/Drag a student/.test(hint.textContent);if(has){const t=document.createElement('div');t.innerHTML=TIPS;box.appendChild(t.firstChild);hint.remove()}}
+  if(gl){gl.classList.add('cs-glance');gl.querySelectorAll('.gcard .muted').forEach(s=>{const f=s.firstChild;if(f&&f.nodeType===3)f.textContent=f.textContent.replace(/^\s*\d+ students?\s*·\s*/,'')});box.appendChild(gl)}
+  rail.querySelectorAll('p,small').forEach(p=>{if(/^Choose Mixed, Similar or Random/.test(p.textContent.trim()))p.hidden=true});
+  rail.insertBefore(box,rail.children[1]||null)}
+const _r=window.render;window.render=render=function(){_r.apply(this,arguments);moveSide()};moveSide();addEventListener('resize',()=>{clearTimeout(moveSide.t);moveSide.t=setTimeout(()=>render(),150)});})();</script>
+<style>/*chartside2*/
+.cs-panel{gap:8px}
+.cs-tips{display:block;font-size:12.5px;color:#6e6e73;line-height:1.5}
+.cs-tips li{display:inline;background:none;border:0;padding:0;font-size:12.5px;color:#6e6e73}
+.cs-tips li+li::before{content:" · "}
+.cs-glance .gsum{grid-template-columns:1fr!important;gap:0!important;margin-top:4px}
+.cs-glance .gcard{display:grid!important;grid-template-columns:62px 1fr auto;align-items:center;gap:8px;padding:5px 2px!important;background:none!important;border:0!important;box-shadow:none!important;border-top:1px solid rgba(60,60,67,.1)!important;border-radius:0!important}
+.cs-glance .gcard b{font-size:13px!important}
+.cs-glance .gcard .muted{font-size:12px!important;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.cs-glance .gcard .dots{margin:0!important;display:flex;gap:3px}
+.cs-glance .gcard .dots i{width:8px!important;height:8px!important}
+</style>
+
+<style>.cs-glance .gcard{grid-template-columns:58px 1fr auto}.cs-panel h3{font-size:17px}</style><style>aside.rail p[hidden]{display:none!important}.cs-panel{padding-top:16px!important;padding-bottom:14px!important}</style>
+<style>aside.rail small[hidden]{display:none!important}</style>
+
+<style>/*roombar*/
+.roomname-in{font:inherit;font-size:30px;font-weight:700;letter-spacing:-.03em;border:0;border-bottom:2px solid #a259ff;background:transparent;padding:0 2px;min-width:0;width:min(560px,100%);color:var(--ink);outline:none}
+@media (max-width:900px){.roomname-in{font-size:24px}}
+.zfab-wrap{position:absolute;z-index:6;display:flex;align-items:center;gap:6px}
+.zfab{--fs:clamp(34px,2.9vw,46px);width:var(--fs);height:var(--fs);border-radius:50%;border:1px solid rgba(255,255,255,.9);background:rgba(255,255,255,.88);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);box-shadow:0 6px 18px rgba(40,40,80,.16);display:grid;place-items:center;cursor:pointer;color:#1d1d1f;position:relative;padding:0}
+.zfab:hover{border-color:#a259ff;color:#7a3cf0}
+.zfab svg{width:calc(var(--fs)*.46);height:calc(var(--fs)*.46);fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round}
+.zfab-wrap.open .zfab{background:#1d1d1f;color:#fff;border-color:#1d1d1f}
+.zfab[data-ftip]:hover::after{content:attr(data-ftip);position:absolute;right:calc(100% + 8px);top:50%;transform:translateY(-50%);background:#1d1d1f;color:#fff;font-size:12.5px;font-weight:600;padding:6px 10px;border-radius:8px;white-space:nowrap;pointer-events:none}
+.zfab-wrap.open .zfab[data-ftip]:hover::after{display:none}
+@media (hover:none){.zfab[data-ftip]::after{display:none!important}}
+.zfab-wrap .s-zoom{display:flex!important;position:static!important;margin:0!important}
+@media (min-width:901px){.legrow .sz-top{display:none!important}}
+</style>
+<script>(function(){
+const PIC={plus:'plus',dup:'saveas',edit:'pencil',trash:'trash'};
+window.roomBarHTML=function(room){const tb=(act,ic,tip,on,dis)=>`<button class="iconbtn tipbtn${on?' on':''}" data-act="${act}" data-tip="${tip}" aria-label="${tip}"${dis?' disabled':''}>${svg(ic)}</button>`;
+  const delOn=ui.confirm==='delRoom',many=S.rooms.length>1;
+  const title=ui.roomRename?`<input class="roomname-in" id="roomNameIn" data-ch="roomName" value="${esc(room.name)}" aria-label="Layout name" autocomplete="off">`
+   :`<h2 class="chart-one">${esc(room.name)}</h2>`;
+  return`<div class="chartbar">${title}<div class="chart-tools" role="toolbar" aria-label="Layout actions">${tb('newRoom','plus','New room')}${tb('dupRoom','saveas','Duplicate')}${tb('roomRename','pencil','Rename',ui.roomRename)}${many?`<button class="iconbtn tipbtn danger${delOn?' armed':''}" data-act="delRoom" data-confirm="delRoom" data-tip="${delOn?'Click again to delete':'Delete'}" aria-label="${delOn?'Confirm delete':'Delete layout'}">${svg('trash')}</button>`:''}</div><button class="newroom-btn" data-act="newRoom"><b aria-hidden="true">+</b><span>Build new room</span></button></div>`};
+{const _nr=ACT.newRoom;ACT.newRoom=function(){const before=new Set(S.rooms.map(r=>r.id));_nr.apply(this,arguments);const r=S.rooms.find(x=>!before.has(x.id));if(r){if(r.name==='New layout')r.name='New room';save();ui.roomRename=false;ACT.roomRename()}}}
+ACT.roomRename=()=>{ui.roomRename=!ui.roomRename;render();if(ui.roomRename)setTimeout(()=>{const i=document.getElementById('roomNameIn');if(i){i.focus();i.select()}},0)};
+const _rn=CH.roomName;CH.roomName=el=>{ui.roomRename=false;_rn(el)};
+document.addEventListener('keydown',e=>{if(e.target&&e.target.id==='roomNameIn'){if(e.key==='Enter'){e.preventDefault();e.target.blur()}else if(e.key==='Escape'){ui.roomRename=false;render()}}});
+document.addEventListener('focusout',e=>{if(e.target&&e.target.id==='roomNameIn'&&ui.roomRename){setTimeout(()=>{if(ui.roomRename){ui.roomRename=false;render()}},0)}});
+/* seat-size: small circle on the room, opens - % + */
+const ZI='<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5"/><path d="M15.5 15.5 21 21M8 10.5h5M10.5 8v5"/></svg>';
+const XI='<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg>';
+function zoomFab(){if(ui.tab!=='arrange'||innerWidth<=900)return;const w=document.querySelector('.szwrap');if(!w)return;const src=document.querySelector('.legrow .sz-top')||w.querySelector(':scope>.s-zoom');if(!src)return;
+  w.style.position='relative';let z=w.querySelector('.zfab-wrap');if(z)z.remove();z=document.createElement('div');z.className='zfab-wrap'+(ui.zOpen?' open':'');
+  z.innerHTML=(ui.zOpen?src.outerHTML.replace('sz-top',''):'')+`<button class="zfab" data-zf="1" aria-expanded="${!!ui.zOpen}" aria-label="${ui.zOpen?'Close zoom':'Zoom'}" data-ftip="${ui.zOpen?'':'Zoom'}">${ui.zOpen?XI:ZI}</button>`;
+  w.appendChild(z);const r=w.querySelector('.room');if(r){const a=w.getBoundingClientRect(),b=r.getBoundingClientRect(),g=Math.round(Math.min(14,Math.max(8,innerWidth*.01)));z.style.right=Math.max(4,a.right-b.right+g)+'px';z.style.top=Math.max(4,b.top-a.top+g)+'px'}}
+document.addEventListener('click',e=>{const t=e.target.closest&&e.target.closest('[data-zf]');if(t){e.preventDefault();e.stopPropagation();ui.zOpen=!ui.zOpen;render();return}
+  if(ui.zOpen&&!(e.target.closest&&e.target.closest('.zfab-wrap'))){ui.zOpen=false;setTimeout(render,0)}},true);
+const _r=window.render;window.render=render=function(){_r.apply(this,arguments);requestAnimationFrame(zoomFab)};requestAnimationFrame(zoomFab);addEventListener('resize',()=>requestAnimationFrame(zoomFab));
+})();</script><script>(function(){function fitSel(){document.querySelectorAll('select.chartsel').forEach(s=>{const o=s.options[s.selectedIndex];if(!o)return;const m=document.createElement('span'),cs=getComputedStyle(s);m.style.cssText=`position:absolute;visibility:hidden;white-space:pre;font:${cs.font};letter-spacing:${cs.letterSpacing}`;m.textContent=o.text;document.body.appendChild(m);s.style.width=Math.ceil(m.getBoundingClientRect().width+34)+'px';m.remove()})}
+const _r=window.render;window.render=render=function(){_r.apply(this,arguments);fitSel()};fitSel();addEventListener('resize',fitSel);document.addEventListener('change',e=>{if(e.target.matches&&e.target.matches('select.chartsel'))fitSel()});})();</script>
+
+<style>.usedby{display:flex;flex-wrap:wrap;gap:6px}.ub-chip{font-size:13px;font-weight:600;padding:4px 10px;border-radius:999px;background:rgba(162,89,255,.1);color:#5b2bb5}
+.ub-warn{margin:0;display:flex;gap:6px;align-items:flex-start;font-size:13px;color:#8a5200}.ub-warn::before{content:"!";flex:none;width:16px;height:16px;margin-top:1px;border-radius:50%;background:#ff9f0a;color:#fff;font-size:11px;font-weight:800;display:grid;place-items:center}</style><script>(function(){let alone=false;document.addEventListener('pointerdown',e=>{alone=!!e.altKey;if(alone||ui.tab!=='room'||e.shiftKey)return;const el=e.target.closest&&e.target.closest('[data-id],[data-item]');if(!el)return;const id=el.dataset.id||el.dataset.item,r=editRoom&&editRoom(),it=r&&r.items.find(i=>i.id===id);if(it&&it.cluster&&ui.selIds.length===1&&ui.selIds[0]===id)setSel([id])},true);
+const _s=setSel;setSel=window.setSel=function(ids){ids=[...new Set(ids||[])];
+  if(ui.tab==='room'&&ids.length&&!alone){const r=editRoom&&editRoom();if(r){const cl=new Set(r.items.filter(i=>ids.includes(i.id)&&i.cluster).map(i=>String(i.cluster).toUpperCase()));
+    if(cl.size)r.items.forEach(i=>{if(i.cluster&&cl.has(String(i.cluster).toUpperCase())&&!ids.includes(i.id))ids.push(i.id)})}}
+  return _s(ids)};})();</script>
+
+<style>.sl-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.sl-btn{position:relative;background:#fff;border:1.5px solid rgba(60,60,67,.12);border-radius:14px;padding:8px 8px 7px;text-align:center;cursor:pointer;font:inherit;color:#1d1d1f}
+.sl-btn:hover{border-color:#a259ff}
+.sl-btn svg{width:100%;height:auto;display:block;margin-bottom:4px}
+.sl-btn b{font-size:13px;display:block}
+.sl-btn.armed{border-color:#d70015;box-shadow:0 0 0 3px rgba(215,0,21,.12)}
+.sl-btn .arm{position:absolute;inset:0;display:grid;place-items:center;border-radius:12px;background:rgba(215,0,21,.92);color:#fff;font-weight:700;font-size:13px}
+.sl-empty{border:0;background:none;padding:2px 0;font:inherit;font-size:13px;color:#7a3cf0;font-weight:600;cursor:pointer;justify-self:start}
+.sl-empty.armed{color:#d70015}</style>
+<script>(function(){
+const SL_DEF={rows:24,pairs:12,g4:6,g6:4,u:24,cards:6};
+window.startLayoutsHTML=function(room){const L=window.QC_LAYS||[],P=ui.slPick;
+  if(P){const l=L.find(x=>x.k===P.k)||L[0],per=P.k==='cards'?P.gs:l.per,unit=l.unit.toLowerCase();
+    return`<section class="panel sl-panel"><h3>${esc(l.name)}</h3><div class="sl-pick">${l.svg}</div>
+    <div class="sl-q"><span>How many ${unit}?</span><span class="stepper sl-step"><button data-act="slN" data-arg="-1" aria-label="Fewer"${P.n<=1?' disabled':''}>−</button><input id="slN" type="number" min="1" max="60" value="${P.n}" aria-label="Number of ${unit}"><button data-act="slN" data-arg="1" aria-label="More"${P.n>=60?' disabled':''}>+</button></span></div>
+    ${P.k==='cards'?`<div class="sl-q"><span>Seats per group?</span><span class="stepper sl-step"><button data-act="slG" data-arg="-1" aria-label="Fewer"${P.gs<=2?' disabled':''}>−</button><input id="slG" type="number" min="2" max="8" value="${P.gs}" aria-label="Seats per group"><button data-act="slG" data-arg="1" aria-label="More"${P.gs>=8?' disabled':''}>+</button></span></div>`:''}
+    <p class="muted small" style="margin:0">${P.n*per} seats total. This replaces everything in the current layout.</p>
+    <div class="row"><button class="btn small primary" data-act="slApply">Replace layout</button><button class="btn small ghost" data-act="slCancel">Cancel</button></div></section>`}
+  return`<section class="panel"><h3>Layout presets</h3><p class="muted small" style="margin:0">Pick a layout, then choose how many.</p><div class="sl-grid">${L.map(l=>`<button class="sl-btn" data-act="slOpen" data-arg="${l.k}">${l.svg}<b>${l.name}</b></button>`).join('')}</div>
+  <button class="sl-empty${ui.confirm==='preset:blank'?' armed':''}" data-act="preset" data-arg="blank" data-confirm="preset:blank">${ui.confirm==='preset:blank'?'Click again to clear the room':'Or start with an empty room'}</button></section>`};
+ACT.slOpen=(b,k)=>{ui.slPick={k,n:SL_DEF[k]||6,gs:4};render()};
+ACT.slCancel=()=>{ui.slPick=null;render()};
+ACT.slN=(b,d)=>{const P=ui.slPick;if(!P)return;P.n=Math.max(1,Math.min(60,P.n+(+d)));render()};
+ACT.slG=(b,d)=>{const P=ui.slPick;if(!P)return;P.gs=Math.max(2,Math.min(8,P.gs+(+d)));render()};
+CH.slN=el=>{};
+document.addEventListener('change',e=>{const P=ui.slPick;if(!P)return;if(e.target.id==='slN'){P.n=Math.max(1,Math.min(60,parseInt(e.target.value)||1));render()}else if(e.target.id==='slG'){P.gs=Math.max(2,Math.min(8,parseInt(e.target.value)||4));render()}});
+ACT.slApply=()=>{const P=ui.slPick,r=editRoom(),L=(window.QC_LAYS||[]).find(x=>x.k===P.k);if(!P||!r||!L)return;
+  const g=qcGenPublic(P.k,P.n,P.gs);r.items=g.items;r.qc=g.meta;r.qcSig=[P.k,P.n,P.gs].join('|');r.seatOrder={};r.qcOwner=null;r.qcPos=r.items.filter(i=>FURN[i.type]&&FURN[i.type].seats).map(i=>i.id+'@'+Math.round(i.x*10)+','+Math.round(i.y*10)+','+(i.ang||0)).join(';');ui.slPick=null;setSel([]);save();render();toast(`Room set to ${L.name}: ${P.n} ${L.unit.toLowerCase()}.`)};
+})();</script>
+<style>.sl-pick{max-width:200px}.sl-pick svg{width:100%;height:auto;display:block}.sl-panel{display:grid;gap:10px}
+.sl-q{display:flex;align-items:center;justify-content:space-between;gap:10px;font-weight:600;font-size:14px}
+.sl-step{display:inline-flex;align-items:center;border-radius:12px;background:#fff;border:1px solid rgba(60,60,67,.18);overflow:hidden}
+.sl-step button{border:0;background:none;width:36px;height:36px;font-size:18px;font-weight:700;cursor:pointer;color:inherit}.sl-step button:disabled{opacity:.3}
+.sl-step input{width:44px;border:0;text-align:center;font:inherit;font-weight:800;font-size:16px;background:none;-moz-appearance:textfield;padding:0;min-height:0;height:36px}
+.sl-step input::-webkit-inner-spin-button,.sl-step input::-webkit-outer-spin-button{-webkit-appearance:none;margin:0}</style>
+<style>aside section.panel:has([data-x=noSel]){display:none!important}</style>
+<script>CH.groupLabel=el=>{const r=editRoom(),v=el.value.trim();r.items.filter(i=>ui.selIds.includes(i.id)&&FURN[i.type].seats).forEach((i,k)=>{i.label=k===0?v:''});save();render()};</script><script>(function(){const K='rgs.lastRoom';let last=null;try{last=localStorage.getItem(K)}catch(e){}
+if(!ui.roomId&&last&&S&&S.rooms.some(r=>r.id===last))ui.roomId=last;
+const _pc=CH.pickClass;CH.pickClass=el=>{const keep=ui.roomId;_pc(el);if(keep&&S.rooms.some(r=>r.id===keep)){ui.roomId=keep;render()}};
+const _r=window.render;window.render=render=function(){if(!ui.roomId&&last&&S&&S.rooms.some(r=>r.id===last))ui.roomId=last;_r.apply(this,arguments);if(ui.tab==='room'&&ui.roomId&&ui.roomId!==last){last=ui.roomId;try{localStorage.setItem(K,last)}catch(e){}}};})();</script>
+<style>::selection{background:rgba(162,89,255,.22);color:inherit}::-moz-selection{background:rgba(162,89,255,.22);color:inherit}
+input::selection,textarea::selection{background:rgba(162,89,255,.25);color:#1d1d1f}
+.roomname-in{border:0;border-bottom:2px solid #a259ff;border-radius:0;box-shadow:none!important;outline:none!important;background:transparent!important}</style>
+
+<style>/*stickyrail*/@media (min-width:901px){.layout>.rail{position:sticky;top:calc(96px + env(safe-area-inset-top,0px));max-height:calc(100vh - 110px - env(safe-area-inset-top,0px));overflow-y:auto;overscroll-behavior:contain;scrollbar-width:thin;scrollbar-color:rgba(60,60,67,.25) transparent;padding:2px 6px 14px 2px;margin:-2px -6px 0 -2px;border-radius:20px}
+.layout>.rail::-webkit-scrollbar{width:6px}.layout>.rail::-webkit-scrollbar-thumb{background:rgba(60,60,67,.25);border-radius:6px}}</style>
