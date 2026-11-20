@@ -994,7 +994,7 @@ input.qtitle:focus{background:#fff;box-shadow:0 0 0 4px rgba(162,89,255,.16)}
 .sc span{color:var(--muted)}
 .qbadge{flex:none;width:18px;height:18px;border-radius:6px;display:grid;place-items:center;font-style:normal;font-size:11px;font-weight:700;background:color-mix(in srgb,var(--qb) 18%,white);color:color-mix(in srgb,var(--qb) 70%,black);box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--qb) 40%,white)}
 .qnum{flex:none;width:9px;text-align:right;font-size:12px;font-weight:600;color:#8e8e93;font-variant-numeric:tabular-nums;margin-right:-3px}
-.stname{display:flex;align-items:center;gap:8px}
+.stname{display:flex;align-items:center;gap:8px}.stdel{border:0;cursor:pointer;font:inherit;padding:0;position:relative;transition:background .12s,color .12s}.stdel .sx{display:none;font-size:15px;line-height:1;font-weight:700}.stdel:not(:disabled):hover,.stdel:not(:disabled):focus-visible{background:#ff3b30!important;color:#fff!important;border-color:#ff3b30!important}.stdel:not(:disabled):hover .sn,.stdel:not(:disabled):focus-visible .sn{display:none}.stdel:not(:disabled):hover .sx,.stdel:not(:disabled):focus-visible .sx{display:block}.stdel:disabled{cursor:default}.stadd{display:flex;align-items:center;justify-content:center;gap:6px;width:100%;margin:2px 0 6px;padding:9px 12px;border-radius:12px;border:1.5px dashed rgba(162,89,255,.45);background:rgba(162,89,255,.06);color:#7a3fd6;font:600 14px Figtree,system-ui,sans-serif;cursor:pointer}.stadd:hover{background:rgba(162,89,255,.12);border-color:#a259ff}.stadd:disabled{opacity:.45;cursor:default}.stadd .pl{font-size:17px;line-height:1;font-weight:700}
 .sched{border-collapse:collapse;width:100%;font-size:13px}
 .sched th,.sched td{padding:8px 10px;border-bottom:1px solid rgba(60,60,67,.08);text-align:left;white-space:nowrap}
 .sched thead th{font-weight:600;background:rgba(255,255,255,.5)}
@@ -2204,7 +2204,9 @@ function stationsHTML(cls){
       <small class="muted">After a transition, the next round starts on its own.</small>
     </section>
     <section class="panel"><h3>Station names</h3>
-      ${Array.from({length:ns},(_,i)=>`<label class="stname"><span class="cnum">${i+1}</span><input type="text" data-ch="stname" data-key="${i}" value="${esc(c.names[i]||'')}" placeholder="Station ${i+1}" aria-label="Name for station ${i+1}"></label>`).join('')}
+      ${Array.from({length:ns},(_,i)=>`<div class="stname"><button type="button" class="cnum stdel" data-act="stDel" data-arg="${i}"${ns<=2?' disabled':''} title="${ns<=2?'Stations need at least 2':'Remove '+esc(stName(cls,i))}" aria-label="Remove ${esc(stName(cls,i))}"><span class="sn">${i+1}</span><span class="sx" aria-hidden="true">×</span></button><input type="text" data-ch="stname" data-key="${i}" value="${esc(c.names[i]||'')}" placeholder="Station ${i+1}" aria-label="Name for station ${i+1}"></div>`).join('')}
+      <button type="button" class="stadd" data-act="stAdd"${ns>=12?' disabled':''}><span class="pl" aria-hidden="true">+</span>Add station</button>
+      <small class="muted">Hover a number to remove that station.</small>
     </section>
   </aside>
   <section class="stage">
@@ -2559,6 +2561,8 @@ const ACT={
   stMake:()=>{const cls=need();makeStGroups(cls);save();render()},
   stStations:(b,d)=>{const cls=need(),c=cls.stationsCfg,v=clamp(stCountOf(cls)+(+d),2,12);c.count=v;ui.round=0;save();render()},
   stGmode:(b,m)=>{need().st.opts.mode=m;save();render()},
+  stDel:(b,d)=>{const cls=need(),c=cls.stationsCfg,ns=stCountOf(cls),i=+d;if(ns<=2)return;const gone=stName(cls,i),names=Array.from({length:ns},(_,k)=>c.names[k]||'');names.splice(i,1);c.names=names;c.count=ns-1;cls.st.count=Math.min(ns-1,stMax(cls));makeStGroups(cls);ui.round=0;save();render();toast(`Removed ${gone}. Now ${cls.st.count} groups. Undo at the top right.`)},
+  stAdd:()=>{const cls=need(),c=cls.stationsCfg,ns=stCountOf(cls);if(ns>=12)return;const names=Array.from({length:ns},(_,k)=>c.names[k]||'');names.push('');c.names=names;c.count=ns+1;cls.st.count=Math.min(ns+1,stMax(cls));makeStGroups(cls);ui.round=0;save();render();setTimeout(()=>{const el=document.querySelector(`[data-ch="stname"][data-key="${ns}"]`);if(el)el.focus()},30)},
   stCount:(b,d)=>{const cls=need(),st=cls.st,n=clamp(st.count+(+d),2,stMax(cls));if(n===st.count)return;if(stCountOf(cls)===st.count)cls.stationsCfg.count=n;st.count=n;makeStGroups(cls);save();render()},
   stLoad:()=>{const cls=need(),x=cls.groupSets.find(g=>g.id===($('#stLoadSel')||{}).value);if(!x)return;cls.st.groups=x.groups.map(g=>g.slice());if(stCountOf(cls)===cls.st.count)cls.stationsCfg.count=x.groups.length;cls.st.count=x.groups.length;cls.st.meta={mode:'set',name:x.name};ui.stpick=null;save();render();toast('Loaded “'+x.name+'”')},
   stTap:(b,id)=>{const cls=need(),G=cls.st.groups,find=x=>{for(let i=0;i<G.length;i++){const j=G[i].indexOf(x);if(j>=0)return[i,j]}return null};if(!ui.stpick){ui.stpick=id;render();return}if(ui.stpick===id){ui.stpick=null;render();return}const a=find(ui.stpick),c=find(id);if(a&&c&&a[0]!==c[0]){G[a[0]][a[1]]=id;G[c[0]][c[1]]=ui.stpick;ui.stpick=null;save()}else ui.stpick=id;render()},
