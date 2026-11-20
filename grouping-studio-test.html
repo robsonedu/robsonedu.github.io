@@ -813,7 +813,7 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--violet);
 .roster td input.cat{width:13ch}
 .roster td input.num{width:8ch}
 .pop{position:fixed;z-index:120;width:min(340px,calc(100vw - 24px));padding:14px;border-radius:20px;display:grid;gap:12px;background:rgba(255,255,255,.86);-webkit-backdrop-filter:blur(30px) saturate(180%);backdrop-filter:blur(30px) saturate(180%);border:1px solid rgba(255,255,255,.9);box-shadow:0 1px 0 rgba(255,255,255,.9) inset,0 24px 60px rgba(30,30,60,.22),0 4px 12px rgba(30,30,60,.08)}
-.seg.four{grid-template-columns:repeat(4,1fr)}
+.seg.four{grid-template-columns:repeat(4,1fr)}.seg.four.five{grid-template-columns:auto auto auto auto auto;justify-content:stretch}.seg.four.five button{padding:0 2px;font-size:12px;letter-spacing:-.01em;white-space:nowrap;min-width:0}
 .seg.four button{font-size:12px;padding:0 4px}
 .chips{display:flex;flex-wrap:wrap;gap:6px}
 .addmenu{gap:2px;padding:6px;width:min(300px,calc(100vw - 24px))}
@@ -1327,7 +1327,7 @@ function bandsOf(list,col){const r=norm(list,col),items=list.map((s,i)=>({id:s.i
 function qmapFor(cls,colId){const m=new Map();const col=cls.columns.find(c=>c.id===colId);if(!col)return m;if(isCat(col)&&col.options){cls.students.forEach(s=>{if(!s.absent&&hasVal(s,col)){const i=col.options.findIndex(o=>catKey(o)===catKey(s.v[col.id]));m.set(s.id,i<0?0:5+i)}});return m}if(isCat(col)){const L=catList(cls,col).slice(0,4).map(x=>x.k);cls.students.forEach(s=>{if(!s.absent&&hasVal(s,col)){const i=L.indexOf(catKey(s.v[col.id]));m.set(s.id,i<0?0:i+1)}});return m}const pres=cls.students.filter(s=>!s.absent);const b=bandsOf(pres,col);b.forEach((v,k)=>m.set(k,v));return m}
 function summ(list,col){const vals=list.filter(s=>hasVal(s,col)).map(s=>String(s.v[col.id]).trim());if(!vals.length)return'—';if(isCat(col)){const c={};vals.forEach(v=>{const k=v;c[k]=(c[k]||0)+1});return Object.entries(c).sort((a,b)=>b[1]-a[1]).map(([k,n])=>n+' '+k).join(', ')}if(vals.every(v=>!isNaN(parseNum(v)))){const m=avg(vals.map(parseNum)),lx=vals.some(v=>/L$/i.test(v));return'avg '+(lx?Math.round(m)+'L':Math.round(m*10)/10)}const sorted=vals.map(v=>v.toUpperCase()).sort();return sorted[0]===sorted[sorted.length-1]?sorted[0]:sorted[0]+'–'+sorted[sorted.length-1]}
 const critName=(cls,id)=>id==='__g'?'gender':(cls.columns.find(c=>c.id===id)||{name:'?'}).name;
-function metaText(cls,meta){if(!meta)return'Arranged by hand';if(meta.mode==='set')return'From groups: '+(meta.name||'untitled');if(meta.crit&&meta.crit.length)return(meta.mode==='similar'?'Similar by ':'Mixed by ')+meta.crit.map((id,i)=>i?critName(cls,id):critName(cls,id)).join(', then ');if(meta.mode==='random')return'Random shuffle';const col=cls.columns.find(c=>c.id===meta.by),bal=meta.bal==='__g'?{name:'gender'}:cls.columns.find(c=>c.id===meta.bal);if(meta.mode==='random'||!col)return'Random shuffle'+(bal?', balanced by '+bal.name:'');return(meta.mode==='similar'?'Similar':'Mixed')+' by '+col.name+(bal?', balanced by '+bal.name:'')}
+function metaText(cls,meta){if(!meta)return'Arranged by hand';if(meta.mode==='alpha')return'Alphabetical by '+(meta.alphaBy==='first'?'first':'last')+' name';if(meta.mode==='set')return'From groups: '+(meta.name||'untitled');if(meta.crit&&meta.crit.length)return(meta.mode==='similar'?'Similar by ':'Mixed by ')+meta.crit.map((id,i)=>i?critName(cls,id):critName(cls,id)).join(', then ');if(meta.mode==='random')return'Random shuffle';const col=cls.columns.find(c=>c.id===meta.by),bal=meta.bal==='__g'?{name:'gender'}:cls.columns.find(c=>c.id===meta.bal);if(meta.mode==='random'||!col)return'Random shuffle'+(bal?', balanced by '+bal.name:'');return(meta.mode==='similar'?'Similar':'Mixed')+' by '+col.name+(bal?', balanced by '+bal.name:'')}
 function cleanup(cls,L){const cur=curOf(cls),seen=new Set();for(const[k,id]of Object.entries(cur.seats)){if(!L.seatByKey.has(k)||!stud(cls,id)||seen.has(id))delete cur.seats[k];else seen.add(id)}}
 function groupsOf(cls,L,cur){return L.groups.map(g=>({label:g.label,ids:g.seats.map(si=>cur.seats[L.seats[si].key]).filter(Boolean)}))}
 
@@ -1344,6 +1344,10 @@ function runGroupingL(cls,L,opt){
   const present=cls.students.filter(s=>!s.absent);
   if(!nS)return{error:'This room has no seats yet. Add tables on the Room tab.'};
   if(!present.length)return{error:'Add students on the Roster tab first.'};
+  if(opt.mode==='alpha'){const by=alphaBy(cls),parts=s=>{const t=String(s.name||'').trim().split(/\s+/);const f=(s.first||t[0]||'').trim(),l=(s.last||(t.length>1?t.slice(1).join(' '):t[0])||'').trim();return by==='first'?[f,l]:[l,f]},cmp=(x,y)=>x.localeCompare(y,undefined,{sensitivity:'base'});
+    const sorted=present.slice().sort((a,b)=>{const A=parts(a),B=parts(b);return cmp(A[0],B[0])||cmp(A[1],B[1])});const take=sorted.slice(0,nS),target=sizePlan(L.groups.map(g=>g.seats.length),take.length),seats={};let p=0;
+    L.groups.forEach((g,gi)=>{g.seats.slice().sort((a,b)=>((L.seats[a].num||0)-(L.seats[b].num||0))||a-b).slice(0,target[gi]).forEach(si=>{if(p<take.length)seats[L.seats[si].key]=take[p++].id})});
+    return{seats,roles:{},unseated:sorted.slice(nS).map(s=>s.id),meta:{mode:'alpha',crit:[],by:'',bal:'',alphaBy:by}}}
   let pool=shuffle(present.slice());
   const unseated=pool.slice(nS).map(s=>s.id);pool=pool.slice(0,nS);
   const N=pool.length;
@@ -1430,7 +1434,10 @@ function checkIssues(cls,L,cur){
   counts.forEach((c,i)=>{if(c===1&&mx>2)list.push({lvl:'warn',t:`${L.groups[i].label} has only one student.`})});
   return{list,flag};
 }
-const TYPE_NAME={mixed:'Mixed',similar:'Similar',random:'Random'};
+const TYPE_NAME={mixed:'Mixed',similar:'Similar',random:'Random',alpha:'Alphabetical'};
+const ALPHA_SEG=[['mixed','Mixed'],['similar','Similar'],['random','Random'],['alpha','A–Z']];
+const alphaBy=c=>c&&c.alphaBy==='first'?'first':'last';
+const alphaHTML=cls=>`<small class="muted">${ui.tab==='arrange'?'Students go in A–Z order, starting with seat 1.':'Group 1 gets the start of the list, then Group 2, and so on.'} Seating rules don’t move anyone.</small><label class="field"><span>Sort by</span><select data-ch="alphaBy"><option value="last"${alphaBy(cls)==='last'?' selected':''}>Last name</option><option value="first"${alphaBy(cls)==='first'?' selected':''}>First name</option></select></label>`;
 function chartType(cls,meta){if(!meta)return'';let m=meta.mode;if(m==='set'){m=meta.gmode;if(!m){const g=cls.groupSets.find(x=>x.name===meta.name);m=g&&g.meta&&g.meta.mode}}return TYPE_NAME[m]?m:''}
 function pairSet(groups){const P=new Set();for(const g of groups||[]){const ids=g.ids.slice().sort();for(let i=0;i<ids.length;i++)for(let j=i+1;j<ids.length;j++)P.add(ids[i]+'|'+ids[j])}return P}
 function repeatSources(cls,curGroups,type,exclude){const ex=exclude===undefined?cls.chartId:exclude;
@@ -1467,19 +1474,19 @@ const chartTitle=cls=>{const h=openChart(cls);return h?(h.label||'Untitled chart
 function recipeOf(cls,h){if(!h)return null;if(h.recipe)return h.recipe;const m=h.meta;if(!m)return null;
   if(m.mode==='set'){const g=cls.groupSets.find(x=>x.name===m.name);if(g&&g.meta&&TYPE_NAME[g.meta.mode])return{mode:g.meta.mode,crit:(g.meta.crit||[]).slice()};return TYPE_NAME[m.gmode]?{mode:m.gmode,crit:[]}:null}
   return TYPE_NAME[m.mode]?{mode:m.mode,crit:(m.crit||[]).slice()}:null}
-function fillCrit(cls,r){if(!r)return r;if(r.mode==='random'||validCrit(cls,r.crit).length)return r;const q=cls.quick&&cls.quick.opts&&validCrit(cls,cls.quick.opts.crit);const c=q&&q.length?q:validCrit(cls,[cls.opts.by]);return Object.assign({},r,{crit:c})}
+function fillCrit(cls,r){if(!r)return r;if(r.mode==='random'||r.mode==='alpha'||validCrit(cls,r.crit).length)return r;const q=cls.quick&&cls.quick.opts&&validCrit(cls,cls.quick.opts.crit);const c=q&&q.length?q:validCrit(cls,[cls.opts.by]);return Object.assign({},r,{crit:c})}
 function lastRecipe(cls){const x=lastRecipe0(cls);if(x)x.r=fillCrit(cls,x.r);return x}
 function lastRecipe0(cls){const h=openChart(cls),r=recipeOf(cls,h);if(r)return{r,from:h};for(const x of cls.history.slice().sort((a,b)=>b.date-a.date)){const rr=recipeOf(cls,x);if(rr)return{r:rr,from:x}}return null}
 function validCrit(cls,crit){return(crit||[]).filter(id=>id==='__g'||cls.columns.some(c=>c.id===id))}
 function recipeText(cls,r){if(!r)return'';const c=validCrit(cls,r.crit);return TYPE_NAME[r.mode]+(r.mode!=='random'&&c.length?' by '+c.map(id=>critName(cls,id)).join(', then '):'')}
 function syncBy(cls,r){const c=r&&validCrit(cls,r.crit).find(id=>id!=='__g');if(c)cls.opts.by=c}
 function createChart(cls,name,recipe){const h=saveHistory(cls,name);if(recipe&&TYPE_NAME[recipe.mode])h.recipe={mode:recipe.mode,crit:validCrit(cls,recipe.crit)};syncBy(cls,recipe);return h}
-function buildFromRecipe(cls,r){const crit=r.mode==='random'?[]:validCrit(cls,r.crit).map((id,i)=>({id,goal:r.mode==='similar'&&i===0?'match':'mix'}));
+function buildFromRecipe(cls,r){const crit=r.mode==='random'||r.mode==='alpha'?[]:validCrit(cls,r.crit).map((id,i)=>({id,goal:r.mode==='similar'&&i===0?'match':'mix'}));
   const res=runGrouping(cls,roomOf(cls),{mode:r.mode,crit,avoid:true,recent:recentGroups(cls,r.mode)});if(res.error)return res;
   const L=layoutInfo(roomOf(cls));orderByRank(cls,L,res.seats,rankCol(cls,validCrit(cls,r.crit),r.mode));
   cls.current={seats:res.seats,roles:res.roles||{},meta:res.meta,date:Date.now()};return res}
 function defaultChartName(cls,r){return[cls&&cls.name,r&&TYPE_NAME[r.mode],new Date().toLocaleDateString(undefined,{month:'short',day:'numeric'})].filter(Boolean).join(' · ')}
-function staleNotes(cls,r){if(!r||r.mode==='random')return[];const out=[],here=cls.students.filter(s=>!s.absent),ed=cls.colEdited||{};
+function staleNotes(cls,r){if(!r||r.mode==='random'||r.mode==='alpha')return[];const out=[],here=cls.students.filter(s=>!s.absent),ed=cls.colEdited||{};
   for(const id of validCrit(cls,r.crit)){if(id==='__g')continue;const c=cls.columns.find(x=>x.id===id);const miss=here.filter(s=>!hasVal(s,c)).length;
     if(miss)out.push(`${miss} student${miss>1?'s have':' has'} no ${c.name}`);else if(ed[id]&&Date.now()-ed[id]>28*864e5)out.push(`${c.name} hasn’t been updated since ${fmtDate(ed[id])}`)}
   return out}
@@ -1602,8 +1609,8 @@ function applyColors(){const q=(S&&S.settings.qColors)||QDEF;q.forEach((c,i)=>do
 function placePop(){const p=document.getElementById('pop');if(!p)return;const a=document.querySelector(p.dataset.anchor);if(!a){p.remove();return}const r=a.getBoundingClientRect(),w=p.offsetWidth,h=p.offsetHeight;let x=Math.min(r.left,innerWidth-w-12),y=r.bottom+8;if(y+h>innerHeight-12&&r.top-h-8>12)y=r.top-h-8;p.style.left=Math.max(12,x)+'px';p.style.top=Math.max(12,y)+'px'}
 if(HAS_DOM){addEventListener('resize',placePop);addEventListener('scroll',placePop,true)}
 /* keep the Groups page in step with the class: its room follows the class's room layout, and Mixed/Similar always start with a criterion */
-function syncQuick(c){const o=c&&c.quick&&c.quick.opts;if(!o)return;if(o.mode!=='random'&&!critOptions(c).length)o.mode='random';if(o.seenRoom!==c.roomId){o.roomId=c.roomId;o.seenRoom=c.roomId}
-  if(o.mode!=='random'&&!validCrit(c,o.crit).length){const c0=c.columns.find(x=>x.id===c.opts.by)||c.columns[0];const cr=[c0&&c0.id,c.students.some(s=>s.g)?'__g':null].filter(Boolean);if(cr.length)o.crit=cr}}
+function syncQuick(c){const o=c&&c.quick&&c.quick.opts;if(!o)return;if(o.mode!=='random'&&o.mode!=='alpha'&&!critOptions(c).length)o.mode='random';if(o.seenRoom!==c.roomId){o.roomId=c.roomId;o.seenRoom=c.roomId}
+  if(o.mode!=='random'&&o.mode!=='alpha'&&!validCrit(c,o.crit).length){const c0=c.columns.find(x=>x.id===c.opts.by)||c.columns[0];const cr=[c0&&c0.id,c.students.some(s=>s.g)?'__g':null].filter(Boolean);if(cr.length)o.crit=cr}}
 function render(){NAMEC=null;try{const ac=S&&activeClass&&activeClass();if(ac)syncQuick(ac)}catch(e){}try{renderNow()}catch(e){setTimeout(()=>{try{renderNow()}catch(x){}},0)}if(ui.tour!=null&&HAS_DOM)requestAnimationFrame(tourPlace)}
 function renderNow(){
   const app=$('#app');
@@ -1753,13 +1760,13 @@ function arrangeHTML(cls){
     ${hasSeats&&by?`<div class="field"><span>Tables at a glance · ${esc(by.name)}</span><div class="gsum">${L.groups.map(g=>{const ss=g.seats.map(si=>cur.seats[L.seats[si].key]).filter(Boolean).map(id=>stud(cls,id));return`<div class="gcard"><b>${esc(g.label)}</b><span class="muted">${ss.length} student${ss.length===1?'':'s'} · <span class="num">${esc(summ(ss,by))}</span>${ss.some(x=>x&&x.g)?` · ${ss.filter(x=>x&&x.g==='M').length}M ${ss.filter(x=>x&&x.g==='F').length}F`:''}</span><div class="dots">${ss.map(s=>`<i style="background:var(--q${qm.get(s.id)||0})" title="${esc(dname(s))}"></i>`).join('')}</div></div>`}).join('')}</div></div>`:''}
   </section>
   ${panelOpen?`<aside class="rail">
-    ${ui.mkOpen||!openChart(cls)?(()=>{const first=!openChart(cls);const o=cls.quick.opts,help=o.mode==='random'?'A fair shuffle. Seating rules still apply.':o.mode==='similar'?'Students are grouped in bands: highs together, lows together.':'Every table gets a spread of high, middle and low.';const saved=!!ui.mkSet,sets=cls.groupSets.slice().reverse(),setSel=saved?(sets.find(x=>x.id===ui.mkSet)||null):null,setMode=setSel&&setSel.meta&&TYPE_NAME[setSel.meta.mode]?setSel.meta.mode:(saved&&!setSel&&cls.quick.meta&&TYPE_NAME[cls.quick.meta.mode]?cls.quick.meta.mode:null);
+    ${ui.mkOpen||!openChart(cls)?(()=>{const first=!openChart(cls);const o=cls.quick.opts,help=o.mode==='alpha'?'':o.mode==='random'?'A fair shuffle. Seating rules still apply.':o.mode==='similar'?'Students are grouped in bands: highs together, lows together.':'Every table gets a spread of high, middle and low.';const saved=!!ui.mkSet,sets=cls.groupSets.slice().reverse(),setSel=saved?(sets.find(x=>x.id===ui.mkSet)||null):null,setMode=setSel&&setSel.meta&&TYPE_NAME[setSel.meta.mode]?setSel.meta.mode:(saved&&!setSel&&cls.quick.meta&&TYPE_NAME[cls.quick.meta.mode]?cls.quick.meta.mode:null);
     const nm=ui.mkName!=null?ui.mkName:saved?defaultChartName(cls,setMode?{mode:setMode}:null):defaultChartName(cls,{mode:o.mode});return`<section class="panel mkpanel"><div class="chart-head"><h3>${cls.history.length?'Make New Chart':'Make your first chart'}</h3>${first?'':`<button class="iconbtn" data-act="mkClose" aria-label="Close">${svg('x')}</button>`}</div>${first&&!cls.history.length?`<small class="muted">Pick how to group, choose your criteria, then press Create chart. Students are seated at the tables in your room layout.</small>`:''}
-      <div class="seg four" role="group" aria-label="Grouping type">${[['mixed','Mixed'],['similar','Similar'],['random','Random']].map(([k,l])=>{const off=k!=='random'&&!critOptions(cls).length;return`<button data-act="qGmode" data-arg="${k}" aria-pressed="${!saved&&o.mode===k}"${off?' disabled title="Add data on the Roster first"':''}>${l}</button>`}).join('')}<button data-act="mkSaved" aria-pressed="${saved}">Saved</button></div>${critOptions(cls).length?'':`<small class="muted">Mixed and Similar need something to group by. Add a score, level or category on the <button class="linkbtn" data-act="tab" data-arg="roster">Roster</button> (or genders), and they'll turn on. Until then, charts are a fair random shuffle.</small>`}
+      <div class="seg four five" role="group" aria-label="Grouping type">${ALPHA_SEG.map(([k,l])=>{const off=k!=='random'&&k!=='alpha'&&!critOptions(cls).length;return`<button data-act="qGmode" data-arg="${k}" aria-pressed="${!saved&&o.mode===k}"${k==='alpha'?' title="Alphabetical" aria-label="Alphabetical"':''}${off?' disabled title="Add data on the Roster first"':''}>${l}</button>`}).join('')}<button data-act="mkSaved" aria-pressed="${saved}">Saved</button></div>${critOptions(cls).length?'':`<small class="muted">Mixed and Similar need something to group by. Add a score, level or category on the <button class="linkbtn" data-act="tab" data-arg="roster">Roster</button> (or genders), and they'll turn on. Until then, charts are a fair random shuffle.</small>`}
       ${saved?`<label class="field"><span>Saved groups</span><select data-ch="mkSet"><option value="__cur"${ui.mkSet==='__cur'?' selected':''}>(Current) ${cls.quick.name?esc(cls.quick.name):'Groups page'}</option>${sets.map(x=>`<option value="${x.id}"${setSel&&x.id===setSel.id?' selected':''}>${esc(x.name)}</option>`).join('')}</select></label>`:''}
-      ${saved?`<small class="muted">Seats these exact groups, including any swaps you made by hand.</small>`:`      <small class="muted">${help}</small>
+      ${saved?`<small class="muted">Seats these exact groups, including any swaps you made by hand.</small>`:`      ${help?`<small class="muted">${help}</small>`:''}
       ${critListHTML(cls,o,'q')}
-      <label class="check"><input type="checkbox" data-ch="qopt" data-key="avoid"${o.avoid?' checked':''}> Avoid recent partners</label>`}
+      ${o.mode==='alpha'?'':`<label class="check"><input type="checkbox" data-ch="qopt" data-key="avoid"${o.avoid?' checked':''}> Avoid recent partners</label>`}`}
       <label class="field"><span>Room layout</span><select data-ch="mkRoom">${S.rooms.map(r=>`<option value="${r.id}"${r.id===(ui.mkRoom||room.id)?' selected':''}>${esc(r.name)}</option>`).join('')}</select></label>
       <label class="field"><span>Chart name</span><input type="text" id="mkName" data-ch="mkName" value="${esc(nm)}"></label>
       <button class="btn primary wide" data-act="mkCreate">${cls.history.length?'Create new chart':'Create chart'}</button>
@@ -2029,7 +2036,7 @@ function virtualL(sizes){const seats=[],groups=sizes.map((n,gi)=>({key:'q'+gi,in
 function qSizes(n,size){const ng=Math.max(1,Math.ceil(n/size)),base=Math.floor(n/ng),ex=n%ng;return Array.from({length:ng},(_,i)=>base+(i<ex?1:0))}
 function recentGroups(cls,mode){return repeatSources(cls,null,TYPE_NAME[mode]?mode:'',null).reverse()}
 function tgtOpts(cls,t){return t==='st'?cls.st.opts:cls.quick.opts}
-function critListHTML(cls,o,t){if(o.mode==='random')return'';const all=critOptions(cls),used=o.crit,opt=(sel,skip)=>all.filter(c=>c.id===sel||!skip.includes(c.id)).map(c=>`<option value="${c.id}"${c.id===sel?' selected':''}>${esc(c.name)}</option>`).join(''),rest=all.filter(c=>!used.includes(c.id));
+function critListHTML(cls,o,t){if(o.mode==='random')return'';if(o.mode==='alpha')return alphaHTML(cls);const all=critOptions(cls),used=o.crit,opt=(sel,skip)=>all.filter(c=>c.id===sel||!skip.includes(c.id)).map(c=>`<option value="${c.id}"${c.id===sel?' selected':''}>${esc(c.name)}</option>`).join(''),rest=all.filter(c=>!used.includes(c.id));
   return`<div class="field"><span>Group by</span><ol class="critlist" data-tgt="${t}">${used.map((id,i)=>`<li class="critrow" data-ci="${i}"><span class="grip" data-grip="${i}" data-tgt="${t}" aria-hidden="true" title="Drag to reorder">${svg('grip')}</span><span class="cnum">${i+1}</span><select data-ch="critSet" data-tgt="${t}" data-i="${i}" aria-label="Criterion ${i+1}">${opt(id,used)}</select><span class="goal">${i===0?(o.mode==='similar'?'Match':'Mix'):'Balance'}</span><button class="mini xbtn" data-act="critDel" data-arg="${t}|${i}" aria-label="Remove ${esc(critName(cls,id))}">${svg('x')}</button></li>`).join('')}</ol>
   ${rest.length?`<div class="critadd"><span class="cnum">${used.length+1}</span><select data-ch="critAdd" data-tgt="${t}" aria-label="Add a criterion"><option value="">${used.length?'Then by…':'Choose a criterion…'}</option>${rest.map(c=>`<option value="${c.id}">${esc(c.name)}</option>`).join('')}</select></div>`:''}
   ${used.length>1?'<small class="muted">Higher in the list counts more. Drag to reorder.</small>':''}</div>`}
@@ -2039,7 +2046,7 @@ function makeQuick(cls){syncQuick(cls);
   const q=cls.quick,ids=qPresent(cls),o=q.opts;if(ids.length<2)return;
   const qr=quickRoom(cls);let L;
   if(qr)L=virtualL(qr.RL.groups.map(g=>g.seats.length));else{qSnap(cls);L=virtualL(qSizes(ids.length,q.size))}
-  const crit=o.mode==='random'?[]:o.crit.map((id,i)=>({id,goal:o.mode==='similar'&&i===0?'match':'mix'}));
+  const crit=o.mode==='random'||o.mode==='alpha'?[]:o.crit.map((id,i)=>({id,goal:o.mode==='similar'&&i===0?'match':'mix'}));
   const r=runGroupingL(cls,L,{mode:o.mode,crit,avoid:o.avoid,recent:recentGroups(cls,o.mode)});
   let G=L.groups.map(g=>g.seats.map(si=>(r.seats||{})[L.seats[si].key]).filter(Boolean));
   let keys=qr?qr.RL.groups.map(g=>g.key):null,labels=qr?qr.RL.groups.map(g=>g.label):null;
@@ -2087,7 +2094,7 @@ function groupsHTML(cls){
   const q=cls.quick,o=q.opts,G=q.groups,opts=qSnap(cls),Lb=qLabels(cls);
   const lens=G.map(g=>g.length),lo=lens.length?Math.min(...lens):0,hi=lens.length?Math.max(...lens):0;
   const manual=q.swapMode==='manual';
-  const by=o.mode!=='random'?cls.columns.find(c=>c.id===o.crit[0]):null;
+  const by=o.mode!=='random'&&o.mode!=='alpha'?cls.columns.find(c=>c.id===o.crit[0]):null;
   const hint=G.length<2?'Make smaller groups to start swapping.':manual?(ui.qpick?`Now tap someone in another group to trade with ${nameOf(cls,ui.qpick)}.`:'Tap one name, then tap a name in another group to trade them.'):'Tap a name to swap them into another group. Tap the same name again for a different swap.';
   const qm=cls.view.colors&&by?qmapFor(cls,by.id):new Map(),sc=scoreCard(cls);
   const active=ui.qswap&&ui.qswap.partner?ui.qswap.id:null,partner=ui.qswap?ui.qswap.partner:null;
@@ -2108,16 +2115,16 @@ function groupsHTML(cls){
   return`<div class="layout">
   <aside class="rail">
     <section class="panel"><h3>Make groups</h3>
-      <div class="seg" role="group" aria-label="Grouping type">${[['mixed','Mixed'],['similar','Similar'],['random','Random']].map(([k,l])=>`<button data-act="qGmode" data-arg="${k}" aria-pressed="${o.mode===k}">${l}</button>`).join('')}</div>
-      <small class="muted">${o.mode==='random'?'A fair shuffle. Seating rules still apply.':o.mode==='similar'?'Students are ranked by your first criterion and grouped in bands: highs together, lows together. Any others are balanced only where scores tie.':'Every group gets a spread of your first criterion. Any others are balanced in order.'}</small>
+      <div class="seg four" role="group" aria-label="Grouping type">${ALPHA_SEG.map(([k,l])=>`<button data-act="qGmode" data-arg="${k}" aria-pressed="${o.mode===k}"${k==='alpha'?' title="Alphabetical" aria-label="Alphabetical"':''}>${l}</button>`).join('')}</div>
+      <small class="muted"${o.mode==='alpha'?' hidden':''}>${o.mode==='random'?'A fair shuffle. Seating rules still apply.':o.mode==='similar'?'Students are ranked by your first criterion and grouped in bands: highs together, lows together. Any others are balanced only where scores tie.':'Every group gets a spread of your first criterion. Any others are balanced in order.'}</small>
       ${critListHTML(cls,o,'q')}
       <div class="field"><span>Group sizes</span><div class="seg two" role="group" aria-label="Group sizes"><button data-act="qSizeMode" data-arg="room" aria-pressed="${o.sizeMode==='room'}">Room layout</button><button data-act="qSizeMode" data-arg="size" aria-pressed="${o.sizeMode!=='room'}">Pick group size</button></div>
       <small class="muted">${o.sizeMode==='room'?'Groups match the tables in a room, so mixed tables of 4 and 6 work. Best when the groups will be seated.':'Every group is the same size, no matter the room. Good for partner work, stations or activities away from the tables.'}</small>
       ${o.sizeMode==='room'?(()=>{const qr=quickRoom(cls);const caps={};let seats=0;if(qr)qr.RL.groups.forEach(g=>{const n=g.seats.length;caps[n]=(caps[n]||0)+1;seats+=n});return`<select data-ch="qopt" data-key="roomId" aria-label="Room layout">${S.rooms.map(r=>`<option value="${r.id}"${r.id===o.roomId?' selected':''}>${esc(r.name)}</option>`).join('')}</select>
         <div class="sizechips">${Object.entries(caps).sort((a,b)=>a[0]-b[0]).map(([n,c])=>`<span>${c} table${c>1?'s':''} of ${n}</span>`).join('')}<em class="${here.length>seats?'warn':''}">${seats} seats · ${here.length} students</em></div>`})():`<div class="stepper" role="group" aria-label="Group size"><button data-act="qSize" data-arg="-1" aria-label="Smaller groups"${q.size<=opts[0]?' disabled':''}>−</button><output>Groups of ${q.size}</output><button data-act="qSize" data-arg="1" aria-label="Larger groups"${q.size>=opts[opts.length-1]?' disabled':''}>+</button></div><small class="muted">Makes ${qSizes(here.length,q.size).length} groups${new Set(qSizes(here.length,q.size)).size>1?' (a few are one smaller or larger so everyone fits)':''}.</small>`}</div>
-      <label class="check"><input type="checkbox" data-ch="qopt" data-key="avoid"${o.avoid?' checked':''}> Avoid recent partners</label>
+      ${o.mode==='alpha'?'':`<label class="check"><input type="checkbox" data-ch="qopt" data-key="avoid"${o.avoid?' checked':''}> Avoid recent partners</label>`}
       <button class="btn primary wide" data-act="qShuffle">Make groups</button>
-      ${cls.rules.length?`<small class="muted">Your ${cls.rules.length} seating rule${cls.rules.length>1?'s':''} from the Roster ${cls.rules.length>1?'are':'is'} always followed.</small>`:''}
+      ${cls.rules.length&&o.mode!=='alpha'?`<small class="muted">Your ${cls.rules.length} seating rule${cls.rules.length>1?'s':''} from the Roster ${cls.rules.length>1?'are':'is'} always followed.</small>`:''}
     </section>
   </aside>
   <section class="stage">${q.blank&&!G.length?`${gHead}<div class="empty"><h3>No groups yet</h3><p class="muted">Choose Mixed, Similar or Random and your criteria, then click Make groups. Or open a saved set.</p></div>`:`
@@ -2129,7 +2136,7 @@ function groupsHTML(cls){
 `}
   </section></div>`;
 }
-function rankCol(cls,crit,mode){if(mode==='random')return null;for(const id of crit||[]){const c=cls.columns.find(x=>x.id===id);if(c&&!isCat(c))return c}return null}
+function rankCol(cls,crit,mode){if(mode==='random'||mode==='alpha')return null;for(const id of crit||[]){const c=cls.columns.find(x=>x.id===id);if(c&&!isCat(c))return c}return null}
 const FILL_CACHE={};
 function fillOrder(n,m){const key=n+':'+m;if(FILL_CACHE[key])return FILL_CACHE[key];
   if(n>8||m<3){const r=Array.from({length:m},(_,i)=>i);FILL_CACHE[key]=r;return r}
@@ -2163,7 +2170,7 @@ function makeStGroups(cls){
   const b=cls.st,o=b.opts,ids=qPresent(cls);if(ids.length<2)return;
   b.count=clamp(+b.count||6,2,stMax(cls));const n=ids.length,base=Math.floor(n/b.count),ex=n%b.count;
   const L=virtualL(Array.from({length:b.count},(_,i)=>base+(i<ex?1:0)));
-  const crit=o.mode==='random'?[]:o.crit.map((id,i)=>({id,goal:o.mode==='similar'&&i===0?'match':'mix'}));
+  const crit=o.mode==='random'||o.mode==='alpha'?[]:o.crit.map((id,i)=>({id,goal:o.mode==='similar'&&i===0?'match':'mix'}));
   const r=runGroupingL(cls,L,{mode:o.mode,crit,avoid:o.avoid,recent:recentGroups(cls,o.mode)});
   if(r.error){const G=L.groups.map(()=>[]);shuffle(ids.slice()).forEach((id,i)=>G[i%G.length].push(id));b.groups=G;b.meta={mode:'random'}}
   else{b.groups=L.groups.map(g=>g.seats.map(si=>r.seats[L.seats[si].key]).filter(Boolean)).filter(g=>g.length);b.meta=r.meta}
@@ -2177,15 +2184,15 @@ function stCountOf(cls){const c=cls.stationsCfg;if(!c.count)c.count=stationGroup
 function stationsHTML(cls){
   if(!cls)return emptyClassesHTML();
   if(qPresent(cls).length<2)return`<div class="page"><div class="page-head"><div><h2>Stations</h2></div></div><div class="empty"><h3>Add students first</h3><p class="muted">Stations rotates your groups through activities with a timer.</p><button class="btn" data-act="tab" data-arg="roster">Go to Roster</button></div></div>`;
-  const c=cls.stationsCfg,G=stationGroups(cls),n=G.length,ns=stCountOf(cls),b=cls.st,sc=scoreCard(cls,b),qm=cls.view.colors&&b.opts.mode!=='random'&&b.opts.crit[0]&&b.opts.crit[0]!=='__g'?qmapFor(cls,b.opts.crit[0]):new Map();
+  const c=cls.stationsCfg,G=stationGroups(cls),n=G.length,ns=stCountOf(cls),b=cls.st,sc=scoreCard(cls,b),qm=cls.view.colors&&b.opts.mode!=='random'&&b.opts.mode!=='alpha'&&b.opts.crit[0]&&b.opts.crit[0]!=='__g'?qmapFor(cls,b.opts.crit[0]):new Map();
   return`<div class="layout">
   <aside class="rail">
     <section class="panel"><h3>Station groups</h3>
-      <div class="seg" role="group" aria-label="Grouping type">${[['mixed','Mixed'],['similar','Similar'],['random','Random']].map(([k,l])=>`<button data-act="stGmode" data-arg="${k}" aria-pressed="${b.opts.mode===k}">${l}</button>`).join('')}</div>
+      <div class="seg four" role="group" aria-label="Grouping type">${ALPHA_SEG.map(([k,l])=>`<button data-act="stGmode" data-arg="${k}" aria-pressed="${b.opts.mode===k}"${k==='alpha'?' title="Alphabetical" aria-label="Alphabetical"':''}>${l}</button>`).join('')}</div>
       ${critListHTML(cls,b.opts,'st')}
       <div class="field"><span>Number of groups</span><div class="stepper" role="group" aria-label="Number of groups"><button data-act="stCount" data-arg="-1" aria-label="Fewer groups"${b.count<=2?' disabled':''}>−</button><output>${b.count} groups</output><button data-act="stCount" data-arg="1" aria-label="More groups"${b.count>=stMax(cls)?' disabled':''}>+</button></div><small class="muted">${Math.floor(qPresent(cls).length/b.count)}${qPresent(cls).length%b.count?'–'+Math.ceil(qPresent(cls).length/b.count):''} students per group.</small></div>
       <div class="field"><span>Number of stations</span><div class="stepper" role="group" aria-label="Number of stations"><button data-act="stStations" data-arg="-1" aria-label="Fewer stations"${ns<=2?' disabled':''}>−</button><output>${ns} stations</output><button data-act="stStations" data-arg="1" aria-label="More stations"${ns>=12?' disabled':''}>+</button></div><small class="muted">${ns>n?`${ns-n} station${ns-n>1?'s sit':' sits'} empty each round.`:ns<n?`Up to ${Math.ceil(n/ns)} groups share a station each round.`:'One group per station.'} Every group visits every station in ${ns} rounds.</small></div>
-      <label class="check"><input type="checkbox" data-ch="stopt" data-key="avoid"${b.opts.avoid?' checked':''}> Avoid recent partners</label>
+      ${b.opts.mode==='alpha'?'':`<label class="check"><input type="checkbox" data-ch="stopt" data-key="avoid"${b.opts.avoid?' checked':''}> Avoid recent partners</label>`}
       <button class="btn primary wide" data-act="stMake">Make groups</button>
       ${cls.groupSets.length?`<div class="ordiv"><span>or use a saved set</span></div><div class="row"><select id="stLoadSel" style="flex:1" aria-label="Saved group set">${cls.groupSets.slice().reverse().map(x=>`<option value="${x.id}">${esc(x.name)}</option>`).join('')}</select><button class="btn small" data-act="stLoad">Load</button></div>`:''}
     </section>
@@ -2201,10 +2208,10 @@ function stationsHTML(cls){
   </aside>
   <section class="stage">
     <div class="stage-head"><div><h2>Stations</h2><p class="muted">${n} groups · ${ns} stations · ${esc(metaText(cls,b.meta)||'')} · ${c.work} min each${+c.transition?` · ${c.transition<60?c.transition+' sec':(c.transition/60)+' min'} to move`:''}</p></div></div>
-    <div class="tablewrap"><table class="sched"><thead><tr><th></th>${Array.from({length:ns},(_,s2)=>`<th>${esc(stName(cls,s2))}</th>`).join('')}</tr></thead><tbody>${Array.from({length:ns},(_,r)=>`<tr><th>Round ${r+1}</th>${Array.from({length:ns},(_,s2)=>{const here=G.map((_,gi)=>gi).filter(gi=>stAt(gi,r,ns)===s2);return`<td>${here.length?here.map(gi=>`<span class="gchip" style="--tc:var(--t${gi%8+1})">Group ${gi+1}</span>`).join(' '):'<span class="muted small">Open</span>'}</td>`}).join('')}</tr>`).join('')}</tbody></table></div>
+    <div class="tablewrap"><table class="sched"><thead><tr><th></th>${Array.from({length:ns},(_,s2)=>`<th data-stn="${s2}">${esc(stName(cls,s2))}</th>`).join('')}</tr></thead><tbody>${Array.from({length:ns},(_,r)=>`<tr><th>Round ${r+1}</th>${Array.from({length:ns},(_,s2)=>{const here=G.map((_,gi)=>gi).filter(gi=>stAt(gi,r,ns)===s2);return`<td>${here.length?here.map(gi=>`<span class="gchip" style="--tc:var(--t${gi%8+1})">Group ${gi+1}</span>`).join(' '):'<span class="muted small">Open</span>'}</td>`}).join('')}</tr>`).join('')}</tbody></table></div>
     ${sc.length?`<div class="scorecard">${sc.map(x=>`<div class="sc ${x.ok?'ok':'warn'}"><i aria-hidden="true">${x.ok?'✓':'!'}</i><div><b>${esc(x.name)}</b><span>${esc(x.text)}</span></div></div>`).join('')}</div>`:''}
     <p class="hint">${ui.stpick?`Now tap someone in another group to trade with ${esc(nameOf(cls,ui.stpick))}.`:'To trade two students, tap one name, then a name in another group.'}</p>
-    <div class="qgrid">${G.map((g,gi)=>{const bad=qBroken(cls,G,gi);return`<div class="qcard${bad?' clash':''}"><div class="qc-head"><b>Group ${gi+1}</b>${bad?'<span class="pill bad">Rule broken</span>':''}<span class="n">${g.length}</span></div><div class="qsum">Starts at ${esc(stName(cls,stAt(gi,0,ns)))}</div><ul>${(qm.size?g.slice().sort((x,y)=>(qm.get(x)||9)-(qm.get(y)||9)):g).map(id=>{const qq=qm.get(id);return`<li><button class="qname${ui.stpick===id?' picked':''}" data-act="stTap" data-arg="${id}">${qq?(qq<=4?`<span class="qnum">${qq}</span>`:'')+`<i class="qdot" style="background:var(--q${qq})" aria-hidden="true"></i>`:''}<span class="qt">${esc(nameOf(cls,id))}</span>${svg('swap')}</button></li>`}).join('')}</ul></div>`}).join('')}</div>
+    <div class="qgrid">${G.map((g,gi)=>{const bad=qBroken(cls,G,gi);return`<div class="qcard${bad?' clash':''}"><div class="qc-head"><b>Group ${gi+1}</b>${bad?'<span class="pill bad">Rule broken</span>':''}<span class="n">${g.length}</span></div><div class="qsum">Starts at <span data-stn="${stAt(gi,0,ns)}">${esc(stName(cls,stAt(gi,0,ns)))}</span></div><ul>${(qm.size?g.slice().sort((x,y)=>(qm.get(x)||9)-(qm.get(y)||9)):g).map(id=>{const qq=qm.get(id);return`<li><button class="qname${ui.stpick===id?' picked':''}" data-act="stTap" data-arg="${id}">${qq?(qq<=4?`<span class="qnum">${qq}</span>`:'')+`<i class="qdot" style="background:var(--q${qq})" aria-hidden="true"></i>`:''}<span class="qt">${esc(nameOf(cls,id))}</span>${svg('swap')}</button></li>`}).join('')}</ul></div>`}).join('')}</div>
   </section></div>`;
 }
 function stationTimerEnd(){const cls=activeClass(),c=cls.stationsCfg;if(ui.phase==='work'){if(c.autoTransition&&+c.transition>0){startTransition();return}renderPresent();return}advanceStation(true)}
@@ -2513,7 +2520,7 @@ const ACT={
   mkSrc:(b,a)=>{ui.mkSrc=a;ui.mkName=null;render()},
   mkOpen:()=>{const cls=need(),lr=lastRecipe(cls);ui.mkRoom=null;ui.mkSet=null;if(lr&&lr.r){cls.quick.opts.mode=lr.r.mode;const c=validCrit(cls,lr.r.crit);if(c.length)cls.quick.opts.crit=c}ui.mkOpen=true;ui.mkName=null;render()},
   mkClose:()=>{ui.mkOpen=false;render()},
-  mkCreate:()=>{const cls=need();if(ui.mkRoom&&S.rooms.some(r=>r.id===ui.mkRoom))cls.roomId=ui.mkRoom;if(ui.mkSet){const r=mkSeatSaved(cls),nm=(($('#mkName')||{}).value||'').trim()||defaultChartName(cls,r.rec);ui.mkOpen=false;ui.mkName=null;ui.mkRoom=null;ui.mkSet=null;createChart(cls,nm,r.rec);chartDone(cls,r.left,nm);return}const o=cls.quick.opts,r={mode:o.mode,crit:o.mode==='random'?[]:validCrit(cls,o.crit)};if(r.mode!=='random'&&!r.crit.length)r.mode='random';const typed=(($('#mkName')||{}).value||'').trim(),nm=(!typed||typed===defaultChartName(cls,{mode:o.mode}))?defaultChartName(cls,r):typed,res=buildFromRecipe(cls,r);if(res.error){toast(res.error);return}ui.mkOpen=false;ui.mkName=null;ui.mkRoom=null;createChart(cls,nm,r);chartDone(cls,(res.unseated||[]).length,nm)},
+  mkCreate:()=>{const cls=need();if(ui.mkRoom&&S.rooms.some(r=>r.id===ui.mkRoom))cls.roomId=ui.mkRoom;if(ui.mkSet){const r=mkSeatSaved(cls),nm=(($('#mkName')||{}).value||'').trim()||defaultChartName(cls,r.rec);ui.mkOpen=false;ui.mkName=null;ui.mkRoom=null;ui.mkSet=null;createChart(cls,nm,r.rec);chartDone(cls,r.left,nm);return}const o=cls.quick.opts,r={mode:o.mode,crit:o.mode==='random'||o.mode==='alpha'?[]:validCrit(cls,o.crit)};if(r.mode!=='random'&&r.mode!=='alpha'&&!r.crit.length)r.mode='random';const typed=(($('#mkName')||{}).value||'').trim(),nm=(!typed||typed===defaultChartName(cls,{mode:o.mode}))?defaultChartName(cls,r):typed,res=buildFromRecipe(cls,r);if(res.error){toast(res.error);return}ui.mkOpen=false;ui.mkName=null;ui.mkRoom=null;createChart(cls,nm,r);chartDone(cls,(res.unseated||[]).length,nm)},
   reshuffle:()=>{const cls=need(),h=openChart(cls);if(h&&!(ui.shufOk||{})[h.id]){ui.shufAsk=true;render();setTimeout(()=>{const i=$('#shName');if(i){i.focus();i.select()}},30);return}ACT.shThis()},
   shCancel:(b,a,ev)=>{if(b&&b.classList.contains('modal-back')&&ev&&ev.target!==b)return;ui.shufAsk=false;render()},
   shNew:()=>{const cls=need(),lr=lastRecipe(cls),r=lr?lr.r:{mode:'random',crit:[]},nm=(($('#shName')||{}).value||'').trim()||defaultChartName(cls,r),res=buildFromRecipe(cls,r);if(res.error){toast(res.error);return}ui.shufAsk=false;const h=createChart(cls,nm,r);ui.shufOk=ui.shufOk||{};ui.shufOk[h.id]=true;chartDone(cls,(res.unseated||[]).length,nm)},
@@ -2703,7 +2710,7 @@ async function gsImport(){if(GS.busy)return;
   catch(e){const m=String(e&&e.message||'');gsStatus('');toast(m==='load'?'Couldn’t reach Google. Check your connection and try again.':/denied|closed|popup|access_denied/.test(m)?'Google sign-in was cancelled.':m==='http403'||m==='http404'?'That sheet couldn’t be opened. Make sure you can view it in Google Sheets.':'Couldn’t import that sheet. Try again.')}
   finally{GS.busy=false}}
 function csvSplit(l){const out=[];let cur='',q=false;for(let i=0;i<l.length;i++){const ch=l[i];if(q){if(ch==='"'){if(l[i+1]==='"'){cur+='"';i++}else q=false}else cur+=ch}else if(ch==='"')q=true;else if(ch===','){out.push(cur);cur=''}else cur+=ch}out.push(cur);return out}
-function pasteParse(txt){const lines=String(txt||'').replace(/\r/g,'').split('\n').filter(l=>l.trim());if(lines.length<2)return null;const tab=lines[0].includes('\t');const rows=lines.map(l=>(tab?l.split('\t'):csvSplit(l)).map(c=>c.trim()));const low=rows[0].map(h=>h.toLowerCase());
+function pasteParse(txt){if(window.tabify)txt=window.tabify(txt);const lines=String(txt||'').replace(/\r/g,'').split('\n').filter(l=>l.trim());if(lines.length<2)return null;const tab=lines[0].includes('\t');const rows=lines.map(l=>(tab?l.split('\t'):csvSplit(l)).map(c=>c.trim()));const low=rows[0].map(h=>h.toLowerCase());
   const first=low.findIndex(h=>/^(first|given|preferred first)/.test(h)),last=low.findIndex(h=>/^(last|surname|family)/.test(h));let full=low.findIndex(h=>/name/.test(h)&&!/^(first|given|last|surname|family|preferred)/.test(h));if(first<0&&last<0&&full<0)full=0;
   const names=(first>=0||last>=0)?[]:rows.slice(1).map(r=>(r[full]||'').trim()).filter(Boolean);
   const comma=names.filter(n=>n.includes(',')).length;return{rows,first,last,full,names,cols:first>=0||last>=0,guess:names.length&&comma>=names.length/2?'lfc':'fl'}}
@@ -2712,7 +2719,7 @@ function pastePreview(){const box=$('#pasteBox'),out=$('#pastePrev');if(!box||!o
   const st=(S&&S.settings.nameStyle)||'initial',ex=labelList(P.cols?P.rows.slice(1).map(r=>({first:(r[P.first]||'').trim(),middle:'',last:(r[P.last]||'').trim()})):P.names.map(n=>parseName(n,fmt==='fl'?'fl':'lf')),st).slice(0,4);
   out.hidden=false;out.innerHTML=P.cols?`<div class="pp-row"><b>Names</b><span>First and last name columns found</span></div><div class="pp-ex">${ex.map(x=>`<span>${esc(x)}</span>`).join('')}<em>…</em></div>`
     :`<div class="pp-row"><b>Names are written</b><select id="pasteFmt"${cur&&cur.dataset.user?' data-user="1"':''}>${[['fl','First Last'],['lfc','Last, First'],['lf','Last First (no comma)']].map(([k,l])=>`<option value="${k}"${fmt===k?' selected':''}>${l}${k===P.guess?' (detected)':''}</option>`).join('')}</select></div><div class="pp-ex"><small>On charts:</small>${ex.map(x=>`<span>${esc(x)}</span>`).join('')}${P.names.length>4?'<em>…</em>':''}</div>`}
-function importRows(cls,txt,mode,fmt){
+function importRows(cls,txt,mode,fmt){if(window.tabify)txt=window.tabify(txt);
   const lines=String(txt||'').replace(/\r/g,'').split('\n').filter(l=>l.trim());
   if(lines.length<2)return{err:'Paste a header row and at least one student.'};
   const tab=lines[0].includes('\t');
@@ -2752,7 +2759,7 @@ const CH={
   station:el=>{need().stations[el.dataset.key]=el.value.trim();save()},
   stopt:el=>{need().st.opts[el.dataset.key]=el.checked;save()},
   stcfg:el=>{const c=need().stationsCfg,k=el.dataset.key;c[k]=el.type==='checkbox'?el.checked:k==='work'?clamp(Math.round(+el.value)||12,1,120):k==='transition'?+el.value:el.value;save();render()},
-  stname:el=>{need().stationsCfg.names[+el.dataset.key]=el.value.trim();save()},
+  stname:el=>{const c=need(),k=+el.dataset.key;c.stationsCfg.names[k]=el.value.trim();save();document.querySelectorAll(`[data-stn="${k}"]`).forEach(x=>x.textContent=stName(c,k))},
   qstation:el=>{need().quick.stations[+el.dataset.key]=el.value.trim();save()},
   qName:el=>{need().quick.name=el.value.trim();save()},
   qPickSet:el=>{if(el.value){ui.qEdit=false;ACT.qOpen(null,el.value)}},
@@ -2991,6 +2998,7 @@ render();
 #qc .foot .in{padding:6px 10px}#qc .foot .bigbtn{padding-top:9px;padding-bottom:9px}
 @media (max-width:600px){#qc .foot .in.in{padding:5px}#qc .foot .in .bigbtn.bigbtn{padding-top:8px;padding-bottom:8px}}
 #qc .note{font-size:13px;color:#6e6e73}
+#qc .qprev{margin:0 0 8px;font-size:13px;color:#6e6e73;min-height:1em;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 #qc .two{display:grid;grid-template-columns:1.35fr 1fr;gap:20px;align-items:start}
 #qc .tip{display:grid;gap:12px;font-size:14px;color:#3a3a3c}
 #qc .tip>div{display:flex;gap:10px;align-items:flex-start}
@@ -3192,9 +3200,29 @@ const qcls=()=>ui.qc&&ui.qc.clsId&&S&&S.classes.find(c=>c.id===ui.qc.clsId)||nul
 const here=cls=>cls.students.filter(s=>!s.absent);
 
 /* names from the box: one per line, or rows from a spreadsheet (tab separated, with a header row) */
-function qcNames(text){text=String(text||'').replace(/\r/g,'');
-  if(/\t/.test(text)){const P=pasteParse(text);if(P){if(P.cols){return P.rows.slice(1).map(rw=>[P.first>=0?rw[P.first]:'',P.last>=0?rw[P.last]:''].filter(Boolean).join(' ').trim()).filter(Boolean)}return P.names}}
-  return text.split('\n').map(l=>l.replace(/^\s*\d+[.)]\s+/,'').trim()).filter(Boolean)}
+/* Pasted tables that lost their tabs (copied from a doc, email or chat): "First Last Score Gender" with spaces.
+   If the first line looks like a header, turn the rows back into columns. Extra words in a row go into the name. */
+const NAME_HEAD=/^(name|names|student|students|first|firstname|given|preferred|last|lastname|surname|family|full)$/i;
+window.tabify=function(txt){txt=String(txt||'').replace(/\r/g,'');if(/\t/.test(txt))return txt;
+  const lines=txt.split('\n').filter(l=>l.trim());if(lines.length<2)return txt;
+  if(lines.filter(l=>l.includes(',')).length>=lines.length*.8)return txt;
+  const head=lines[0].trim().split(/\s+/);if(head.length<2||head.some(h=>/\d/.test(h))||!head.some(h=>NAME_HEAD.test(h.replace(/[:_-]/g,''))))return txt;
+  const low=head.map(h=>h.toLowerCase().replace(/[:_-]/g,'')),fi=low.findIndex(h=>/^(first|firstname|given|preferred)$/.test(h)),li=low.findIndex(h=>/^(last|lastname|surname|family)$/.test(h));
+  let ni=fi>=0?fi:low.findIndex(h=>NAME_HEAD.test(h));if(ni<0)ni=0;
+  let ok=0;const out=[head.join('\t')];
+  for(const l of lines.slice(1)){let t=l.trim().split(/\s+/);const extra=t.length-head.length;
+    if(extra>0){t=t.slice(0,ni).concat([t.slice(ni,ni+extra+1).join(' ')],t.slice(ni+extra+1))}
+    if(t.length===head.length)ok++;out.push(t.join('\t'))}
+  return ok>=(lines.length-1)*.8?out.join('\n'):txt};
+const JUNK=/(\d|^(m|f|x|nb|male|female|boy|girl)$)/i;
+function qcNames(text){text=window.tabify(String(text||'').replace(/\r/g,''));
+  const l0=text.split('\n').find(l=>l.trim())||'',csvHead=l0.includes(',')&&l0.split(',').some(h=>NAME_HEAD.test(h.trim().replace(/[\s:_-]/g,'')));
+  if(/\t/.test(text)||csvHead){const P=pasteParse(text);if(P){if(P.cols){return P.rows.slice(1).map(rw=>[P.first>=0?rw[P.first]:'',P.last>=0?rw[P.last]:''].filter(Boolean).join(' ').trim()).filter(Boolean)}return P.names}}
+  let L=text.split('\n').map(l=>l.replace(/^\s*\d+[.)]\s+/,'').trim()).filter(Boolean);
+  /* names followed by scores or other notes (Ava Martinez 92 F): drop the trailing extras when most lines have them */
+  const cut=l=>{const t=l.split(/\s+/);while(t.length>1&&JUNK.test(t[t.length-1]))t.pop();return t.join(' ')};
+  if(L.length>1&&L.filter(l=>cut(l)!==l).length>=L.length*.6)L=L.map(cut);
+  return L}
 
 /* the room: a tidy grid of tables, saved as a real room so the full Studio can use it */
 function qcCols(kind,n){if(kind==='rows')return Math.min(7,Math.max(2,Math.ceil(Math.sqrt(n*1.5))));if(kind==='g6')return n<=4?2:3;if(kind==='g4'||kind==='cards'||kind==='pairs')return n<=4?2:n>12?4:3;return 3}
@@ -3320,11 +3348,12 @@ function qcClose(){ui.qc=null;document.documentElement.style.overflow='';qcRende
 function qcHead(q){const s=['Names','Layout','Arrange'];return`<div class="qh"><div class="ttl"><span class="gmark" aria-hidden="true"><i></i><i></i><i></i><i></i></span><span class="t">Quick Chart</span></div>
   ${q.step===4?'<div class="steps"></div>':`<div class="steps">${s.map((x,k)=>{const n=k+1,can=n!==q.step&&n<=q.max;return`${k?'<i class="sep"></i>':''}<button class="st ${n===q.step?'on':n<q.step||n<=q.max?'done':''}"${can?` data-qa="goStep" data-arg="${n}"`:' tabindex="-1"'}><b>${n<q.step||(n<=q.max&&n!==q.step)?'✓':n}</b>${x}</button>`}).join('')}</div>`}
   ${q.step!==4&&S.classes.some(c=>c.id!==q.clsId&&!(c.name||'').includes(SAMPLE_PREFIX))?`<button class="hbtn" data-qa="list" title="See all your classes">${QI.list}<span class="lg">My Classes</span></button>`:''}<button class="hbtn" data-qa="full" title="Open this in the full Grouping Studio">${QI.grid}<span class="lg">Open full Studio</span></button></div>`}
+const qcPrevHTML=t=>{const L=qcNames(t);return L.length?`Names: ${L.slice(0,4).map(esc).join(' · ')}${L.length>4?' …':''}`:''};
 function step1(q){const n=qcNames(q.text).length,ed=q.max>=3&&q.clsId;return{body:`<h1>${ed?'Edit roster':'Who’s in your class?'}</h1><p class="sub">${ed?'Add, remove or fix names, one per line. Everyone already seated keeps their seat.':'Paste or type names, one per line. That’s all Quick Chart needs.'}</p>
-  <div class="two"><div class="card"><label class="l" for="qcName">Class name</label><input class="t" id="qcName" placeholder="3rd Period" value="${esc(q.name)}" autocomplete="off"><div style="height:16px"></div><label class="l" for="qcText">Student names</label><textarea id="qcText" placeholder="Ava Martinez&#10;Ben Carter&#10;Chloe Nguyen&#10;…" spellcheck="false">${esc(q.text)}</textarea>
-  <div class="row" style="margin-top:12px"><span class="chip${n?'':' zero'}" id="qcCount">${n?'✓ '+n+' student'+(n===1?'':'s'):'No names yet'}</span><span class="note">First and last, or first names only. Both work.</span></div></div>
+  <div class="two"><div class="card"><label class="l" for="qcName">Class name</label><input class="t" id="qcName" placeholder="3rd Period" value="${esc(q.name)}" autocomplete="off"><div style="height:16px"></div><div class="row" style="justify-content:space-between;align-items:center;gap:10px;margin-bottom:6px"><label class="l" for="qcText" style="margin:0">Student names</label><span class="chip${n?'':' zero'}" id="qcCount">${n?'✓ '+n+' student'+(n===1?'':'s'):'No names yet'}</span></div><div class="qprev" id="qcPrev">${qcPrevHTML(q.text)}</div><textarea id="qcText" placeholder="Ava Martinez&#10;Ben Carter&#10;Chloe Nguyen&#10;…" spellcheck="false">${esc(q.text)}</textarea>
+  <div class="row" style="margin-top:10px"><span class="note">First and last, or first names only. Both work.</span></div></div>
   <div class="card tip">${gsOn()?`<button class="bigbtn sec gsbtn" data-qa="gs">${QI.sheet} Import from Google Sheets</button><div style="text-align:center;color:#8e8e93;font-size:13px;margin:-2px 0">or</div>`:''}
-   <div><i>1</i><span><b>Copy</b> the name column from your gradebook or spreadsheet.</span></div><div><i>2</i><span><b>Paste</b> it in the box. One name per line.</span></div><div><i>3</i><span><b>Next</b>, pick how your desks are set up.</span></div>
+   <div><i>1</i><span><b>Copy</b> names from your gradebook or spreadsheet. Extra columns like scores are fine.</span></div><div><i>2</i><span><b>Paste</b> it in the box. One name per line.</span></div><div><i>3</i><span><b>Next</b>, pick how your desks are set up.</span></div>
    <div class="note" style="border-top:1px solid rgba(60,60,67,.12);padding-top:12px">🔒 Names stay in this browser. Nothing is uploaded.</div></div></div>
   <textarea id="pasteBox" hidden></textarea><div id="pastePrev" hidden></div><div id="gsInfo" hidden></div>`,
   foot:q.max>=3&&q.clsId?`<button class="bigbtn ghost" data-qa="goStep" data-arg="3">Cancel</button><span class="note">New names go to “Not seated yet.” Removed names leave their seats.</span><span class="sp"></span><button class="bigbtn go" data-qa="namesBack" id="qcNext1"${n?'':' disabled'}>Save roster · back to chart →</button>`:`<button class="bigbtn ghost" data-qa="full">Cancel</button><span class="note">Saved as a class in Grouping Studio</span><span class="sp"></span><button class="bigbtn go" data-qa="next1" id="qcNext1"${n?'':' disabled'}>Next: pick a layout →</button>`}}
@@ -3403,7 +3432,7 @@ document.addEventListener('click',e=>{const root=document.getElementById('qc-roo
 });
 document.addEventListener('change',e=>{if(!ui.qc||e.target.id!=='qcRoomPick')return;const v=e.target.value;ui.qc.reuseId=v;ui.qc.layout='room:'+v;ui.qc.count=null;qcRender()});
 document.addEventListener('keydown',e=>{if(!ui.qc||e.target.id==='qcRoomPick')return;const b=e.target.closest&&e.target.closest('.ropt.one');if(b&&(e.key==='Enter'||e.key===' ')){e.preventDefault();b.click()}});
-document.addEventListener('input',e=>{if(!ui.qc)return;if(e.target.id==='qcText'){ui.qc.text=e.target.value;const n=qcNames(e.target.value).length,c=$('#qcCount'),b=$('#qcNext1');if(c){c.textContent=n?'✓ '+n+' student'+(n===1?'':'s'):'No names yet';c.className='chip'+(n?'':' zero')}if(b)b.disabled=!n}
+document.addEventListener('input',e=>{if(!ui.qc)return;if(e.target.id==='qcText'){ui.qc.text=e.target.value;const n=qcNames(e.target.value).length,c=$('#qcCount'),b=$('#qcNext1');if(c){c.textContent=n?'✓ '+n+' student'+(n===1?'':'s'):'No names yet';c.className='chip'+(n?'':' zero')}if(b)b.disabled=!n;const pv=$('#qcPrev');if(pv)pv.textContent=qcPrevHTML(e.target.value).replace(/&amp;/g,'&').replace(/&#39;/g,"'").replace(/&quot;/g,'"').replace(/&lt;/g,'<').replace(/&gt;/g,'>')}
   else if(e.target.id==='qcName')ui.qc.name=e.target.value});
 document.addEventListener('keydown',e=>{if(!ui.qc||ui.qc.hidden)return;if(e.key==='Escape'&&ui.qc.pick){ui.qc.pick=null;qcRender();e.stopPropagation()}},true);
 /* drag a name onto a seat (mouse, pen or finger); a short press without moving is a tap */
@@ -3534,6 +3563,12 @@ function qcFit(){document.querySelectorAll('#qc-root .qfree[data-nat]').forEach(
 .rostbtn{display:inline-flex;align-items:center;gap:5px;margin-left:6px;vertical-align:middle;border:1px solid rgba(60,60,67,.18);background:#fff;border-radius:999px;padding:3px 10px 3px 8px;font:inherit;font-size:12.5px;font-weight:700;color:#1d1d1f;cursor:pointer}
 .rostbtn:hover{border-color:#a259ff;color:#7a3cf0}
 .rostbtn svg{width:14px;height:14px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round}
+
+/* Stations schedule: equal columns so long station names don't push the groups out of line */
+.sched{table-layout:fixed;min-width:620px}
+.sched tr>:first-child{width:92px}
+.sched th,.sched td{vertical-align:middle}
+.sched thead th{white-space:normal;overflow-wrap:anywhere;vertical-align:bottom;line-height:1.25}
 </style>
 <script>
 (function(){
@@ -3590,6 +3625,10 @@ document.addEventListener('click',e=>{const b=e.target.closest&&e.target.closest
 /* returning teachers land on My Classes */
 try{const pg=new URLSearchParams(location.search).get('page');if(S&&ui.tour==null&&!pg){ui.tab='classes';render()}}catch(e){}
 })();
+
+CH.alphaBy=el=>{const c=need();c.alphaBy=el.value==='first'?'first':'last';save();render()};
+/* station names: update the rotation table while typing */
+document.addEventListener('input',e=>{const el=e.target;if(!el||el.dataset.ch!=='stname')return;try{CH.stname(el)}catch(x){}});
 </script>
 
 <style>.mc-acts{gap:6px}.mc-acts .mc-btn{padding:8px 11px;font-size:13.5px;gap:6px}.mc-acts .mc-btn svg{width:16px;height:16px}#qc .mc-acts .mc-btn{font-size:13.5px}
