@@ -3569,6 +3569,12 @@ function qcFit(){document.querySelectorAll('#qc-root .qfree[data-nat]').forEach(
 .sched tr>:first-child{width:92px}
 .sched th,.sched td{vertical-align:middle}
 .sched thead th{white-space:normal;overflow-wrap:anywhere;vertical-align:bottom;line-height:1.25}
+.chartbar .newroom-btn{margin-left:auto;flex:none;display:inline-flex;align-items:center;gap:7px;border:0;border-radius:999px;padding:10px 18px 10px 14px;font:inherit;font-size:14px;font-weight:700;color:#fff;cursor:pointer;background:linear-gradient(100deg,#ff4fb8,#a259ff 55%,#3d8bff);box-shadow:0 4px 14px rgba(162,89,255,.3)}
+.chartbar .newroom-btn b{font-size:20px;line-height:1;font-weight:600;margin-top:-2px}
+.chartbar .roomname-in{flex:0 1 460px!important;min-width:120px;width:auto!important}
+.chartbar .newroom-btn:hover{filter:brightness(1.06)}
+.chartbar .newroom-btn:focus-visible{outline:3px solid rgba(162,89,255,.4);outline-offset:2px}
+@media (max-width:600px){.chartbar .newroom-btn{padding:8px 12px 8px 10px;font-size:13px}}
 </style>
 <script>
 (function(){
@@ -3749,7 +3755,8 @@ window.roomBarHTML=function(room){const tb=(act,ic,tip,on,dis)=>`<button class="
   const delOn=ui.confirm==='delRoom',many=S.rooms.length>1;
   const title=ui.roomRename?`<input class="roomname-in" id="roomNameIn" data-ch="roomName" value="${esc(room.name)}" aria-label="Layout name" autocomplete="off">`
    :`<h2 class="chart-one">${esc(room.name)}</h2>`;
-  return`<div class="chartbar">${title}<div class="chart-tools" role="toolbar" aria-label="Layout actions">${tb('newRoom','plus','New layout')}${tb('dupRoom','saveas','Duplicate')}${tb('roomRename','pencil','Rename',ui.roomRename)}${many?`<button class="iconbtn tipbtn danger${delOn?' armed':''}" data-act="delRoom" data-confirm="delRoom" data-tip="${delOn?'Click again to delete':'Delete'}" aria-label="${delOn?'Confirm delete':'Delete layout'}">${svg('trash')}</button>`:''}</div></div>`};
+  return`<div class="chartbar">${title}<div class="chart-tools" role="toolbar" aria-label="Layout actions">${tb('dupRoom','saveas','Duplicate')}${tb('roomRename','pencil','Rename',ui.roomRename)}${many?`<button class="iconbtn tipbtn danger${delOn?' armed':''}" data-act="delRoom" data-confirm="delRoom" data-tip="${delOn?'Click again to delete':'Delete'}" aria-label="${delOn?'Confirm delete':'Delete layout'}">${svg('trash')}</button>`:''}</div><button class="newroom-btn" data-act="newRoom"><b aria-hidden="true">+</b><span>Build new room</span></button></div>`};
+{const _nr=ACT.newRoom;ACT.newRoom=function(){const before=new Set(S.rooms.map(r=>r.id));_nr.apply(this,arguments);const r=S.rooms.find(x=>!before.has(x.id));if(r){if(r.name==='New layout')r.name='New room';save();ui.roomRename=false;ACT.roomRename()}}}
 ACT.roomRename=()=>{ui.roomRename=!ui.roomRename;render();if(ui.roomRename)setTimeout(()=>{const i=document.getElementById('roomNameIn');if(i){i.focus();i.select()}},0)};
 const _rn=CH.roomName;CH.roomName=el=>{ui.roomRename=false;_rn(el)};
 document.addEventListener('keydown',e=>{if(e.target&&e.target.id==='roomNameIn'){if(e.key==='Enter'){e.preventDefault();e.target.blur()}else if(e.key==='Escape'){ui.roomRename=false;render()}}});
